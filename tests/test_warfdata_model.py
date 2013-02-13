@@ -5,14 +5,10 @@ from sqlalchemy import create_engine
 
 import warbmodel
 
-from warfdata.model import Action, Cost, Month, Prestation, Salesman
+from warfdata.model import Cost, Month, Prestation, Salesman
 
 
 class TestModelBase(unittest.TestCase):
-
-    def test_action(self):
-        application = Action.Action()
-        self.assertTrue(True)
 
     def test_cost(self):
         user = Cost.Cost()

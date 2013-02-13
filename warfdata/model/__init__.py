@@ -6,4 +6,4 @@ attribute/method of each SQLA-Class is mandatory.
 """
 from warbmodel import Base
 
-__all__ = ['Action', 'Cost', 'Month', 'Prestation', 'Salesman']
+__all__ = ['Cost', 'Month', 'Prestation', 'Salesman']

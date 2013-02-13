@@ -5,8 +5,11 @@ also provides a class to check wether the provided model package fits the
 requirements or not.
 
 """
-from sqlalchemy.orm.session import Session as SQLA_Session
 from importlib import import_module
+
+from sqlalchemy.orm.session import Session as SQLA_Session
+
+from warbmodel import User, Application
 
 
 class DataRepository():
@@ -15,6 +18,47 @@ class DataRepository():
     Provide a base with a fully functionnal SQLA-Session.
 
     """
+
+    def _get_user(self, **kwargs):
+        """Return a user given a user (other SQLA-Session) or a user_id."""
+        if 'user' in kwargs:
+            if not isinstance(kwargs['user'], User.User):
+                raise AttributeError('user provided is not a wb-User')
+
+            # Merging user which may come from another session
+            user = self.session.merge(kwargs['user'])
+
+        elif 'user_id' in kwargs:
+            user = self.session.query(User.User)\
+                .filter(User.User.id == kwargs['user_id'])\
+                .one()
+
+        else:
+            raise TypeError('User informations (user or user_id) not provided')
+
+        return user
+
+    def _get_application(self, **kwargs):
+        """Return an application given an application (other SQLA-Session) or
+        a application_id."""
+        if 'application' in kwargs:
+            if not isinstance(kwargs['application'], Application.Application):
+                raise AttributeError('application provided is not a wb-User')
+
+            # Merging application which may come from another session
+            app = self.session.merge(kwargs['application'])
+
+        elif 'application_id' in kwargs:
+            app_id = kwargs['application_id']
+            app = self.session.query(Application.Application)\
+                .filter(Application.Application.id == app_id)\
+                .one()
+
+        else:
+            raise TypeError('Application informations (application or \
+                application_id) not provided')
+
+        return app
 
     def __init__(self, **kwargs):
         """Init a SQLA-Session."""
@@ -33,6 +77,10 @@ class DataRepository():
 
         self.package = kwargs['package']
 
+        self.user = self._get_user(**kwargs)
+
+        self.application = self._get_application(**kwargs)
+
 
 class ModelPackageChecker():
     """Check if provided model package fits the requirements."""
@@ -45,16 +93,6 @@ class ModelPackageChecker():
         import_module(kwargs['package'])
 
         self.package = kwargs['package']
-
-    def _test_action(self):
-        """Test the Action object."""
-        Action = import_module('.Action', package=self.package)
-        dir_list = dir(Action.Action)
-        required_list = ['datetime', 'message', 'created_by_id', 'created_by',
-                         'application_id', 'application']
-        for item in required_list:
-            if not item in dir_list:
-                raise TypeError('Action\'s {} field missing'.format(item))
 
     def _test_cost(self):
         """Test the Cost object."""
@@ -96,7 +134,6 @@ class ModelPackageChecker():
 
     def run(self):
         """Run the test."""
-        self._test_action()
         self._test_cost()
         self._test_month()
         self._test_prestation()
