@@ -53,7 +53,7 @@ class PrestationsData(DataRepository):
         if not 'selling_price' in kwargs:
             raise TypeError('selling_price missing')
 
-        if not isinstance(float, kwargs['selling_price']):
+        if not isinstance(kwargs['selling_price'], float):
             raise AttributeError('selling_price isn\'t a float')
 
         if presta.selling_price == kwargs['selling_price']:
