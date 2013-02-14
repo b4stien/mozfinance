@@ -10,6 +10,7 @@ from importlib import import_module
 from sqlalchemy.orm.session import Session as SQLA_Session
 
 from warbmodel import User, Application
+from warbdata.actions import ActionsData
 
 
 class DataRepository():
@@ -80,6 +81,8 @@ class DataRepository():
         self.user = self._get_user(**kwargs)
 
         self.application = self._get_application(**kwargs)
+
+        self.actions_data = ActionsData(session=self.session, user=self.user)
 
 
 class ModelPackageChecker():
