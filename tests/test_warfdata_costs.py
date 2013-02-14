@@ -75,6 +75,15 @@ class TestUpdateCost(TestCostsData):
             amount=float(12))
         self.assertEqual(cost.amount, float(12))
 
+    def test_update_with_cost_id(self):
+        cost = self.costs_data.create(
+            reason=u'With action',
+            prestation=self.prestation)
+        cost = self.costs_data.update(
+            cost_id=cost.id,
+            amount=float(12))
+        self.assertEqual(cost.amount, float(12))
+
     def test_no_update(self):
         reason = u'With action'
         cost = self.costs_data.create(

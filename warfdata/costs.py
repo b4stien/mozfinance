@@ -22,7 +22,7 @@ class CostsData(DataRepository):
             cost = self.session.merge(kwargs['cost'])
 
         elif 'cost_id' in kwargs:
-            cost = self.session.query(Cost.Cost)\
+            cost = self.session.query(self.Cost.Cost)\
                 .filter(self.Cost.Cost.id == kwargs['cost_id'])\
                 .one()
 
