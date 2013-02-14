@@ -36,14 +36,13 @@ class CostsData(DataRepository):
             raise TypeError('message or prestation not provided')
 
         self.actions_data.create(
-            message=message.format(prestation.id),
-            application=self.application)
+            message=message.format(prestation.id))
 
     def create(self, pop_action=False, **kwargs):
         """Create and insert a cost in DB. Return this cost.
 
         Keyword arguments:
-        see warbmodel.Application.CostSchema
+        see warbmodel.Cost.CostSchema
 
         """
         cost_schema = self.Cost.CostSchema(kwargs)  # Validate datas
@@ -56,7 +55,7 @@ class CostsData(DataRepository):
                 message=self.Cost.ACT_COST_CREATE,
                 prestation=kwargs['prestation'])
 
-        # To get a full application to return (get a working id)
+        # To get a full cost to return (get a working id)
         self.session.flush()
 
         return cost
@@ -73,7 +72,7 @@ class CostsData(DataRepository):
         reason -- new reason of the cost (**)
 
         * at least one is required
-        ** see warbmodel.Application.CostSchema for expected types
+        ** see warbmodel.Cost.CostSchema for expected types
 
         """
         cost = self._get_cost(**kwargs)

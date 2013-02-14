@@ -23,3 +23,9 @@ class Prestation(Base):
     sector = Column(Enum(
         *PRESTATION_SECTORS,
         name="prestation_sectors"), index=True)
+
+    update_dict = set(['breakeven'])  # For update purpose
+    create_dict = set(['date', 'breakeven'])
+
+
+ACT_PRESTATION_SET_SELLING_PRICE = u'Modification du prix de vente de #P{}'

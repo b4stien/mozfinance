@@ -47,7 +47,7 @@ class MonthsData(DataRepository):
         """Create and insert a month in DB. Return this month.
 
         Keyword arguments:
-        see warbmodel.Application.CostSchema
+        see warbmodel.Month.MonthSchema
 
         """
         cost_schema = self.Month.MonthSchema(kwargs)  # Validate datas
@@ -55,7 +55,7 @@ class MonthsData(DataRepository):
         month = self.Month.Month(**kwargs)
         self.session.add(month)
 
-        # To get a full application to return (get a working id)
+        # To get a full month to return (get a working id)
         self.session.flush()
 
         return month
@@ -73,7 +73,7 @@ class MonthsData(DataRepository):
         breakeven -- new breakeven of the month (**)
 
         * at least one is required
-        ** see warbmodel.Application.MonthSchema for expected type
+        ** see warbmodel.Month.MonthSchema for expected type
 
         """
         month = self._get_month(**kwargs)
@@ -102,8 +102,7 @@ class MonthsData(DataRepository):
                 month.date, datetime.time())
             date_name = datetime_date.strftime('%B %Y').decode('utf8')
             self.actions_data.create(
-                message=self.Month.ACT_MONTH_UPDATE.format(date_name),
-                application=self.application)
+                message=self.Month.ACT_MONTH_UPDATE.format(date_name))
 
         return month
 

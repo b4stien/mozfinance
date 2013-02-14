@@ -27,17 +27,15 @@ class DataRepository():
                 raise AttributeError('user provided is not a wb-User')
 
             # Merging user which may come from another session
-            user = self.session.merge(kwargs['user'])
+            return self.session.merge(kwargs['user'])
 
         elif 'user_id' in kwargs:
-            user = self.session.query(User.User)\
+            return self.session.query(User.User)\
                 .filter(User.User.id == kwargs['user_id'])\
                 .one()
 
         else:
             raise TypeError('User informations (user or user_id) not provided')
-
-        return user
 
     def _get_application(self, **kwargs):
         """Return an application given an application (other SQLA-Session) or
@@ -47,19 +45,16 @@ class DataRepository():
                 raise AttributeError('application provided is not a wb-User')
 
             # Merging application which may come from another session
-            app = self.session.merge(kwargs['application'])
+            return self.session.merge(kwargs['application'])
 
         elif 'application_id' in kwargs:
             app_id = kwargs['application_id']
-            app = self.session.query(Application.Application)\
+            return self.session.query(Application.Application)\
                 .filter(Application.Application.id == app_id)\
                 .one()
 
         else:
-            raise TypeError('Application informations (application or \
-                application_id) not provided')
-
-        return app
+            raise TypeError('Application informations not provided')
 
     def __init__(self, **kwargs):
         """Init a SQLA-Session."""
@@ -82,7 +77,9 @@ class DataRepository():
 
         self.application = self._get_application(**kwargs)
 
-        self.actions_data = ActionsData(session=self.session, user=self.user)
+        self.actions_data = ActionsData(session=self.session,
+                                        user=self.user,
+                                        application=self.application)
 
 
 class ModelPackageChecker():
