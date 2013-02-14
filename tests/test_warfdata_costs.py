@@ -4,11 +4,27 @@ from voluptuous import MultipleInvalid
 
 from warbmodel import *
 
+from warfdata.costs import CostsData
 from warfdata.model import *
-from . import TestDatas
+from . import TestData
 
 
-class TestCreateCost(TestDatas):
+class TestCostsData(TestData):
+
+    def setUp(self):
+        TestData.setUp(self)
+        self.costs_data = CostsData(
+            application=self.app,
+            package='warfdata.model',
+            session=self.session,
+            user=self.user)
+
+    def tearDown(self):
+        TestData.tearDown(self)
+        del self.costs_data
+
+
+class TestCreateCost(TestCostsData):
 
     def test_minimal_create(self):
         reason = u'Achat de traôneau'
@@ -48,7 +64,7 @@ class TestCreateCost(TestDatas):
             action = self.session.query(Action.Action).one()
 
 
-class TestUpdateCost(TestDatas):
+class TestUpdateCost(TestCostsData):
 
     def test_update(self):
         cost = self.costs_data.create(
@@ -88,6 +104,10 @@ class TestUpdateCost(TestDatas):
                 pop_action=True)
         with self.assertRaises(NoResultFound):
             action = self.session.query(Action.Action).one()
+
+
+class TestRemoveCost(TestCostsData):
+    pass
 
 
 if __name__ == '__main__':

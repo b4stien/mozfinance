@@ -13,7 +13,7 @@ from warfdata.model import *
 from warfdata.costs import CostsData
 
 
-class TestDatas(unittest.TestCase):
+class TestData(unittest.TestCase):
 
     def setUp(self):
         engine = create_engine('sqlite:///:memory:', echo=False)
@@ -33,11 +33,6 @@ class TestDatas(unittest.TestCase):
             min_permission='view',
             title='Tests')
 
-        self.costs_data = CostsData(
-            application=self.app,
-            package='warfdata.model',
-            session=self.session,
-            user=self.user)
         self.prestation = Prestation.Prestation()
 
     def tearDown(self):
@@ -46,5 +41,4 @@ class TestDatas(unittest.TestCase):
         del self.user
         del self.apps_data
         del self.app
-        del self.costs_data
         del self.prestation
