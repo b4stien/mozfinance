@@ -67,6 +67,24 @@ class TestUpdateMonth(TestMonthsData):
         self.assertEqual(month.date, month_date)
         self.assertEqual(month.breakeven, float(27000))
 
+    def test_update_with_date(self):
+        month_date = date(year=2012, month=12, day=1)
+        month = self.months_data.create(
+            date=month_date)
+        month = self.months_data.update(
+            date=month_date,
+            breakeven=float(27000))
+        self.assertEqual(month.breakeven, float(27000))
+
+    def test_update_with_month_id(self):
+        month_date = date(year=2012, month=12, day=1)
+        month = self.months_data.create(
+            date=month_date)
+        month = self.months_data.update(
+            month_id=month.id,
+            breakeven=float(27000))
+        self.assertEqual(month.breakeven, float(27000))
+
     def test_update_with_action(self):
         month = self.months_data.create(date=date(year=2012, month=12, day=1))
         month = self.months_data.update(

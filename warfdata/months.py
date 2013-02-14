@@ -25,13 +25,21 @@ class MonthsData(DataRepository):
             month = self.session.merge(kwargs['month'])
 
         elif 'month_id' in kwargs:
-            month = self.session.query(Month.Month)\
+            month = self.session.query(self.Month.Month)\
                 .filter(self.Month.Month.id == kwargs['month_id'])\
+                .one()
+
+        elif 'date' in kwargs:
+            if not isinstance(kwargs['date'], datetime.date):
+                raise AttributeError('date provided is not a datetime.date')
+
+            month = self.session.query(self.Month.Month)\
+                .filter(self.Month.Month.date == kwargs['date'])\
                 .one()
 
         else:
             raise TypeError(
-                'Month informations (month or month_id) not provided')
+                'Month informations (month, month_id or date) not provided')
 
         return month
 
