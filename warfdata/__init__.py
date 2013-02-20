@@ -60,7 +60,7 @@ class DataRepository():
     def _get_salesman(self, **kwargs):
         """Return a salesman given a salesman (other SQLA-Session) or
         a salesman_id."""
-        Salesman = self.Salesman
+        Salesman = import_module('.Salesman', package=self.package)
         if 'salesman' in kwargs:
             if not isinstance(kwargs['salesman'], Salesman.Salesman):
                 raise AttributeError('salesman provided is not a wb-Salesman')
@@ -77,7 +77,15 @@ class DataRepository():
             raise TypeError('Salesman informations not provided')
 
     def __init__(self, **kwargs):
-        """Init a SQLA-Session."""
+        """Init a DataRepository object, ABC for other Data objects.
+
+        Keyword arguments (all required):
+        application -- SQLA-Application using the DataRepository
+        package -- package holding the models
+        session -- SQLA-Session
+        user -- user using the DataRepository
+
+        """
         if not 'session' in kwargs:
             raise TypeError('session not provided')
 
@@ -100,8 +108,6 @@ class DataRepository():
         self.actions_data = ActionsData(session=self.session,
                                         user=self.user,
                                         application=self.application)
-
-        self.Salesman = import_module('.Salesman', package=self.package)
 
 
 class ModelPackageChecker():

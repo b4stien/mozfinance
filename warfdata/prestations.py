@@ -1,12 +1,10 @@
 from importlib import import_module
 
-from warbdata.actions import ActionsData
-
 from . import DataRepository
 
 
 class PrestationsData(DataRepository):
-    """DataRepository object for costs."""
+    """DataRepository object for prestations."""
 
     def __init__(self, **kwargs):
         DataRepository.__init__(self, **kwargs)
@@ -31,8 +29,8 @@ class PrestationsData(DataRepository):
                 .one()
 
         else:
-            raise TypeError('Prestation informations (prestation or \
-                             prestation_id) not provided')
+            raise TypeError(
+                'Prestation informations (prestation or prestation_id) not provided')
 
     def add_salesman(self, pop_action=False, **kwargs):
         """Add a salesman to a prestation. Return an exception if this salesman
@@ -53,6 +51,7 @@ class PrestationsData(DataRepository):
         salesman = self._get_salesman(**kwargs)
 
         if salesman in presta.salesmen:
+            # Maybe it should be useful to have a custom Exception
             raise Exception
 
         presta.salesmen.append(salesman)
@@ -84,6 +83,7 @@ class PrestationsData(DataRepository):
         salesman = self._get_salesman(**kwargs)
 
         if not salesman in presta.salesmen:
+            # Maybe it should be useful to have a custom Exception
             raise Exception
 
         presta.salesmen.remove(salesman)

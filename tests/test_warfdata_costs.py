@@ -114,9 +114,30 @@ class TestUpdateCost(TestCostsData):
         with self.assertRaises(NoResultFound):
             action = self.session.query(Action.Action).one()
 
+    def test_wrong_cost_on_update(self):
+        with self.assertRaises(AttributeError):
+            self.costs_data.update(
+                cost='cost',
+                amount=13.0,
+                pop_action=True)
+
+    def test_no_cost_on_update(self):
+        with self.assertRaises(TypeError):
+            self.costs_data.update(
+                amount=13.0,
+                pop_action=True)
+
 
 class TestRemoveCost(TestCostsData):
-    pass
+    
+    def test_remove_cost(self):
+        cost = self.costs_data.create(
+            reason=u'With action',
+            prestation=self.prestation)
+        cost = self.costs_data.remove(
+            cost=cost)
+        with self.assertRaises(NoResultFound):
+            self.session.query(Cost.Cost).one()
 
 
 if __name__ == '__main__':

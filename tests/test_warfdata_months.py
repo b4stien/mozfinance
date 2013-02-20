@@ -104,6 +104,35 @@ class TestUpdateMonth(TestMonthsData):
             pop_action=False)
         self.assertTrue(not month)
 
+    def test_wrong_month(self):
+        with self.assertRaises(AttributeError):
+            month = self.months_data.update(
+                month='month',
+                breakeven=float(27000),
+                pop_action=False)
+
+    def test_wrong_date(self):
+        with self.assertRaises(AttributeError):
+            month = self.months_data.update(
+                date='month',
+                breakeven=float(27000),
+                pop_action=False)
+
+    def test_wrong_info(self):
+        with self.assertRaises(TypeError):
+            month = self.months_data.update(
+                breakeven=float(27000),
+                pop_action=False)
+
+
+class TestRemoveMonth(TestMonthsData):
+    def test_basique(self):
+        month = self.months_data.create(date=date(year=2012, month=12, day=1))
+        with self.assertRaises(NotImplementedError):
+            self.months_data.remove(
+                month=month,
+                pop_action=False)
+
 
 if __name__ == '__main__':
     unittest.main()

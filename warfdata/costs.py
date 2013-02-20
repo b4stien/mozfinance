@@ -1,7 +1,5 @@
 from importlib import import_module
 
-from warbdata.actions import ActionsData
-
 from . import DataRepository
 
 

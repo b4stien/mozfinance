@@ -3,8 +3,6 @@ import datetime
 import locale
 locale.setlocale(locale.LC_ALL, 'fr_FR.UTF8')
 
-from warbdata.actions import ActionsData
-
 from . import DataRepository
 
 
@@ -108,4 +106,4 @@ class MonthsData(DataRepository):
 
     def remove(self, **kwargs):
         """There is no point in removing a month from DB."""
-        pass
+        raise NotImplementedError

@@ -1,5 +1,6 @@
 from sqlalchemy import Table, Column, ForeignKey, Integer, Unicode, PickleType
 from sqlalchemy.orm import backref, relationship
+from voluptuous import Schema, Required, All, Length
 
 from . import Base, Prestation
 
@@ -24,3 +25,12 @@ class Salesman(Base):
         "Prestation",
         secondary=association_table,
         backref=backref('salesmen'))
+
+    update_dict = set(['firstname', 'lastname'])  # For update purpose
+    create_dict = set(['firstname', 'lastname'])
+
+
+SalesmanSchema = Schema({
+    Required('firstname'): All(unicode, Length(min=3, max=30)),
+    Required('lastname'): All(unicode, Length(min=3, max=30))
+})
