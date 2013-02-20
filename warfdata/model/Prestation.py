@@ -1,4 +1,5 @@
-from sqlalchemy import Column, Integer, Date, Enum, Unicode, Float
+# -*- coding: utf-8 -*-
+from sqlalchemy import Column, Integer, Date, Enum, Unicode, Float, PickleType
 
 from . import Base
 
@@ -16,6 +17,7 @@ class Prestation(Base):
     date = Column(Date, index=True)
     client = Column(Unicode(length=30))
     selling_price = Column(Float)
+    custom_com_formulae = Column(PickleType)
 
     category = Column(Enum(
         *PRESTATION_CATEGORIES,
@@ -29,3 +31,6 @@ class Prestation(Base):
 
 
 ACT_PRESTATION_SET_SELLING_PRICE = u'Modification du prix de vente de #P{}'
+ACT_PRESTATION_SET_CUSTOM_COM_FORMULAE = u'Modification d\'une formule de commision sur #P{}'
+ACT_PRESTATION_ADD_SALESMAN = u'Ajout d\'un commercial à #P{}'
+ACT_PRESTATION_REMOVE_SALESMAN = u'Suppression d\'un commercial sur #P{}'

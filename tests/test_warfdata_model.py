@@ -6,9 +6,10 @@ from sqlalchemy import create_engine
 import warbmodel
 
 from warfdata.model import Cost, Month, Prestation, Salesman
+from . import TestData
 
 
-class TestModelBase(unittest.TestCase):
+class TestModelBase(TestData):
 
     def test_cost(self):
         user = Cost.Cost()
@@ -26,13 +27,6 @@ class TestModelBase(unittest.TestCase):
         user = Salesman.Salesman()
         self.assertTrue(True)
 
-
-class TestModelCreateAll(unittest.TestCase):
-
-    def test_create_all(self):
-        engine = create_engine('sqlite:///:memory:', echo=False)
-        warbmodel.Base.metadata.create_all(engine)
-        self.assertTrue(True)
 
 if __name__ == '__main__':
     unittest.main()

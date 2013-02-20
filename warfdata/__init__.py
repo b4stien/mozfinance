@@ -42,7 +42,8 @@ class DataRepository():
         a application_id."""
         if 'application' in kwargs:
             if not isinstance(kwargs['application'], Application.Application):
-                raise AttributeError('application provided is not a wb-User')
+                raise AttributeError(
+                    'application provided is not a wb-Application')
 
             # Merging application which may come from another session
             return self.session.merge(kwargs['application'])
@@ -55,6 +56,25 @@ class DataRepository():
 
         else:
             raise TypeError('Application informations not provided')
+
+    def _get_salesman(self, **kwargs):
+        """Return a salesman given a salesman (other SQLA-Session) or
+        a salesman_id."""
+        Salesman = self.Salesman
+        if 'salesman' in kwargs:
+            if not isinstance(kwargs['salesman'], Salesman.Salesman):
+                raise AttributeError('salesman provided is not a wb-Salesman')
+
+            # Merging salesman which may come from another session
+            return self.session.merge(kwargs['salesman'])
+
+        elif 'salesman_id' in kwargs:
+            return self.session.query(Salesman.Salesman)\
+                .filter(Salesman.Salesman.id == kwargs['salesman_id'])\
+                .one()
+
+        else:
+            raise TypeError('Salesman informations not provided')
 
     def __init__(self, **kwargs):
         """Init a SQLA-Session."""
@@ -80,6 +100,8 @@ class DataRepository():
         self.actions_data = ActionsData(session=self.session,
                                         user=self.user,
                                         application=self.application)
+
+        self.Salesman = import_module('.Salesman', package=self.package)
 
 
 class ModelPackageChecker():

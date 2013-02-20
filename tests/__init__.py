@@ -16,10 +16,12 @@ from warfdata.costs import CostsData
 class TestData(unittest.TestCase):
 
     def setUp(self):
-        engine = create_engine('sqlite:///:memory:', echo=False)
-        warbmodel.Base.metadata.create_all(engine)
+        self.engine = create_engine('sqlite:///:memory:', echo=False)
+        # self.engine = create_engine(
+        #     'postgres://testpgsql:testpgsqlp4ss@localhost/testpgsql')
+        warbmodel.Base.metadata.create_all(self.engine)
 
-        Session = sessionmaker(bind=engine)
+        Session = sessionmaker(bind=self.engine)
         self.session = Session()
 
         self.users_data = UsersData(session=self.session)
@@ -36,6 +38,8 @@ class TestData(unittest.TestCase):
         self.prestation = Prestation.Prestation()
 
     def tearDown(self):
+        self.session.close()
+        warbmodel.Base.metadata.drop_all(self.engine)
         del self.session
         del self.users_data
         del self.user
