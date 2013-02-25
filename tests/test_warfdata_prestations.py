@@ -4,11 +4,11 @@ from datetime import date
 from sqlalchemy.orm.exc import NoResultFound
 from voluptuous import MultipleInvalid
 
-from warbmodel import *
+from warbase.model import *
 
-from warfdata.prestations import PrestationsData
-from warfdata.salesmen import SalesmenData
-from warfdata.model import *
+from warfinance.data.prestations import PrestationsData
+from warfinance.data.salesmen import SalesmenData
+from warfinance.data.model import *
 from . import TestData
 
 
@@ -18,7 +18,7 @@ class TestPrestationsData(TestData):
         TestData.setUp(self)
         self.presta_data = PrestationsData(
             application=self.app,
-            package='warfdata.model',
+            package='warfinance.data.model',
             session=self.session,
             user=self.user)
         self.prestation = Prestation.Prestation()
@@ -91,7 +91,7 @@ class TestPrestationsSalesmen(TestPrestationsData):
         TestPrestationsData.setUp(self)
         self.salesmen_data = SalesmenData(
             application=self.app,
-            package='warfdata.model',
+            package='warfinance.data.model',
             session=self.session,
             user=self.user)
 
@@ -149,7 +149,7 @@ class TestCustomFormulae(TestPrestationsData):
         TestPrestationsData.setUp(self)
         self.salesmen_data = SalesmenData(
             application=self.app,
-            package='warfdata.model',
+            package='warfinance.data.model',
             session=self.session,
             user=self.user)
 

@@ -1,7 +1,7 @@
 from importlib import import_module
 import datetime
 import locale
-locale.setlocale(locale.LC_ALL, 'fr_FR.UTF8')
+locale.setlocale(locale.LC_ALL, 'fr_FR')
 
 from . import DataRepository
 
@@ -45,7 +45,7 @@ class MonthsData(DataRepository):
         """Create and insert a month in DB. Return this month.
 
         Keyword arguments:
-        see warbmodel.Month.MonthSchema
+        see warfinance.datamodel.Month.MonthSchema
 
         """
         cost_schema = self.Month.MonthSchema(kwargs)  # Validate datas
@@ -71,7 +71,7 @@ class MonthsData(DataRepository):
         breakeven -- new breakeven of the month (**)
 
         * at least one is required
-        ** see warbmodel.Month.MonthSchema for expected type
+        ** see warfinance.datamodel.Month.MonthSchema for expected type
 
         """
         month = self._get_month(**kwargs)

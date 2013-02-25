@@ -3,9 +3,9 @@ import unittest
 
 from sqlalchemy import create_engine
 
-import warbmodel
+import warbase.model
 
-from warfdata.model import Cost, Month, Prestation, Salesman
+from warfinance.data.model import Cost, Month, Prestation, Salesman
 from . import TestData
 
 

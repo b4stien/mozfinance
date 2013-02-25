@@ -1,0 +1,4 @@
+SQLAlchemy
+psycopg2
+voluptuous
+-e git://github.com/b4stien/warbase.git#egg=warbase

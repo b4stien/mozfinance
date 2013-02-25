@@ -4,6 +4,6 @@ It could be use as a source to create custom working SQLA-Classes. Every
 attribute/method of each SQLA-Class is mandatory.
 
 """
-from warbmodel import Base
+from warbase.model import Base
 
 __all__ = ['Cost', 'Month', 'Prestation', 'Salesman']

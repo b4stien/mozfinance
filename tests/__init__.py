@@ -1,16 +1,16 @@
- # -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 import unittest
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-import warbmodel
-from warbmodel import *
-from warbdata.users import UsersData
-from warbdata.applications import ApplicationsData
+import warbase.model
+from warbase.model import *
+from warbase.data.users import UsersData
+from warbase.data.applications import ApplicationsData
 
-from warfdata.model import *
-from warfdata.costs import CostsData
+from warfinance.data.model import *
+from warfinance.data.costs import CostsData
 
 
 class TestData(unittest.TestCase):
@@ -19,7 +19,7 @@ class TestData(unittest.TestCase):
         self.engine = create_engine('sqlite:///:memory:', echo=False)
         # self.engine = create_engine(
         #     'postgres://testpgsql:testpgsqlp4ss@localhost/testpgsql')
-        warbmodel.Base.metadata.create_all(self.engine)
+        warbase.model.Base.metadata.create_all(self.engine)
 
         Session = sessionmaker(bind=self.engine)
         self.session = Session()
@@ -39,7 +39,7 @@ class TestData(unittest.TestCase):
 
     def tearDown(self):
         self.session.close()
-        warbmodel.Base.metadata.drop_all(self.engine)
+        warbase.model.Base.metadata.drop_all(self.engine)
         del self.session
         del self.users_data
         del self.user

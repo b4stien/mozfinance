@@ -1,8 +1,8 @@
  # -*- coding: utf-8 -*-
 import unittest
 
-from warfdata import ModelPackageChecker as PackageChecker
-from warfdata import DataRepository
+from warfinance.data import ModelPackageChecker as PackageChecker
+from warfinance.data import DataRepository
 
 from . import TestData
 
@@ -10,7 +10,7 @@ from . import TestData
 class TestModelBase(unittest.TestCase):
 
     def test_action(self):
-        package_checker = PackageChecker(package='warfdata.model')
+        package_checker = PackageChecker(package='warfinance.data.model')
         self.assertTrue(package_checker.run())
 
 
@@ -19,7 +19,7 @@ class TestWarfdataInit(TestData):
     def test_correct_datarepo_init(self):
         datarepo = DataRepository(
             application=self.app,
-            package='warfdata.model',
+            package='warfinance.data.model',
             session=self.session,
             user=self.user
         )
@@ -28,7 +28,7 @@ class TestWarfdataInit(TestData):
         with self.assertRaises(TypeError):
             datarepo = DataRepository(
                 application=self.app,
-                package='warfdata.model',
+                package='warfinance.data.model',
                 user=self.user
             )
 
@@ -36,7 +36,7 @@ class TestWarfdataInit(TestData):
         with self.assertRaises(AttributeError):
             datarepo = DataRepository(
                 application=self.app,
-                package='warfdata.model',
+                package='warfinance.data.model',
                 session='not session',
                 user=self.user
             )
@@ -44,7 +44,7 @@ class TestWarfdataInit(TestData):
     def test_datarepo_init_user_id(self):
         datarepo = DataRepository(
             application=self.app,
-            package='warfdata.model',
+            package='warfinance.data.model',
             session=self.session,
             user_id=self.user.id
         )
@@ -53,7 +53,7 @@ class TestWarfdataInit(TestData):
         with self.assertRaises(TypeError):
             datarepo = DataRepository(
                 application=self.app,
-                package='warfdata.model',
+                package='warfinance.data.model',
                 session=self.session
             )
 
@@ -61,7 +61,7 @@ class TestWarfdataInit(TestData):
         with self.assertRaises(AttributeError):
             datarepo = DataRepository(
                 application=self.app,
-                package='warfdata.model',
+                package='warfinance.data.model',
                 session=self.session,
                 user='not a SQLA-user'
             )
@@ -69,7 +69,7 @@ class TestWarfdataInit(TestData):
     def test_datarepo_init_app_id(self):
         datarepo = DataRepository(
             application_id=self.app.id,
-            package='warfdata.model',
+            package='warfinance.data.model',
             session=self.session,
             user_id=self.user.id
         )
@@ -77,7 +77,7 @@ class TestWarfdataInit(TestData):
     def test_no_app(self):
         with self.assertRaises(TypeError):
             datarepo = DataRepository(
-                package='warfdata.model',
+                package='warfinance.data.model',
                 session=self.session,
                 user_id=self.user.id
             )
@@ -86,7 +86,7 @@ class TestWarfdataInit(TestData):
         with self.assertRaises(AttributeError):
             datarepo = DataRepository(
                 application='self.app',
-                package='warfdata.model',
+                package='warfinance.data.model',
                 session=self.session,
                 user=self.user
             )

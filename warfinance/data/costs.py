@@ -40,7 +40,7 @@ class CostsData(DataRepository):
         """Create and insert a cost in DB. Return this cost.
 
         Keyword arguments:
-        see warbmodel.Cost.CostSchema
+        see warfinance.data.model.Cost.CostSchema
 
         """
         cost_schema = self.Cost.CostSchema(kwargs)  # Validate datas
@@ -70,7 +70,7 @@ class CostsData(DataRepository):
         reason -- new reason of the cost (**)
 
         * at least one is required
-        ** see warbmodel.Cost.CostSchema for expected types
+        ** see warfinance.data.model.Cost.CostSchema
 
         """
         cost = self._get_cost(**kwargs)

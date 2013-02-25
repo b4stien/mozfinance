@@ -2,10 +2,10 @@
 from sqlalchemy.orm.exc import NoResultFound
 from voluptuous import MultipleInvalid
 
-from warbmodel import *
+from warbase.model import *
 
-from warfdata.costs import CostsData
-from warfdata.model import *
+from warfinance.data.costs import CostsData
+from warfinance.data.model import *
 from . import TestData
 
 
@@ -15,7 +15,7 @@ class TestCostsData(TestData):
         TestData.setUp(self)
         self.costs_data = CostsData(
             application=self.app,
-            package='warfdata.model',
+            package='warfinance.data.model',
             session=self.session,
             user=self.user)
 

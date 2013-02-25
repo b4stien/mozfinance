@@ -14,7 +14,7 @@ class SalesmenData(DataRepository):
         """Create and insert a salesman in DB. Return this salesman.
 
         Keyword arguments:
-        see warbmodel.Salesman.SalesmanSchema
+        see warfinance.data.model.Salesman.SalesmanSchema
 
         """
         salesman_schema = self.Salesman.SalesmanSchema(kwargs)
@@ -44,7 +44,7 @@ class SalesmenData(DataRepository):
         lastname -- new lastname of the salesman (**)
 
         * at least one is required
-        ** see warbmodel.Salesman.SalesmanSchema for expected types
+        ** see warfinance.data.Salesman.SalesmanSchema for expected types
 
         """
         salesman = self._salesman_cost(**kwargs)

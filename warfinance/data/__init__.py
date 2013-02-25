@@ -9,8 +9,8 @@ from importlib import import_module
 
 from sqlalchemy.orm.session import Session as SQLA_Session
 
-from warbmodel import User, Application
-from warbdata.actions import ActionsData
+from warbase.model import User, Application
+from warbase.data.actions import ActionsData
 
 
 class DataRepository():

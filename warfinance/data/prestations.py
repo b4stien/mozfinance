@@ -107,7 +107,7 @@ class PrestationsData(DataRepository):
         selling_price -- new selling_price of the prestation (**)
 
         * at least one is required
-        ** see warbmodel.Prestation.PrestationSchema for expected types
+        ** see warfinance.data.model.Prestation.PrestationSchema for expected types
 
         """
         presta = self._get_prestation(**kwargs)

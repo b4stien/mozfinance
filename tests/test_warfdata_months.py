@@ -4,10 +4,10 @@ from datetime import date
 from sqlalchemy.orm.exc import NoResultFound
 from voluptuous import MultipleInvalid
 
-from warbmodel import *
+from warbase.model import *
 
-from warfdata.months import MonthsData
-from warfdata.model import *
+from warfinance.data.months import MonthsData
+from warfinance.data.model import *
 from . import TestData
 
 
@@ -17,7 +17,7 @@ class TestMonthsData(TestData):
         TestData.setUp(self)
         self.months_data = MonthsData(
             application=self.app,
-            package='warfdata.model',
+            package='warfinance.data.model',
             session=self.session,
             user=self.user)
 
