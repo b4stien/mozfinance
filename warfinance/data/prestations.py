@@ -10,28 +10,6 @@ class PrestationsData(DataRepository):
         DataRepository.__init__(self, **kwargs)
         self.Prestation = import_module('.Prestation', package=self.package)
 
-    def _get_prestation(self, **kwargs):
-        """Return a prestation given a prestation (other SQLA-Session) or a
-        prestation_id."""
-        if 'prestation' in kwargs:
-            if not isinstance(kwargs['prestation'],
-                              self.Prestation.Prestation):
-                raise AttributeError(
-                    'prestation provided is not a wb-Prestation')
-
-            # Merging prestation which may come from another session
-            return self.session.merge(kwargs['prestation'])
-
-        elif 'prestation_id' in kwargs:
-            presta_id = kwargs['prestation_id']
-            return self.session.query(self.Prestation.Prestation)\
-                .filter(self.Prestation.Prestation.id == presta_id)\
-                .one()
-
-        else:
-            raise TypeError(
-                'Prestation informations (prestation or prestation_id) not provided')
-
     def add_salesman(self, pop_action=False, **kwargs):
         """Add a salesman to a prestation. Return an exception if this salesman
         is already associated with the prestation.

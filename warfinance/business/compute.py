@@ -1,7 +1,108 @@
+from warbase.data.computed_values import ComputedValuesData
+
 from . import AbcBusinessWorker
 
 
 class ComputeWorker(AbcBusinessWorker):
-	
-	def month_ca(self, month):
-		pass
+
+    def __init__(self, **kwargs):
+        AbcBusinessWorker.__init__(self, **kwargs)
+        self.compvalues_data = ComputedValuesData(session=self.session)
+
+
+    def _get_or_compute(self, key, target_id, **kwargs):
+        comp_value = self._get_computed_value(
+            key=key,
+            target_id=target_id)
+
+        if comp_value is None:
+            (instance_type, sep, prefix_key) = key.partition(':')
+            method = self._attributes_dict[instance_type][prefix_key]
+
+            if 'instance' in kwargs:
+                method_kwargs = {instance_type: kwargs['instance']}
+            else:
+                method_kwargs = {instance_type+'_id': target_id}
+
+            value = getattr(self, method)(**method_kwargs)
+        else:
+            value = comp_value.value
+
+        return value
+
+    def prestation_cost(self, **kwargs):
+        presta = self._get_prestation(**kwargs)
+
+        presta_cost = float(0)
+        for cost in presta.costs:
+            presta_cost += cost.amount
+
+        self.compvalues_data.set(
+            key='prestation:cost',
+            target_id=presta.id,
+            value=presta_cost)
+
+        return presta_cost      
+    
+    def month_revenu(self, **kwargs):
+        month = self._get_month(**kwargs)
+
+        Prestation = self.Prestation
+        prestations = self.session.query(Prestation.Prestation)\
+            .filter(Prestation.Prestation.date >= month.date)\
+            .filter(Prestation.Prestation.date < month.next_month())\
+            .all()
+
+        month_revenu = float(0)
+        for presta in prestations:
+            month_revenu += presta.selling_price
+
+        self.compvalues_data.set(
+            key='month:revenu',
+            target_id=month.id,
+            value=month_revenu)
+
+        return month_revenu
+
+    def month_gross_margin(self, **kwargs):
+        month = self._get_month(**kwargs)
+
+        month_revenu = self._get_or_compute(
+            'month:revenu',
+            month.id,
+            instance=month)
+        month_cost = self._get_or_compute(
+            'month:cost',
+            month.id,
+            instance=month)
+
+        month_gross_margin = month_revenu - month_cost
+        self.compvalues_data.set(
+            key='month:gross_margin',
+            target_id=month.id,
+            value=month_gross_margin)
+
+        return month_gross_margin
+
+    def month_cost(self, **kwargs):
+        month = self._get_month(**kwargs)
+
+        Prestation = self.Prestation
+        prestations = self.session.query(Prestation.Prestation)\
+            .filter(Prestation.Prestation.date >= month.date)\
+            .filter(Prestation.Prestation.date < month.next_month())\
+            .all()
+
+        month_cost = float(0)
+        for presta in prestations:
+            month_cost += self._get_or_compute(
+                'prestation:cost',
+                presta.id,
+                instance=presta)
+
+        self.compvalues_data.set(
+            key='month:cost',
+            target_id=month.id,
+            value=month_cost)
+
+        return month_cost

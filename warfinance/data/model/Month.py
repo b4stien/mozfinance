@@ -14,6 +14,12 @@ class Month(Base):
     date = Column(Date, index=True)  # First day of the month
     breakeven = Column(Float)
 
+    def next_month(self):
+        next_month = date(year=self.date.year,
+                          month=self.date.month+1,
+                          day=self.date.day)
+        return next_month
+
     update_dict = set(['breakeven'])  # For update purpose
     create_dict = set(['date', 'breakeven'])
 

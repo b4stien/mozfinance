@@ -70,24 +70,25 @@ class DataRepository(WarbDataRepository):
 
     def _get_month(self, **kwargs):
         """Return a month given a month (other SQLA-Session) or a month_id."""
+        Month = import_module('.Month', package=self.package)
         if 'month' in kwargs:
-            if not isinstance(kwargs['month'], self.Month.Month):
+            if not isinstance(kwargs['month'], Month.Month):
                 raise AttributeError('month provided is not a wb-Month')
 
             # Merging month which may come from another session
             month = self.session.merge(kwargs['month'])
 
         elif 'month_id' in kwargs:
-            month = self.session.query(self.Month.Month)\
-                .filter(self.Month.Month.id == kwargs['month_id'])\
+            month = self.session.query(Month.Month)\
+                .filter(Month.Month.id == kwargs['month_id'])\
                 .one()
 
         elif 'date' in kwargs:
             if not isinstance(kwargs['date'], datetime.date):
                 raise AttributeError('date provided is not a datetime.date')
 
-            month = self.session.query(self.Month.Month)\
-                .filter(self.Month.Month.date == kwargs['date'])\
+            month = self.session.query(Month.Month)\
+                .filter(Month.Month.date == kwargs['date'])\
                 .one()
 
         else:
@@ -95,6 +96,29 @@ class DataRepository(WarbDataRepository):
                 'Month informations (month, month_id or date) not provided')
 
         return month
+
+    def _get_prestation(self, **kwargs):
+        """Return a prestation given a prestation (other SQLA-Session) or a
+        prestation_id."""
+        Prestation = import_module('.Prestation', package=self.package)
+        if 'prestation' in kwargs:
+            if not isinstance(kwargs['prestation'],
+                              Prestation.Prestation):
+                raise AttributeError(
+                    'prestation provided is not a wb-Prestation')
+
+            # Merging prestation which may come from another session
+            return self.session.merge(kwargs['prestation'])
+
+        elif 'prestation_id' in kwargs:
+            presta_id = kwargs['prestation_id']
+            return self.session.query(Prestation.Prestation)\
+                .filter(Prestation.Prestation.id == presta_id)\
+                .one()
+
+        else:
+            raise TypeError(
+                'Prestation informations (prestation or prestation_id) not provided')
 
 
 class ModelPackageChecker():
