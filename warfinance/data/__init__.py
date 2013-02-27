@@ -6,56 +6,48 @@ requirements or not.
 
 """
 from importlib import import_module
+import datetime
 
 from sqlalchemy.orm.session import Session as SQLA_Session
 
 from warbase.model import User, Application
+from warbase.data import DataRepository as WarbDataRepository
 from warbase.data.actions import ActionsData
 
 
-class DataRepository():
+class DataRepository(WarbDataRepository):
     """ABC for data repository objects.
 
     Provide a base with a fully functionnal SQLA-Session.
 
     """
 
-    def _get_user(self, **kwargs):
-        """Return a user given a user (other SQLA-Session) or a user_id."""
-        if 'user' in kwargs:
-            if not isinstance(kwargs['user'], User.User):
-                raise AttributeError('user provided is not a wb-User')
+    def __init__(self, **kwargs):
+        """Init a DataRepository object, ABC for other Data objects.
 
-            # Merging user which may come from another session
-            return self.session.merge(kwargs['user'])
+        Keyword arguments (all required):
+        application -- SQLA-Application using the DataRepository
+        package -- package holding the models
+        session -- SQLA-Session
+        user -- user using the DataRepository
 
-        elif 'user_id' in kwargs:
-            return self.session.query(User.User)\
-                .filter(User.User.id == kwargs['user_id'])\
-                .one()
+        """
+        WarbDataRepository.__init__(self, **kwargs)
 
-        else:
-            raise TypeError('User informations (user or user_id) not provided')
+        if not 'package' in kwargs:
+            raise TypeError('package not provided')
 
-    def _get_application(self, **kwargs):
-        """Return an application given an application (other SQLA-Session) or
-        a application_id."""
-        if 'application' in kwargs:
-            if not isinstance(kwargs['application'], Application.Application):
-                raise AttributeError(
-                    'application provided is not a wb-Application')
+        import_module(kwargs['package'])
 
-            # Merging application which may come from another session
-            return self.session.merge(kwargs['application'])
+        self.package = kwargs['package']
 
-        elif 'application_id' in kwargs:
-            app_id = kwargs['application_id']
-            return self.session.query(Application.Application)\
-                .filter(Application.Application.id == app_id)\
-                .one()
+        self.user = self._get_user(**kwargs)
 
-        else:
-            raise TypeError('Application informations not provided')
+        self.application = self._get_application(**kwargs)
+
+        self.actions_data = ActionsData(session=self.session,
+                                        user=self.user,
+                                        application=self.application)
 
     def _get_salesman(self, **kwargs):
         """Return a salesman given a salesman (other SQLA-Session) or
@@ -76,38 +68,33 @@ class DataRepository():
         else:
             raise TypeError('Salesman informations not provided')
 
-    def __init__(self, **kwargs):
-        """Init a DataRepository object, ABC for other Data objects.
+    def _get_month(self, **kwargs):
+        """Return a month given a month (other SQLA-Session) or a month_id."""
+        if 'month' in kwargs:
+            if not isinstance(kwargs['month'], self.Month.Month):
+                raise AttributeError('month provided is not a wb-Month')
 
-        Keyword arguments (all required):
-        application -- SQLA-Application using the DataRepository
-        package -- package holding the models
-        session -- SQLA-Session
-        user -- user using the DataRepository
+            # Merging month which may come from another session
+            month = self.session.merge(kwargs['month'])
 
-        """
-        if not 'session' in kwargs:
-            raise TypeError('session not provided')
+        elif 'month_id' in kwargs:
+            month = self.session.query(self.Month.Month)\
+                .filter(self.Month.Month.id == kwargs['month_id'])\
+                .one()
 
-        if not isinstance(kwargs['session'], SQLA_Session):
-            raise AttributeError('session provided is not a SQLA-Session')
+        elif 'date' in kwargs:
+            if not isinstance(kwargs['date'], datetime.date):
+                raise AttributeError('date provided is not a datetime.date')
 
-        self.session = kwargs['session']
+            month = self.session.query(self.Month.Month)\
+                .filter(self.Month.Month.date == kwargs['date'])\
+                .one()
 
-        if not 'package' in kwargs:
-            raise TypeError('package not provided')
+        else:
+            raise TypeError(
+                'Month informations (month, month_id or date) not provided')
 
-        import_module(kwargs['package'])
-
-        self.package = kwargs['package']
-
-        self.user = self._get_user(**kwargs)
-
-        self.application = self._get_application(**kwargs)
-
-        self.actions_data = ActionsData(session=self.session,
-                                        user=self.user,
-                                        application=self.application)
+        return month
 
 
 class ModelPackageChecker():

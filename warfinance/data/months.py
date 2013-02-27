@@ -13,34 +13,6 @@ class MonthsData(DataRepository):
         DataRepository.__init__(self, **kwargs)
         self.Month = import_module('.Month', package=self.package)
 
-    def _get_month(self, **kwargs):
-        """Return a month given a month (other SQLA-Session) or a month_id."""
-        if 'month' in kwargs:
-            if not isinstance(kwargs['month'], self.Month.Month):
-                raise AttributeError('month provided is not a wb-Month')
-
-            # Merging month which may come from another session
-            month = self.session.merge(kwargs['month'])
-
-        elif 'month_id' in kwargs:
-            month = self.session.query(self.Month.Month)\
-                .filter(self.Month.Month.id == kwargs['month_id'])\
-                .one()
-
-        elif 'date' in kwargs:
-            if not isinstance(kwargs['date'], datetime.date):
-                raise AttributeError('date provided is not a datetime.date')
-
-            month = self.session.query(self.Month.Month)\
-                .filter(self.Month.Month.date == kwargs['date'])\
-                .one()
-
-        else:
-            raise TypeError(
-                'Month informations (month, month_id or date) not provided')
-
-        return month
-
     def create(self, **kwargs):
         """Create and insert a month in DB. Return this month.
 
