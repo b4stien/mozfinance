@@ -1,8 +1,5 @@
  # -*- coding: utf-8 -*-
-from datetime import date
-
 from sqlalchemy.orm.exc import NoResultFound
-from voluptuous import MultipleInvalid
 
 from warbase.model import *
 
@@ -152,9 +149,45 @@ class TestCustomFormulae(TestPrestationsData):
             package='warfinance.data.model',
             session=self.session,
             user=self.user)
+        self.salesman = self.salesmen_data.create(
+            firstname=u'Robert',
+            lastname=u'Louis')
+        self.prestation = self.presta_data.add_salesman(
+            salesman=self.salesman,
+            prestation=self.prestation)
 
     def test_set_correct_custom_formula(self):
-        pass
+        presta = self.presta_data.set_custom_com_formula(
+            salesman=self.salesman,
+            prestation=self.prestation,
+            commission_formula='lol')
+        self.assertTrue((self.salesman.id, 'lol') in presta.custom_com_formulae)
+
+    def test_wrong_custom_formula(self):
+        with self.assertRaises(AttributeError):
+            presta = self.presta_data.set_custom_com_formula(
+                salesman=self.salesman,
+                prestation=self.prestation,
+                commission_formula=u'lol')
+
+    def test_no_update_set_custom_formula(self):
+        presta = self.presta_data.set_custom_com_formula(
+            salesman=self.salesman,
+            prestation=self.prestation,
+            commission_formula='lol')
+        presta = self.presta_data.set_custom_com_formula(
+            salesman=self.salesman,
+            prestation=self.prestation,
+            commission_formula='lol')
+        self.assertTrue(not presta)
+
+    def test_no_update_set_custom_formula(self):
+        presta = self.presta_data.set_custom_com_formula(
+            salesman=self.salesman,
+            prestation=self.prestation,
+            commission_formula='lol',
+            pop_action=True)
+        self.session.query(Action.Action).one()
 
 
 if __name__ == '__main__':

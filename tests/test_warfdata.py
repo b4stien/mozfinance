@@ -24,6 +24,13 @@ class TestWarfdataInit(TestData):
             user=self.user
         )
 
+    def test_no_datarepo(self):
+        with self.assertRaises(TypeError):
+            datarepo = DataRepository(
+                application=self.app,
+                session=self.session,
+                user=self.user)
+
     def test_no_session(self):
         with self.assertRaises(TypeError):
             datarepo = DataRepository(

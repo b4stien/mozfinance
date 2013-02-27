@@ -96,7 +96,8 @@ class CostsData(DataRepository):
 
         if pop_action:
             self._pop_action(
-                message=self.Cost.ACT_COST_UPDATE, prestation=cost.prestation)
+                message=self.Cost.ACT_COST_UPDATE,
+                prestation=cost.prestation)
 
         return cost
 
@@ -117,4 +118,5 @@ class CostsData(DataRepository):
 
         if pop_action:
             self._pop_action(
-                message=self.Cost.ACT_COST_REMOVE, prestation=prestation)
+                message=self.Cost.ACT_COST_REMOVE,
+                prestation=prestation)

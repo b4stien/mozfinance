@@ -19,7 +19,7 @@ class Month(Base):
 
 
 def MonthDate(msg=None):
-    """Verify that the value is a URL."""
+    """Verify that the value is a correct month date."""
     def f(v):
         if v.day != 1:
             raise Invalid(msg or 'expected a date with date.day == 1')

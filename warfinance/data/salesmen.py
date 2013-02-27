@@ -25,7 +25,7 @@ class SalesmenData(DataRepository):
         self.session.flush()
 
         if pop_action:
-            msg = self.Prestation.ACT_SALESMAN_CREATE
+            msg = self.Salesman.ACT_SALESMAN_CREATE
             self.actions_data.create(message=msg)
 
         self.session.flush()
@@ -47,7 +47,7 @@ class SalesmenData(DataRepository):
         ** see warfinance.data.Salesman.SalesmanSchema for expected types
 
         """
-        salesman = self._salesman_cost(**kwargs)
+        salesman = self._get_salesman(**kwargs)
 
         salesman_dict = {k: v for k, v in salesman.__dict__.items()
                          if k in salesman.create_dict}
@@ -63,13 +63,13 @@ class SalesmenData(DataRepository):
         for item in item_to_update:
             salesman.__dict__[item] = kwargs[item]
 
-        if new_salesman_dict == cost_dict:
+        if new_salesman_dict == salesman_dict:
             return False
 
         self.session.flush()
 
         if pop_action:
-            msg = self.Prestation.ACT_SALESMAN_UPDATE
+            msg = self.Salesman.ACT_SALESMAN_UPDATE
             self.actions_data.create(message=msg)
 
         return salesman
@@ -85,9 +85,9 @@ class SalesmenData(DataRepository):
         * at least one is required
 
         """
-        salesman = self._salesman_cost(**kwargs)
+        salesman = self._get_salesman(**kwargs)
         self.session.delete(salesman)
 
         if pop_action:
-            msg = self.Prestation.ACT_SALESMAN_REMOVE
+            msg = self.Salesman.ACT_SALESMAN_REMOVE
             self.actions_data.create(message=msg)

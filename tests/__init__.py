@@ -17,8 +17,6 @@ class TestData(unittest.TestCase):
 
     def setUp(self):
         self.engine = create_engine('sqlite:///:memory:', echo=False)
-        # self.engine = create_engine(
-        #     'postgres://testpgsql:testpgsqlp4ss@localhost/testpgsql')
         warbase.model.Base.metadata.create_all(self.engine)
 
         Session = sessionmaker(bind=self.engine)

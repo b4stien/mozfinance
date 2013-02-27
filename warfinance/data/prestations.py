@@ -51,7 +51,7 @@ class PrestationsData(DataRepository):
         salesman = self._get_salesman(**kwargs)
 
         if salesman in presta.salesmen:
-            # Maybe it should be useful to have a custom Exception
+            # It may be useful to have a custom Exception
             raise Exception
 
         presta.salesmen.append(salesman)
@@ -170,7 +170,7 @@ class PrestationsData(DataRepository):
             if sm_id == salesman.id:
                 presta.custom_com_formulae.remove((sm_id, com))
 
-        presta.custom_com_formulae.append(custom_com_formulae)
+        presta.custom_com_formulae.append(custom_com_formula)
 
         self.session.flush()
 
