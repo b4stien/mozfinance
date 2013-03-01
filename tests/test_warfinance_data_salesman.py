@@ -14,7 +14,6 @@ class TestSalesmenData(TestData):
     def setUp(self):
         TestData.setUp(self)
         self.salesmen_data = SalesmenData(
-            application=self.app,
             package='warfinance.data.model',
             session=self.session,
             user=self.user)

@@ -14,7 +14,6 @@ class TestCostsData(TestData):
     def setUp(self):
         TestData.setUp(self)
         self.costs_data = CostsData(
-            application=self.app,
             package='warfinance.data.model',
             session=self.session,
             user=self.user)

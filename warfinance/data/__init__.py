@@ -10,7 +10,7 @@ import datetime
 
 from sqlalchemy.orm.session import Session as SQLA_Session
 
-from warbase.model import User, Application
+from warbase.model import User
 from warbase.data import DataRepository as WarbDataRepository
 from warbase.data.actions import ActionsData
 
@@ -26,7 +26,6 @@ class DataRepository(WarbDataRepository):
         """Init a DataRepository object, ABC for other Data objects.
 
         Keyword arguments (all required):
-        application -- SQLA-Application using the DataRepository
         package -- package holding the models
         session -- SQLA-Session
         user -- user using the DataRepository
@@ -43,11 +42,8 @@ class DataRepository(WarbDataRepository):
 
         self.user = self._get_user(**kwargs)
 
-        self.application = self._get_application(**kwargs)
-
         self.actions_data = ActionsData(session=self.session,
-                                        user=self.user,
-                                        application=self.application)
+                                        user=self.user)
 
     def _get_salesman(self, **kwargs):
         """Return a salesman given a salesman (other SQLA-Session) or

@@ -14,7 +14,6 @@ class TestPrestationsData(TestData):
     def setUp(self):
         TestData.setUp(self)
         self.presta_data = PrestationsData(
-            application=self.app,
             package='warfinance.data.model',
             session=self.session,
             user=self.user)
@@ -87,7 +86,6 @@ class TestPrestationsSalesmen(TestPrestationsData):
     def setUp(self):
         TestPrestationsData.setUp(self)
         self.salesmen_data = SalesmenData(
-            application=self.app,
             package='warfinance.data.model',
             session=self.session,
             user=self.user)
@@ -145,7 +143,6 @@ class TestCustomFormulae(TestPrestationsData):
     def setUp(self):
         TestPrestationsData.setUp(self)
         self.salesmen_data = SalesmenData(
-            application=self.app,
             package='warfinance.data.model',
             session=self.session,
             user=self.user)

@@ -15,12 +15,10 @@ class TestBusiness(TestData):
     def setUp(self):
         TestData.setUp(self)
         self.biz = BusinessWorker(
-            application=self.app,
             package='warfinance.data.model',
             session=self.session,
             user=self.user)
         self.months_data = MonthsData(
-            application=self.app,
             package='warfinance.data.model',
             session=self.session,
             user=self.user)
@@ -64,8 +62,7 @@ class TestBusinessBase(TestBusiness):
 
 class TestBusinessWithDatas(TestBusiness):
 
-    def setUp(self):
-        TestBusiness.setUp(self)
+    def test_get_computed_values(self):
         now = datetime.datetime.now()
         now_date = now.date()
         self.month_date = datetime.date(year=now.year, month=now.month, day=1)
@@ -78,8 +75,6 @@ class TestBusinessWithDatas(TestBusiness):
         cost1 = Cost(prestation=presta1, amount=float(4))
         self.session.add(cost1)
         self.session.flush()
-
-    def test_get_computed_values(self):
         month = self.biz.get.month(date=self.month_date, compute=True)
         self.assertEqual(month.revenu, float(28))
         self.assertEqual(month.cost, float(4))
