@@ -8,9 +8,6 @@ requirements or not.
 from importlib import import_module
 import datetime
 
-from sqlalchemy.orm.session import Session as SQLA_Session
-
-from warbase.model import User
 from warbase.data import DataRepository as WarbDataRepository
 from warbase.data.actions import ActionsData
 
