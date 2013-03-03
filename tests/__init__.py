@@ -25,7 +25,6 @@ class TestData(unittest.TestCase):
         self.user = self.users_data.create(
             login='bastien', mail='bastien@test')
 
-
         self.prestation = Prestation.Prestation()
 
     def tearDown(self):
