@@ -60,7 +60,7 @@ class MonthsData(DataRepository):
         self.Month.MonthSchema(new_month_dict)
 
         for item in item_to_update:
-            month.__dict__[item] = kwargs[item]
+            setattr(month, item, kwargs[item])
 
         if new_month_dict == month_dict:
             return False

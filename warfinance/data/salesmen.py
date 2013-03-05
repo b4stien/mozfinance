@@ -61,7 +61,7 @@ class SalesmenData(DataRepository):
         self.Salesman.SalesmanSchema(new_salesman_dict)
 
         for item in item_to_update:
-            salesman.__dict__[item] = kwargs[item]
+            setattr(salesman, item, kwargs[item])
 
         if new_salesman_dict == salesman_dict:
             return False

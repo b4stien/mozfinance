@@ -87,7 +87,7 @@ class CostsData(DataRepository):
         self.Cost.CostSchema(new_cost_dict)
 
         for item in item_to_update:
-            cost.__dict__[item] = kwargs[item]
+            setattr(cost, item, kwargs[item])
 
         if new_cost_dict == cost_dict:
             return False
