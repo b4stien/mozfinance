@@ -14,7 +14,9 @@ _ATTRIBUTES_DICT = {
     'month': {
         'revenu': 'month_revenu',
         'gross_margin': 'month_gross_margin',
-        'cost': 'month_cost'
+        'cost': 'month_cost',
+        'prestation_count': 'month_prestation_count',
+        'commission_base': 'month_commission_base',
     },
     'prestation': {
         'cost': 'prestation_cost'

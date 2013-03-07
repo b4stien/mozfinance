@@ -156,3 +156,53 @@ class ComputeWorker(AbcBusinessWorker):
         self.session.commit()
 
         return month_cost
+
+    def month_prestation_count(self, **kwargs):
+        """Compute and return the number of prestation in a month.
+
+        Keyword arguments:
+        same as warfinance.business.compute.ComputeWorker.month_revenu
+
+        """
+        month = self._get_month(**kwargs)
+
+        Prestation = self.Prestation
+        count = self.session.query(Prestation.Prestation)\
+            .filter(Prestation.Prestation.date >= month.date)\
+            .filter(Prestation.Prestation.date < month.next_month())\
+            .count()
+
+        self.compvalues_data.set(
+            key='month:prestation_count',
+            target_id=month.id,
+            value=float(count))
+        self.session.commit()
+
+        return float(count)
+
+    def month_commission_base(self, **kwargs):
+        """Compute and return the commission base of a month.
+
+        Keyword arguments:
+        same as warfinance.business.compute.ComputeWorker.month_revenu
+
+        """
+        month = self._get_month(**kwargs)
+
+        if not month.breakeven:
+            return float(0)
+
+        month_gross_margin = self._get_or_compute(
+            'month:gross_margin',
+            month.id,
+            instance=month)
+
+        commission_base = month_gross_margin - month.breakeven
+
+        self.compvalues_data.set(
+            key='month:commission_base',
+            target_id=month.id,
+            value=commission_base)
+        self.session.commit()
+
+        return commission_base
