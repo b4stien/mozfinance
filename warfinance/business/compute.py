@@ -88,7 +88,8 @@ class ComputeWorker(AbcBusinessWorker):
 
         month_revenu = float(0)
         for presta in prestations:
-            month_revenu += presta.selling_price
+            if presta.selling_price is not None:
+                month_revenu += presta.selling_price
 
         self.compvalues_data.set(
             key='month:revenu',
