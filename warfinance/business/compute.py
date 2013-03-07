@@ -64,6 +64,7 @@ class ComputeWorker(AbcBusinessWorker):
             key='prestation:cost',
             target_id=presta.id,
             value=presta_cost)
+        self.session.commit()
 
         return presta_cost
 
@@ -95,6 +96,7 @@ class ComputeWorker(AbcBusinessWorker):
             key='month:revenu',
             target_id=month.id,
             value=month_revenu)
+        self.session.commit()
 
         return month_revenu
 
@@ -121,6 +123,7 @@ class ComputeWorker(AbcBusinessWorker):
             key='month:gross_margin',
             target_id=month.id,
             value=month_gross_margin)
+        self.session.commit()
 
         return month_gross_margin
 
@@ -150,5 +153,6 @@ class ComputeWorker(AbcBusinessWorker):
             key='month:cost',
             target_id=month.id,
             value=month_cost)
+        self.session.commit()
 
         return month_cost
