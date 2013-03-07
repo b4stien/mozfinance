@@ -1,4 +1,4 @@
-"""This package holds the business layer of WArFinance.
+"""This package holds the business layer of warfinance.
 
 It requires a valid model package (which is then provided to the DataRepository
 in warfinance.data).

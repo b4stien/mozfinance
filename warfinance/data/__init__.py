@@ -1,4 +1,4 @@
-"""This package holds the integrity layer of WArFinance.
+"""This package holds the integrity layer of warfinance.
 
 It requires a valid model package (which is provided to DataRepository). It
 also provides a class to check wether the provided model package fits the

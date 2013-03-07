@@ -1,4 +1,4 @@
 TODO:
 
-* Salesman & comissions on computation
+* Salesman & commissions on computation
 * Use of memcached !
