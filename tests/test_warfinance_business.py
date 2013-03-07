@@ -4,6 +4,7 @@ import datetime
 
 from warfinance.data.model.Prestation import Prestation
 from warfinance.data.model.Cost import Cost
+from warfinance.data.model.Month import Month
 from warfinance.data.months import MonthsData
 from warfinance.biz import BusinessWorker
 
@@ -58,6 +59,23 @@ class TestBusinessBase(TestBusiness):
         self.assertEqual(other_month.revenu, 0)
         self.assertEqual(other_month.cost, 0)
         self.assertEqual(other_month.gross_margin, 0)
+
+    def test_get_month_with_create(self):
+        now = datetime.datetime.now()
+        month_date = datetime.date(year=now.year, month=now.month, day=1)
+        month = self.biz.get.month(date=month_date, create=True)
+        self.assertTrue(isinstance(month, Month))
+
+    def test_get_month_with_raw_date(self):
+        now = datetime.datetime.now()
+        month_date = datetime.date(year=now.year, month=now.month, day=1)
+        self.months_data.create(date=month_date)
+        month = self.biz.get.month(date=now.date())
+        self.assertTrue(isinstance(month, Month))
+
+    def test_get_month_with_wrong_date(self):
+        with self.assertRaises(AttributeError):
+            month = self.biz.get.month(date='now.date()')
 
 
 class TestBusinessWithDatas(TestBusiness):
