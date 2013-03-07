@@ -1,7 +1,5 @@
 from importlib import import_module
 import datetime
-import locale
-locale.setlocale(locale.LC_ALL, 'fr_FR')
 
 from . import DataRepository
 

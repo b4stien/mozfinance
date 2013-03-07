@@ -8,6 +8,12 @@ requirements or not.
 from importlib import import_module
 import datetime
 
+import locale
+try:
+    locale.setlocale(locale.LC_ALL, 'fr_FR.utf8')
+except locale.Error:
+    locale.setlocale(locale.LC_ALL, 'fr_FR')
+
 from warbase.data import DataRepository as WarbDataRepository
 from warbase.data.actions import ActionsData
 
