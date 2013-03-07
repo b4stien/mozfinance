@@ -3,7 +3,7 @@ from sqlalchemy import Table, Column, ForeignKey, Integer, Unicode, PickleType
 from sqlalchemy.orm import backref, relationship
 from voluptuous import Schema, Required, All, Length
 
-from . import Base, Prestation
+from . import Base
 
 
 association_table = Table(

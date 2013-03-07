@@ -2,7 +2,7 @@
 from datetime import date
 
 from sqlalchemy import Column, Integer, Date, Float
-from voluptuous import Schema, Required, All, Length, Invalid
+from voluptuous import Schema, Required, All, Invalid
 
 from . import Base
 
