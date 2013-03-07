@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from datetime import date
+from datetime import date, timedelta
 
 from sqlalchemy import Column, Integer, Date, Float
 from voluptuous import Schema, Required, All, Invalid
@@ -15,10 +15,20 @@ class Month(Base):
     breakeven = Column(Float)
 
     def next_month(self):
-        next_month = date(year=self.date.year,
-                          month=self.date.month+1,
-                          day=self.date.day)
-        return next_month
+        """Return the date of the first day of the following month"""
+        one_month = timedelta(days=31)
+        in_next_month = self.date + one_month
+        return date(year=in_next_month.year,
+                    month=in_next_month.month,
+                    day=1)
+
+    def prev_month(self):
+        """Return the date of the first day of the precedent month"""
+        one_day = timedelta(days=1)
+        in_prev_month = self.date - one_day
+        return date(year=in_prev_month.year,
+                    month=in_prev_month.month,
+                    day=1)
 
     update_dict = set(['breakeven'])  # For update purpose
     create_dict = set(['date', 'breakeven'])
