@@ -4,53 +4,86 @@ from . import AbcBusinessWorker
 
 
 class ComputeWorker(AbcBusinessWorker):
+    """BusinessWorker for computation. All recipes to compute values are stored
+    here."""
 
     def __init__(self, **kwargs):
         AbcBusinessWorker.__init__(self, **kwargs)
         self.compvalues_data = ComputedValuesData(session=self.session)
 
-
     def _get_or_compute(self, key, target_id, **kwargs):
+        """Return a value (a real value and not a ComputedValue).
+
+        Arguments:
+        key -- key of the value (eg: "month:revenu").
+               See warfinance.business.__ATTRIBUTES_DICT
+        target_id -- id of the target
+
+        Keyword arguments:
+        instance -- target (SQLA-object)
+
+        """
+        # The "get" part of "get_or_compute"
         comp_value = self._get_computed_value(
             key=key,
             target_id=target_id)
 
-        if comp_value is None:
-            (instance_type, sep, prefix_key) = key.partition(':')
-            method = self._attributes_dict[instance_type][prefix_key]
+        if comp_value is not None:
+            return comp_value.value
 
-            if 'instance' in kwargs:
-                method_kwargs = {instance_type: kwargs['instance']}
-            else:
-                method_kwargs = {instance_type+'_id': target_id}
+        # And the "compute" part
+        (instance_type, sep, prefix_key) = key.partition(':')
+        method = self._attributes_dict[instance_type][prefix_key]
 
-            value = getattr(self, method)(**method_kwargs)
+        # To avoid useless DB call.
+        if 'instance' in kwargs:
+            method_kwargs = {instance_type: kwargs['instance']}
         else:
-            value = comp_value.value
+            method_kwargs = {instance_type+'_id': target_id}
 
-        return value
+        return getattr(self, method)(**method_kwargs)
 
     def prestation_cost(self, **kwargs):
+        """Compute and return the sum of all the costs of a prestation.
+
+        Keyword arguments:
+        prestation -- SQLA-Prestation (*)
+        prestation_id -- id of the prestation (*)
+
+        * at least one is required
+
+        """
         presta = self._get_prestation(**kwargs)
 
         presta_cost = float(0)
         for cost in presta.costs:
             presta_cost += cost.amount
 
+        # Storing value in DB
         self.compvalues_data.set(
             key='prestation:cost',
             target_id=presta.id,
             value=presta_cost)
 
-        return presta_cost      
-    
+        return presta_cost
+
     def month_revenu(self, **kwargs):
+        """Compute and return the revenu of a month.
+
+        Keyword arguments:
+        month -- SQLA-Month (*)
+        month_id -- id of the month (*)
+        date -- datetime.date of the first day of the month (*)
+
+        * at least one is required
+
+        """
         month = self._get_month(**kwargs)
 
-        Prestation = self.Prestation
-        prestations = self.session.query(Prestation.Prestation)\
-            .filter(Prestation.Prestation.date >= month.date)\
-            .filter(Prestation.Prestation.date < month.next_month())\
+        Prestation = self.Prestation.Prestation  # abbr
+        prestations = self.session.query(Prestation)\
+            .filter(Prestation.date >= month.date)\
+            .filter(Prestation.date < month.next_month())\
             .all()
 
         month_revenu = float(0)
@@ -65,6 +98,12 @@ class ComputeWorker(AbcBusinessWorker):
         return month_revenu
 
     def month_gross_margin(self, **kwargs):
+        """Compute and return the gross margin of a month.
+
+        Keyword arguments:
+        same as warfinance.business.compute.ComputeWorker.month_revenu
+
+        """
         month = self._get_month(**kwargs)
 
         month_revenu = self._get_or_compute(
@@ -85,6 +124,12 @@ class ComputeWorker(AbcBusinessWorker):
         return month_gross_margin
 
     def month_cost(self, **kwargs):
+        """Compute and return the sum of the costs of a month.
+
+        Keyword arguments:
+        same as warfinance.business.compute.ComputeWorker.month_revenu
+
+        """
         month = self._get_month(**kwargs)
 
         Prestation = self.Prestation
