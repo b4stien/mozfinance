@@ -73,4 +73,11 @@ class GetWorker(AbcBusinessWorker):
 
         month = self._add_attributes('month', month, compute)
 
+        Prestation = self.Prestation
+        prestas = self.session.query(Prestation.Prestation)\
+            .filter(Prestation.Prestation.date >= month.date)\
+            .filter(Prestation.Prestation.date < month.next_month())\
+            .all()
+        setattr(month, 'prestations', prestas)
+
         return month

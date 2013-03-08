@@ -79,4 +79,4 @@ class TestBusinessWithDatas(TestData):
         self.assertEqual(month.cost, float(4))
         self.assertEqual(month.gross_margin, float(24))
         self.assertEqual(month.commission_base, float(21))
-        self.assertEqual(int(month.prestation_count), 2)
+        self.assertEqual(len(month.prestations), 2)
