@@ -82,3 +82,20 @@ class GetWorker(AbcBusinessWorker):
         setattr(month, 'prestations', prestas)
 
         return month
+
+    def prestation(self, compute=False, **kwargs):
+        """Return a presta with additional attributes.
+
+        Keyword arguments:
+        prestation -- see warfinance.data.DataRepository._get_prestation (*)
+        prestation_id -- see warfinance.data.DataRepository._get_prestation (*)
+        compute -- (bool) Wether to compute missing attributes or not.
+
+        * at least one is required
+
+        """
+        presta = self._get_prestation(**kwargs)
+
+        presta = self._add_attributes('prestation', presta, compute)
+
+        return presta
