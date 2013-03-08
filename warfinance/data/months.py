@@ -23,8 +23,7 @@ class MonthsData(DataRepository):
         month = self.Month.Month(**kwargs)
         self.session.add(month)
 
-        # To get a full month to return (get a working id)
-        self.session.flush()
+        self.session.commit()
 
         return month
 
@@ -46,8 +45,7 @@ class MonthsData(DataRepository):
         """
         month = self._get_month(**kwargs)
 
-        month_dict = {k: v for k, v in month.__dict__.items()
-                      if k in month.create_dict}
+        month_dict = {k: getattr(month, k) for k in month.create_dict}
         new_month_dict = month_dict.copy()
 
         item_to_update = [item for item in month.update_dict if item in kwargs]
@@ -63,7 +61,7 @@ class MonthsData(DataRepository):
         if new_month_dict == month_dict:
             return False
 
-        self.session.flush()
+        self.session.commit()
 
         if pop_action:
             datetime_date = datetime.datetime.combine(

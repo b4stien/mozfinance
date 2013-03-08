@@ -48,13 +48,12 @@ class CostsData(DataRepository):
         cost = self.Cost.Cost(**kwargs)
         self.session.add(cost)
 
+        self.session.commit()
+
         if pop_action:
             self._pop_action(
                 message=self.Cost.ACT_COST_CREATE,
                 prestation=kwargs['prestation'])
-
-        # To get a full cost to return (get a working id)
-        self.session.flush()
 
         return cost
 
@@ -75,8 +74,7 @@ class CostsData(DataRepository):
         """
         cost = self._get_cost(**kwargs)
 
-        cost_dict = {k: v for k, v in cost.__dict__.items()
-                     if k in cost.create_dict}
+        cost_dict = {k: getattr(cost, k) for k in cost.create_dict}
         new_cost_dict = cost_dict.copy()
 
         item_to_update = [item for item in cost.update_dict if item in kwargs]
@@ -92,7 +90,7 @@ class CostsData(DataRepository):
         if new_cost_dict == cost_dict:
             return False
 
-        self.session.flush()
+        self.session.commit()
 
         if pop_action:
             self._pop_action(
@@ -115,6 +113,7 @@ class CostsData(DataRepository):
         cost = self._get_cost(**kwargs)
         prestation = cost.prestation
         self.session.delete(cost)
+        self.session.commit()
 
         if pop_action:
             self._pop_action(

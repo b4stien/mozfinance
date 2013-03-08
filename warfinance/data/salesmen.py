@@ -22,13 +22,11 @@ class SalesmenData(DataRepository):
         salesman = self.Salesman.Salesman(**kwargs)
         self.session.add(salesman)
 
-        self.session.flush()
+        self.session.commit()
 
         if pop_action:
             msg = self.Salesman.ACT_SALESMAN_CREATE
             self.actions_data.create(message=msg)
-
-        self.session.flush()
 
         return salesman
 
@@ -49,8 +47,7 @@ class SalesmenData(DataRepository):
         """
         salesman = self._get_salesman(**kwargs)
 
-        salesman_dict = {k: v for k, v in salesman.__dict__.items()
-                         if k in salesman.create_dict}
+        salesman_dict = {k: getattr(salesman, k) for k in salesman.create_dict}
         new_salesman_dict = salesman_dict.copy()
 
         item_to_update = [i for i in salesman.update_dict if i in kwargs]
@@ -66,7 +63,7 @@ class SalesmenData(DataRepository):
         if new_salesman_dict == salesman_dict:
             return False
 
-        self.session.flush()
+        self.session.commit()
 
         if pop_action:
             msg = self.Salesman.ACT_SALESMAN_UPDATE
@@ -87,6 +84,7 @@ class SalesmenData(DataRepository):
         """
         salesman = self._get_salesman(**kwargs)
         self.session.delete(salesman)
+        self.session.commit()
 
         if pop_action:
             msg = self.Salesman.ACT_SALESMAN_REMOVE

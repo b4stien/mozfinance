@@ -34,7 +34,7 @@ class PrestationsData(DataRepository):
 
         presta.salesmen.append(salesman)
 
-        self.session.flush()
+        self.session.commit()
 
         if pop_action:
             msg = self.Prestation.ACT_PRESTATION_ADD_SALESMAN
@@ -66,7 +66,7 @@ class PrestationsData(DataRepository):
 
         presta.salesmen.remove(salesman)
 
-        self.session.flush()
+        self.session.commit()
 
         if pop_action:
             msg = self.Prestation.ACT_PRESTATION_REMOVE_SALESMAN
@@ -101,7 +101,7 @@ class PrestationsData(DataRepository):
 
         presta.selling_price = kwargs['selling_price']
 
-        self.session.flush()
+        self.session.commit()
 
         if pop_action:
             msg = self.Prestation.ACT_PRESTATION_SET_SELLING_PRICE
@@ -150,7 +150,7 @@ class PrestationsData(DataRepository):
 
         presta.custom_com_formulae.append(custom_com_formula)
 
-        self.session.flush()
+        self.session.commit()
 
         if pop_action:
             msg = self.Prestation.ACT_PRESTATION_SET_CUSTOM_COM_FORMULAE
