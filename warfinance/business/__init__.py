@@ -41,5 +41,3 @@ class AbcBusinessWorker(DataRepository):
             return DataRepository._get_computed_value(self, **kwargs)
         except NoResultFound:
             return None
-
-

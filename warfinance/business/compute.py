@@ -166,15 +166,15 @@ class ComputeWorker(AbcBusinessWorker):
         """
         month = self._get_month(**kwargs)
 
-        if not month.breakeven:
-            return float(0)
-
         month_gross_margin = self._get_or_compute(
             'month:gross_margin',
             month.id,
             instance=month)
 
-        commission_base = month_gross_margin - month.breakeven
+        if not month.breakeven:
+            commission_base = float(0)
+        else:
+            commission_base = month_gross_margin - month.breakeven
 
         self.compvalues_data.set(
             key='month:commission_base',
