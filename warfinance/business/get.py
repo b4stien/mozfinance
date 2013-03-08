@@ -70,6 +70,7 @@ class GetWorker(AbcBusinessWorker):
             if not create or not 'date' in kwargs:
                 raise NoResultFound
             month = self._data.months.create(date=kwargs['date'])
+            self.session.commit()
 
         month = self._add_attributes('month', month, compute)
 
