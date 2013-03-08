@@ -45,7 +45,8 @@ class MonthsData(DataRepository):
         """
         month = self._get_month(**kwargs)
 
-        month_dict = {k: getattr(month, k) for k in month.create_dict}
+        month_dict = {k: getattr(month, k) for k in month.create_dict
+                      if getattr(month, k) is not None}
         new_month_dict = month_dict.copy()
 
         item_to_update = [item for item in month.update_dict if item in kwargs]

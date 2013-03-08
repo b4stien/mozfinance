@@ -74,7 +74,8 @@ class CostsData(DataRepository):
         """
         cost = self._get_cost(**kwargs)
 
-        cost_dict = {k: getattr(cost, k) for k in cost.create_dict}
+        cost_dict = {k: getattr(cost, k) for k in cost.create_dict
+                     if getattr(cost, k) is not None}
         new_cost_dict = cost_dict.copy()
 
         item_to_update = [item for item in cost.update_dict if item in kwargs]

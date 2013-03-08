@@ -47,7 +47,8 @@ class SalesmenData(DataRepository):
         """
         salesman = self._get_salesman(**kwargs)
 
-        salesman_dict = {k: getattr(salesman, k) for k in salesman.create_dict}
+        salesman_dict = {k: getattr(salesman, k) for k in salesman.create_dict
+                         if getattr(salesman, k) is not None}
         new_salesman_dict = salesman_dict.copy()
 
         item_to_update = [i for i in salesman.update_dict if i in kwargs]
