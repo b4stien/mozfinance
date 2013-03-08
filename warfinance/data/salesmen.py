@@ -72,7 +72,7 @@ class SalesmenData(DataRepository):
 
         return salesman
 
-    def set_commission_formulae(self, pop_action=False, **kwargs):
+    def set_commissions_formulae(self, pop_action=False, **kwargs):
         """Set the commission formulae of a salesman. Return False if there is
         no update or the updated salesman.
 
@@ -80,20 +80,20 @@ class SalesmenData(DataRepository):
         pop_action -- wether to pop an action or not
         salesman_id -- id of the salesman to update (*)
         salesman -- salesman to update (*)
-        commission_formulae -- dict to set
+        commissions_formulae -- dict to set
 
         * at least one is required
 
         """
-        if not 'commission_formulae' in kwargs:
-            raise TypeError('commission_formulae missing')
+        if not 'commissions_formulae' in kwargs:
+            raise TypeError('commissions_formulae missing')
 
         salesman = self._get_salesman(**kwargs)
 
-        if kwargs['commission_formulae'] == salesman.commission_formulae:
+        if kwargs['commissions_formulae'] == salesman.commissions_formulae:
             return False
 
-        salesman.commission_formulae = kwargs['commission_formulae']
+        salesman.commissions_formulae = kwargs['commissions_formulae']
 
         self.session.commit()
 
