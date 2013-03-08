@@ -9,7 +9,7 @@ class ComputeWorker(AbcBusinessWorker):
 
     def __init__(self, **kwargs):
         AbcBusinessWorker.__init__(self, **kwargs)
-        self.compvalues_data = ComputedValuesData(session=self.session)
+        self.compvalues_data = ComputedValuesData(**kwargs)
 
     def _get_or_compute(self, key, target_id, **kwargs):
         """Return a value (a real value and not a ComputedValue).
