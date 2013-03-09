@@ -77,7 +77,7 @@ class TestBusinessWithDatas(TestData):
         month = self.biz.get.month(date=self.month_date, compute=True)
         presta = self.biz.get.prestation(prestation=presta1, compute=True)
         self.assertEqual(month.revenu, float(28))
-        self.assertEqual(month.cost, float(4))
+        self.assertEqual(month.total_cost, float(4))
         self.assertEqual(month.gross_margin, float(24))
         self.assertEqual(month.commission_base, float(21))
         self.assertEqual(len(month.prestations), 2)

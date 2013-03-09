@@ -64,9 +64,35 @@ class ComputeWorker(AbcBusinessWorker):
             key='prestation:cost',
             target_id=presta.id,
             value=presta_cost)
-        self.session.commit()
 
         return presta_cost
+
+    def prestation_margin(self, **kwargs):
+        """Compute and return the margin of a prestation.
+
+        Keyword arguments:
+        prestation -- SQLA-Prestation (*)
+        prestation_id -- id of the prestation (*)
+
+        * at least one is required
+
+        """
+        presta = self._get_prestation(**kwargs)
+
+        presta_cost = self._get_or_compute(
+            'prestation:cost',
+            presta.id,
+            instance=presta)
+
+        presta_margin = presta.selling_price - presta_cost
+
+        # Storing value in DB
+        self.compvalues_data.set(
+            key='prestation:margin',
+            target_id=presta.id,
+            value=presta_margin)
+
+        return presta_margin
 
     def month_revenu(self, **kwargs):
         """Compute and return the revenu of a month.
@@ -96,7 +122,6 @@ class ComputeWorker(AbcBusinessWorker):
             key='month:revenu',
             target_id=month.id,
             value=month_revenu)
-        self.session.commit()
 
         return month_revenu
 
@@ -114,7 +139,7 @@ class ComputeWorker(AbcBusinessWorker):
             month.id,
             instance=month)
         month_cost = self._get_or_compute(
-            'month:cost',
+            'month:total_cost',
             month.id,
             instance=month)
 
@@ -123,12 +148,11 @@ class ComputeWorker(AbcBusinessWorker):
             key='month:gross_margin',
             target_id=month.id,
             value=month_gross_margin)
-        self.session.commit()
 
         return month_gross_margin
 
-    def month_cost(self, **kwargs):
-        """Compute and return the sum of the costs of a month.
+    def month_total_cost(self, **kwargs):
+        """Compute and return the sum of the costs of the prestations of a month.
 
         Keyword arguments:
         same as warfinance.business.compute.ComputeWorker.month_revenu
@@ -150,10 +174,9 @@ class ComputeWorker(AbcBusinessWorker):
                 instance=presta)
 
         self.compvalues_data.set(
-            key='month:cost',
+            key='month:total_cost',
             target_id=month.id,
             value=month_cost)
-        self.session.commit()
 
         return month_cost
 
@@ -180,6 +203,5 @@ class ComputeWorker(AbcBusinessWorker):
             key='month:commission_base',
             target_id=month.id,
             value=commission_base)
-        self.session.commit()
 
         return commission_base

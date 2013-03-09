@@ -38,7 +38,7 @@ class TestBusinessBase(TestBusiness):
         self.months_data.create(date=month_date)
         month = self.biz.get.month(date=month_date)
         self.assertEqual(month.revenu, None)
-        self.assertEqual(month.cost, None)
+        self.assertEqual(month.total_cost, None)
         self.assertEqual(month.gross_margin, None)
 
     def test_get_computed_values(self):
@@ -47,7 +47,7 @@ class TestBusinessBase(TestBusiness):
         self.months_data.create(date=month_date)
         month = self.biz.get.month(date=month_date, compute=True)
         self.assertEqual(month.revenu, 0)
-        self.assertEqual(month.cost, 0)
+        self.assertEqual(month.total_cost, 0)
         self.assertEqual(month.gross_margin, 0)
 
     def test_get_stored_computed_values(self):
@@ -57,7 +57,7 @@ class TestBusinessBase(TestBusiness):
         month = self.biz.get.month(date=month_date, compute=True)
         other_month = self.biz.get.month(date=month_date)
         self.assertEqual(other_month.revenu, 0)
-        self.assertEqual(other_month.cost, 0)
+        self.assertEqual(other_month.total_cost, 0)
         self.assertEqual(other_month.gross_margin, 0)
 
     def test_get_month_with_create(self):
