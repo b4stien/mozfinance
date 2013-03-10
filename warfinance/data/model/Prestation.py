@@ -34,11 +34,11 @@ class Prestation(Base):
     create_dict = set(['date', 'breakeven'])
 
     def month_date(self):
-        # date = datetime.date(
-        #     year=self.date.year,
-        #     month=self.date.month,
-        #     day=1)
-        return self.date
+        month_date = datetime.date(
+            year=self.date.year,
+            month=self.date.month,
+            day=1)
+        return month_date
 
 
 ACT_PRESTATION_SET_SELLING_PRICE = u'Modification du prix de vente de #P{}'
