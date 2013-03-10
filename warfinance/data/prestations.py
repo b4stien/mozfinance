@@ -11,8 +11,8 @@ class PrestationsData(DataRepository):
         self.Prestation = import_module('.Prestation', package=self.package)
 
     def add_salesman(self, pop_action=False, **kwargs):
-        """Add a salesman to a prestation. Return an exception if this salesman
-        is already associated with the prestation.
+        """Add a salesman to a prestation. If this salesman is already
+        associated with the prestation, do nothing.
 
         Keyword arguments:
         pop_action -- wether to pop an action or not
@@ -29,8 +29,7 @@ class PrestationsData(DataRepository):
         salesman = self._get_salesman(**kwargs)
 
         if salesman in presta.salesmen:
-            # It may be useful to have a custom Exception
-            raise Exception
+            return presta
 
         presta.salesmen.append(salesman)
 
@@ -43,8 +42,8 @@ class PrestationsData(DataRepository):
         return presta
 
     def remove_salesman(self, pop_action=False, **kwargs):
-        """Remove a salesman from a prestation. Return an exception if this
-        salesman wasn't associated with the prestation.
+        """Remove a salesman from a prestation. If this salesman wasn't
+        associated with the prestation, do nothing.
 
         Keyword arguments:
         pop_action -- wether to pop an action or not
@@ -61,8 +60,7 @@ class PrestationsData(DataRepository):
         salesman = self._get_salesman(**kwargs)
 
         if not salesman in presta.salesmen:
-            # Maybe it should be useful to have a custom Exception
-            raise Exception
+            return presta
 
         presta.salesmen.remove(salesman)
 

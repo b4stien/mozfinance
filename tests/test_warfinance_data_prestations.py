@@ -107,11 +107,11 @@ class TestPrestationsSalesmen(TestPrestationsData):
             prestation=self.prestation,
             salesman=salesman,
             pop_action=True)
-        with self.assertRaises(Exception):
-            self.prestation = self.presta_data.add_salesman(
-                prestation=self.prestation,
-                salesman=salesman,
-                pop_action=True)
+        presta = self.presta_data.add_salesman(
+            prestation=self.prestation,
+            salesman=salesman,
+            pop_action=True)
+        self.assertEqual(presta, self.prestation)
 
     def test_correct_remove_salesman(self):
         salesman = self.salesmen_data.create(
@@ -131,11 +131,11 @@ class TestPrestationsSalesmen(TestPrestationsData):
         salesman = self.salesmen_data.create(
             firstname=u'Johny',
             lastname=u'Doe')
-        with self.assertRaises(Exception):
-            self.prestation = self.presta_data.remove_salesman(
-                prestation=self.prestation,
-                salesman=salesman,
-                pop_action=True)
+        presta = self.presta_data.remove_salesman(
+            prestation=self.prestation,
+            salesman=salesman,
+            pop_action=True)
+        self.assertEqual(presta, self.prestation)
 
 
 class TestCustomFormulae(TestPrestationsData):
