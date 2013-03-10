@@ -107,6 +107,53 @@ class PrestationsData(DataRepository):
 
         return presta
 
+    def set_custom_ratios(self, pop_action=False, **kwargs):
+        """Set a custom ratio for a specific salesman/prestation. Return False
+        if there is no update or the updated prestation otherwise.
+
+        Keyword arguments:
+        pop_action -- wether to pop an action or not
+        prestation_id -- id of the prestation (*)
+        prestation -- prestation (*)
+        salesman_id -- salesman (**)
+        salesman -- id of the salesman (**)
+        ratio -- the ratio to set
+
+        * at least one is required
+        ** at least one is required
+
+        """
+        presta = self._get_prestation(**kwargs)
+        salesman = self._get_salesman(**kwargs)
+
+        if not 'ratio' in kwargs:
+            raise TypeError('ratio missing')
+
+        if not isinstance(kwargs['ratio'], float):
+            raise AttributeError('ratio isn\'t a float')
+
+        custom_ratio = (salesman.id, kwargs['ratio'])
+
+        if presta.custom_ratios is None:
+            presta.custom_ratios = [custom_ratio]
+
+        elif custom_ratio in presta.custom_ratios:
+            return False
+
+        for (sm_id, ratio) in presta.custom_ratios:
+            if sm_id == salesman.id:
+                presta.custom_ratios.remove((sm_id, ratio))
+
+        presta.custom_ratios.append(custom_ratio)
+
+        self.session.commit()
+
+        if pop_action:
+            msg = self.Prestation.ACT_PRESTATION_SET_CUSTOM_RATIO
+            self.actions_data.create(message=msg.format(presta.id))
+
+        return presta
+
     def set_custom_com_formula(self, pop_action=False, **kwargs):
         """Set a custom commission formula for a specific salesman/prestation.
         Return False if there is no update or the updated prestation otherwise.

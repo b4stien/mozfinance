@@ -178,11 +178,60 @@ class TestCustomFormulae(TestPrestationsData):
             commission_formula='lol')
         self.assertTrue(not presta)
 
-    def test_no_update_set_custom_formula(self):
+    def test_another_no_update_set_custom_formula(self):
         presta = self.presta_data.set_custom_com_formula(
             salesman=self.salesman,
             prestation=self.prestation,
             commission_formula='lol',
+            pop_action=True)
+        self.session.query(Action.Action).one()
+
+
+class TestRatios(TestPrestationsData):
+
+    def setUp(self):
+        TestPrestationsData.setUp(self)
+        self.salesmen_data = SalesmenData(
+            package='warfinance.data.model',
+            session=self.session,
+            user=self.user)
+        self.salesman = self.salesmen_data.create(
+            firstname=u'Robert',
+            lastname=u'Louis')
+        self.prestation = self.presta_data.add_salesman(
+            salesman=self.salesman,
+            prestation=self.prestation)
+
+    def test_set_correct_ratio(self):
+        presta = self.presta_data.set_custom_ratios(
+            salesman=self.salesman,
+            prestation=self.prestation,
+            ratio=float(0.3))
+        self.assertTrue((self.salesman.id, float(0.3)) in presta.custom_ratios)
+
+    def test_wrong_custom_formula(self):
+        with self.assertRaises(AttributeError):
+            self.presta_data.set_custom_ratios(
+                salesman=self.salesman,
+                prestation=self.prestation,
+                ratio=u'lol')
+
+    def test_no_update_set_custom_ratios(self):
+        presta = self.presta_data.set_custom_ratios(
+            salesman=self.salesman,
+            prestation=self.prestation,
+            ratio=float(0.3))
+        presta = self.presta_data.set_custom_ratios(
+            salesman=self.salesman,
+            prestation=self.prestation,
+            ratio=float(0.3))
+        self.assertTrue(not presta)
+
+    def test_pop_action_set_custom_formula(self):
+        self.presta_data.set_custom_ratios(
+            salesman=self.salesman,
+            prestation=self.prestation,
+            ratio=float(0.3),
             pop_action=True)
         self.session.query(Action.Action).one()
 
