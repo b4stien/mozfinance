@@ -207,7 +207,18 @@ class TestRatios(TestPrestationsData):
             salesman=self.salesman,
             prestation=self.prestation,
             ratio=float(0.3))
-        self.assertTrue((self.salesman.id, float(0.3)) in presta.custom_ratios)
+        self.assertEqual(presta.custom_ratios[self.salesman.id], float(0.3))
+
+    def test_remove_correct_ratio(self):
+        presta = self.presta_data.set_custom_ratio(
+            salesman=self.salesman,
+            prestation=self.prestation,
+            ratio=float(0.3))
+        presta = self.presta_data.remove_custom_ratio(
+            salesman=self.salesman,
+            prestation=self.prestation)
+        self.assertTrue(not self.salesman.id in presta.custom_ratios)
+        print presta.custom_ratios
 
     def test_wrong_custom_formula(self):
         with self.assertRaises(AttributeError):

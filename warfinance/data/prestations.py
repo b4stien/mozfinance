@@ -132,19 +132,14 @@ class PrestationsData(DataRepository):
         if not isinstance(kwargs['ratio'], float):
             raise AttributeError('ratio isn\'t a float')
 
-        custom_ratio = (salesman.id, kwargs['ratio'])
-
         if presta.custom_ratios is None:
-            presta.custom_ratios = [custom_ratio]
+            presta.custom_ratios = {}
 
-        elif custom_ratio in presta.custom_ratios:
+        elif salesman.id in presta.custom_ratios\
+                and presta.custom_ratios[salesman.id] == kwargs['ratio']:
             return False
 
-        for (sm_id, ratio) in presta.custom_ratios:
-            if sm_id == salesman.id:
-                presta.custom_ratios.remove((sm_id, ratio))
-
-        presta.custom_ratios.append(custom_ratio)
+        presta.custom_ratios[salesman.id] = kwargs['ratio']
 
         self.session.commit()
 
@@ -175,9 +170,10 @@ class PrestationsData(DataRepository):
         if presta.custom_ratios is None:
             return False
 
-        for (sm_id, ratio) in presta.custom_ratios:
-            if sm_id == salesman.id:
-                presta.custom_ratios.remove((sm_id, ratio))
+        if not salesman.id in presta.custom_ratios:
+            return False
+
+        presta.custom_ratios = { k: presta.custom_ratios[k] for k in presta.custom_ratios if k != salesman.id }
 
         self.session.commit()
 
