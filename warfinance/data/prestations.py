@@ -107,7 +107,7 @@ class PrestationsData(DataRepository):
 
         return presta
 
-    def set_custom_ratios(self, pop_action=False, **kwargs):
+    def set_custom_ratio(self, pop_action=False, **kwargs):
         """Set a custom ratio for a specific salesman/prestation. Return False
         if there is no update or the updated prestation otherwise.
 
@@ -145,6 +145,39 @@ class PrestationsData(DataRepository):
                 presta.custom_ratios.remove((sm_id, ratio))
 
         presta.custom_ratios.append(custom_ratio)
+
+        self.session.commit()
+
+        if pop_action:
+            msg = self.Prestation.ACT_PRESTATION_SET_CUSTOM_RATIOS
+            self.actions_data.create(message=msg.format(presta.id))
+
+        return presta
+
+    def remove_custom_ratio(self, pop_action=False, **kwargs):
+        """Remove a custom ratio for a specific salesman/prestation. Return
+        False if there is no update or the updated prestation otherwise.
+
+        Keyword arguments:
+        pop_action -- wether to pop an action or not
+        prestation_id -- id of the prestation (*)
+        prestation -- prestation (*)
+        salesman_id -- salesman (**)
+        salesman -- id of the salesman (**)
+
+        * at least one is required
+        ** at least one is required
+
+        """
+        presta = self._get_prestation(**kwargs)
+        salesman = self._get_salesman(**kwargs)
+
+        if presta.custom_ratios is None:
+            return False
+
+        for (sm_id, ratio) in presta.custom_ratios:
+            if sm_id == salesman.id:
+                presta.custom_ratios.remove((sm_id, ratio))
 
         self.session.commit()
 

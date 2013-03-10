@@ -203,7 +203,7 @@ class TestRatios(TestPrestationsData):
             prestation=self.prestation)
 
     def test_set_correct_ratio(self):
-        presta = self.presta_data.set_custom_ratios(
+        presta = self.presta_data.set_custom_ratio(
             salesman=self.salesman,
             prestation=self.prestation,
             ratio=float(0.3))
@@ -211,24 +211,24 @@ class TestRatios(TestPrestationsData):
 
     def test_wrong_custom_formula(self):
         with self.assertRaises(AttributeError):
-            self.presta_data.set_custom_ratios(
+            self.presta_data.set_custom_ratio(
                 salesman=self.salesman,
                 prestation=self.prestation,
                 ratio=u'lol')
 
     def test_no_update_set_custom_ratios(self):
-        presta = self.presta_data.set_custom_ratios(
+        presta = self.presta_data.set_custom_ratio(
             salesman=self.salesman,
             prestation=self.prestation,
             ratio=float(0.3))
-        presta = self.presta_data.set_custom_ratios(
+        presta = self.presta_data.set_custom_ratio(
             salesman=self.salesman,
             prestation=self.prestation,
             ratio=float(0.3))
         self.assertTrue(not presta)
 
     def test_pop_action_set_custom_formula(self):
-        self.presta_data.set_custom_ratios(
+        self.presta_data.set_custom_ratio(
             salesman=self.salesman,
             prestation=self.prestation,
             ratio=float(0.3),
