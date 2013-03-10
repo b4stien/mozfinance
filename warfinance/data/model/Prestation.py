@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+import datetime
+
 from sqlalchemy import Column, Integer, Date, Enum, Unicode, Float, PickleType
 
 from . import Base
@@ -30,6 +32,13 @@ class Prestation(Base):
 
     update_dict = set(['breakeven'])  # For update purpose
     create_dict = set(['date', 'breakeven'])
+
+    def month_date(self):
+        # date = datetime.date(
+        #     year=self.date.year,
+        #     month=self.date.month,
+        #     day=1)
+        return self.date
 
 
 ACT_PRESTATION_SET_SELLING_PRICE = u'Modification du prix de vente de #P{}'

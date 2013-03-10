@@ -101,6 +101,8 @@ class PrestationsData(DataRepository):
 
         self.session.commit()
 
+        self._expire_prestation(prestation=presta)
+
         if pop_action:
             msg = self.Prestation.ACT_PRESTATION_SET_SELLING_PRICE
             self.actions_data.create(message=msg.format(presta.id))

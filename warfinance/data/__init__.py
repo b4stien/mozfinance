@@ -14,8 +14,11 @@ try:
 except locale.Error:
     locale.setlocale(locale.LC_ALL, 'fr_FR')
 
+from sqlalchemy.orm.exc import NoResultFound
+
 from warbase.data import DataRepository as WarbDataRepository
 from warbase.data.actions import ActionsData
+from warbase.data.computed_values import ComputedValuesData
 
 
 class DataRepository(WarbDataRepository):
@@ -45,8 +48,8 @@ class DataRepository(WarbDataRepository):
 
         self.user = self._get_user(**kwargs)
 
-        self.actions_data = ActionsData(session=self.session,
-                                        user=self.user)
+        self.actions_data = ActionsData(**kwargs)
+        self.computed_values = ComputedValuesData(**kwargs)
 
     def _get_salesman(self, **kwargs):
         """Return a salesman given a salesman (other SQLA-Session) or
@@ -118,6 +121,18 @@ class DataRepository(WarbDataRepository):
         else:
             raise TypeError(
                 'Prestation informations (prestation or prestation_id) not provided')
+
+    def _expire_prestation(self, **kwargs):
+        presta = self._get_prestation(**kwargs)
+        self.computed_values.expire(key='prestation:', target_id=presta.id)
+        self._expire_month(date=presta.month_date())
+
+    def _expire_month(self, **kwargs):
+        try:
+            month = self._get_month(**kwargs)
+        except NoResultFound:
+            return
+        self.computed_values.expire(key='month:', target_id=month.id)
 
 
 class ModelPackageChecker():

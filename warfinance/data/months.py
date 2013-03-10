@@ -64,6 +64,8 @@ class MonthsData(DataRepository):
 
         self.session.commit()
 
+        self._expire_month(month=month)
+
         if pop_action:
             datetime_date = datetime.datetime.combine(
                 month.date, datetime.time())

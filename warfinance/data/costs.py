@@ -50,6 +50,8 @@ class CostsData(DataRepository):
 
         self.session.commit()
 
+        self._expire_prestation(prestation=cost.prestation)
+
         if pop_action:
             self._pop_action(
                 message=self.Cost.ACT_COST_CREATE,
@@ -93,6 +95,8 @@ class CostsData(DataRepository):
 
         self.session.commit()
 
+        self._expire_prestation(prestation=cost.prestation)
+
         if pop_action:
             self._pop_action(
                 message=self.Cost.ACT_COST_UPDATE,
@@ -115,6 +119,8 @@ class CostsData(DataRepository):
         prestation = cost.prestation
         self.session.delete(cost)
         self.session.commit()
+
+        self._expire_prestation(prestation=prestation)
 
         if pop_action:
             self._pop_action(

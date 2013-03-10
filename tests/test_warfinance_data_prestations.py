@@ -1,4 +1,6 @@
  # -*- coding: utf-8 -*-
+import datetime
+
 from sqlalchemy.orm.exc import NoResultFound
 
 from warbase.model import *
@@ -17,7 +19,6 @@ class TestPrestationsData(TestData):
             package='warfinance.data.model',
             session=self.session,
             user=self.user)
-        self.prestation = Prestation.Prestation()
         self.session.add(self.prestation)
         self.session.flush()
 

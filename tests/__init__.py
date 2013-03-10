@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import unittest
+import datetime
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -9,7 +10,6 @@ from warbase.model import *
 from warbase.data.users import UsersData
 
 from warfinance.data.model import *
-from warfinance.data.costs import CostsData
 
 
 class TestData(unittest.TestCase):
@@ -25,7 +25,8 @@ class TestData(unittest.TestCase):
         self.user = self.users_data.create(
             login='bastien', mail='bastien@test')
 
-        self.prestation = Prestation.Prestation()
+        now = datetime.datetime.now().date()
+        self.prestation = Prestation.Prestation(date=now)
 
     def tearDown(self):
         self.session.close()
