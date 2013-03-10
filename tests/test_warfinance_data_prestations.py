@@ -209,6 +209,17 @@ class TestRatios(TestPrestationsData):
             ratio=float(0.3))
         self.assertEqual(presta.custom_ratios[self.salesman.id], float(0.3))
 
+    def test_update_ratio(self):
+        presta = self.presta_data.set_custom_ratio(
+            salesman=self.salesman,
+            prestation=self.prestation,
+            ratio=float(0.3))
+        presta = self.presta_data.set_custom_ratio(
+            salesman=self.salesman,
+            prestation=self.prestation,
+            ratio=float(0.8))
+        self.assertEqual(presta.custom_ratios[self.salesman.id], float(0.8))
+
     def test_remove_correct_ratio(self):
         presta = self.presta_data.set_custom_ratio(
             salesman=self.salesman,

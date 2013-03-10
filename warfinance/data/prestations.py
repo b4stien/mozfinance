@@ -139,7 +139,10 @@ class PrestationsData(DataRepository):
                 and presta.custom_ratios[salesman.id] == kwargs['ratio']:
             return False
 
-        presta.custom_ratios[salesman.id] = kwargs['ratio']
+        # To trigger model change, SQLA cannot detect changes in dict
+        new_custom_ratios = presta.custom_ratios.copy()
+        new_custom_ratios[salesman.id] = kwargs['ratio']
+        presta.custom_ratios = new_custom_ratios
 
         self.session.commit()
 
