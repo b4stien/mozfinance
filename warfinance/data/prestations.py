@@ -149,7 +149,7 @@ class PrestationsData(DataRepository):
         self.session.commit()
 
         if pop_action:
-            msg = self.Prestation.ACT_PRESTATION_SET_CUSTOM_RATIO
+            msg = self.Prestation.ACT_PRESTATION_SET_CUSTOM_RATIOS
             self.actions_data.create(message=msg.format(presta.id))
 
         return presta
