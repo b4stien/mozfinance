@@ -86,7 +86,10 @@ class ComputeWorker(AbcBusinessWorker):
             presta.id,
             instance=presta)
 
-        presta_margin = presta.selling_price - presta_cost
+        if presta.selling_price:
+            presta_margin = presta.selling_price - presta_cost
+        else:
+            presta_margin = float(0)
 
         # Storing value in DB
         self.compvalues_data.set(
