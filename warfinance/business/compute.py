@@ -287,7 +287,7 @@ class ComputeWorker(AbcBusinessWorker):
         for salesman in presta.salesmen:
 
             if not presta.custom_ratios:
-                ratio = float(1/len(presta.salesmen))
+                ratio = float(1) / float(len(presta.salesmen))
             elif salesman.id in presta.custom_ratios:
                 ratio = presta.custom_ratios[salesman.id]
             else:
