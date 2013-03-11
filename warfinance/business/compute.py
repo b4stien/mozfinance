@@ -384,6 +384,10 @@ class ComputeWorker(AbcBusinessWorker):
                     compute=True,
                     prestation=presta)
 
+                if not presta_sm[salesman.id]:
+                    salesmen_dict[salesman.id] = False
+                    continue
+
                 salesmen_dict[salesman.id]['commission'] += presta_sm[salesman.id]['commission']
 
             if salesmen_dict[salesman.id]:
