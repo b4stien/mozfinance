@@ -1,15 +1,32 @@
 # -*- coding: utf-8 -*-
-import datetime
+from datetime import date
 
-from sqlalchemy import Column, Integer, Date, Enum, Unicode, Float, PickleType
+from sqlalchemy import Column, Integer, Date, Unicode, Float, PickleType
+from voluptuous import Schema, Required, All, Length
 
 from . import Base
 
 
-PRESTATION_CATEGORY_FOO = 'foo'  # eg: sale / rental
-PRESTATION_CATEGORIES = [PRESTATION_CATEGORY_FOO]
-PRESTATION_SECTOR_BAR = 'bar'  # eg: bank / industry
-PRESTATION_SECTORS = [PRESTATION_SECTOR_BAR]
+PRESTATION_CATEGORY_NONE = 0
+PRESTATION_CATEGORY_SALE = 1  # eg: sale / rental
+PRESTATION_CATEGORY_PRESTA = 2
+PRESTATION_CATEGORY_EVENT = 3
+PRESTATION_CATEGORIES = {
+    PRESTATION_CATEGORY_NONE: u'Aucune',
+    PRESTATION_CATEGORY_SALE: u'Vente',
+    PRESTATION_CATEGORY_PRESTA: u'Prestation',
+    PRESTATION_CATEGORY_EVENT: u'Evénementiel'
+}
+PRESTATION_SECTOR_NONE = 0
+PRESTATION_SECTOR_HOSTEL = 1  # eg: bank / industry
+PRESTATION_SECTOR_AGENCY = 2
+PRESTATION_SECTOR_ADVERTISEUR = 3
+PRESTATION_SECTORS = {
+    PRESTATION_SECTOR_NONE: u'Aucun',
+    PRESTATION_SECTOR_HOSTEL: u'Hôtellerie/Restauration',
+    PRESTATION_SECTOR_AGENCY: u'Agences',
+    PRESTATION_SECTOR_ADVERTISEUR: u'Annonceurs'
+}
 
 
 class Prestation(Base):
@@ -19,30 +36,36 @@ class Prestation(Base):
     date = Column(Date, index=True)
     client = Column(Unicode(length=30))
     selling_price = Column(Float)
-
     custom_com_formulae = Column(PickleType)
     custom_ratios = Column(PickleType)
 
-    category = Column(Enum(
-        *PRESTATION_CATEGORIES,
-        name="prestation_categories"), index=True)
-    sector = Column(Enum(
-        *PRESTATION_SECTORS,
-        name="prestation_sectors"), index=True)
+    category = Column(Integer, index=True)
+    sector = Column(Integer, index=True)
 
-    update_dict = set(['breakeven'])  # For update purpose
-    create_dict = set(['date', 'breakeven'])
+    create_dict = set(['date', 'client', 'category', 'sector'])  # For update purpose
+    update_dict = set(['date', 'client', 'category', 'sector'])
 
     def month_date(self):
-        month_date = datetime.date(
+        month_date = date(
             year=self.date.year,
             month=self.date.month,
             day=1)
         return month_date
 
 
+PrestationSchema = Schema({
+    Required('date'): All(date),
+    Required('client'): All(unicode, Length(min=3, max=30)),
+    'category': All(int),
+    'sector': All(int)
+})
+
+ACT_PRESTATION_CREATE = u'Création de #P{}'
+ACT_PRESTATION_UPDATE = u'Modification de #P{}'
+ACT_PRESTATION_REMOVE = u'Suppression de #P{}'
 ACT_PRESTATION_SET_SELLING_PRICE = u'Modification du prix de vente de #P{}'
 ACT_PRESTATION_SET_CUSTOM_COM_FORMULAE = u'Modification d\'une formule de commision sur #P{}'
 ACT_PRESTATION_SET_CUSTOM_RATIOS = u'Modification d\'un coefficient de commision sur #P{}'
 ACT_PRESTATION_ADD_SALESMAN = u'Ajout d\'un commercial à #P{}'
 ACT_PRESTATION_REMOVE_SALESMAN = u'Suppression d\'un commercial sur #P{}'
+

@@ -97,6 +97,8 @@ class SalesmenData(DataRepository):
 
         self.session.commit()
 
+        self._expire_salesman(salesman=salesman)
+
         if pop_action:
             msg = self.Salesman.ACT_SALESMAN_UPDATE
             self.actions_data.create(message=msg)
@@ -115,6 +117,7 @@ class SalesmenData(DataRepository):
 
         """
         salesman = self._get_salesman(**kwargs)
+        self._expire_salesman(salesman=salesman)
         self.session.delete(salesman)
         self.session.commit()
 

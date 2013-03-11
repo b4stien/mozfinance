@@ -5,7 +5,6 @@ import datetime
 from warfinance.data.model.Prestation import Prestation
 from warfinance.data.model.Cost import Cost
 from warfinance.data.model.Month import Month
-from warfinance.data.months import MonthsData
 from warfinance.biz import BusinessWorker
 
 from . import TestData
@@ -19,21 +18,16 @@ class TestBusinessCompute(TestData):
             package='warfinance.data.model',
             session=self.session,
             user=self.user)
-        self.months_data = MonthsData(
-            package='warfinance.data.model',
-            session=self.session,
-            user=self.user)
 
     def tearDown(self):
         TestData.tearDown(self)
         del self.biz
-        del self.months_data
 
     def test_get_month_revenu_with_none_presta_selling_price(self):
         now = datetime.datetime.now()
         now_date = now.date()
         self.month_date = datetime.date(year=now.year, month=now.month, day=1)
-        self.months_data.create(date=self.month_date)
+        self.biz.data.months.create(date=self.month_date)
         presta1 = Prestation(date=now_date)
         presta2 = Prestation(date=now_date, selling_price=float(16))
         self.session.add(presta1)
@@ -51,21 +45,16 @@ class TestBusinessWithDatas(TestData):
             package='warfinance.data.model',
             session=self.session,
             user=self.user)
-        self.months_data = MonthsData(
-            package='warfinance.data.model',
-            session=self.session,
-            user=self.user)
 
     def tearDown(self):
         TestData.tearDown(self)
         del self.biz
-        del self.months_data
 
     def test_get_computed_values(self):
         now = datetime.datetime.now()
         now_date = now.date()
         self.month_date = datetime.date(year=now.year, month=now.month, day=1)
-        self.months_data.create(date=self.month_date, breakeven=float(3))
+        self.biz.data.months.create(date=self.month_date, breakeven=float(3))
         presta1 = Prestation(date=now_date, selling_price=float(12))
         presta2 = Prestation(date=now_date, selling_price=float(16))
         self.session.add(presta1)

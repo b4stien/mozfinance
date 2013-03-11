@@ -14,6 +14,7 @@ _ATTRIBUTES_DICT = {
     'month': {
         'revenu': 'month_revenu',
         'gross_margin': 'month_gross_margin',
+        'net_margin': 'month_net_margin',
         'total_cost': 'month_total_cost',
         'commission_base': 'month_commission_base',
     },
@@ -36,6 +37,7 @@ class AbcBusinessWorker(DataRepository):
         self._attributes_dict = _ATTRIBUTES_DICT
         self.Prestation = import_module('.Prestation', package=self.package)
         self.Month = import_module('.Month', package=self.package)
+        self.Salesman = import_module('.Salesman', package=self.package)
 
     def _get_computed_value(self, **kwargs):
         try:

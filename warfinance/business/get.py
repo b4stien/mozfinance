@@ -81,6 +81,9 @@ class GetWorker(AbcBusinessWorker):
             .all()
         setattr(month, 'prestations', prestas)
 
+        salesmen_com = self._compute.month_salesmen(month=month, compute=compute)
+        setattr(month, 'salesmen_com', salesmen_com)
+
         return month
 
     def prestation(self, compute=False, **kwargs):
@@ -97,5 +100,8 @@ class GetWorker(AbcBusinessWorker):
         presta = self._get_prestation(**kwargs)
 
         presta = self._add_attributes('prestation', presta, compute)
+
+        salesmen_com = self._compute.prestation_salesmen(prestation=presta, compute=compute)
+        setattr(presta, 'salesmen_com', salesmen_com)
 
         return presta

@@ -1,3 +1,5 @@
+from sqlalchemy.orm import joinedload
+
 from warbase.data.computed_values import ComputedValuesData
 
 from . import AbcBusinessWorker
@@ -151,6 +153,32 @@ class ComputeWorker(AbcBusinessWorker):
 
         return month_gross_margin
 
+    def month_net_margin(self, **kwargs):
+        """Compute and return the net margin of a month.
+
+        Keyword arguments:
+        same as warfinance.business.compute.ComputeWorker.month_revenu
+
+        """
+        month = self._get_month(**kwargs)
+
+        month_gross_margin = self._get_or_compute(
+            'month:gross_margin',
+            month.id,
+            instance=month)
+
+        if not month.cost:
+            month_net_margin = float(0)
+        else:
+            month_net_margin = month_gross_margin - month.cost
+
+        self.compvalues_data.set(
+            key='month:net_margin',
+            target_id=month.id,
+            value=month_net_margin)
+
+        return month_net_margin
+
     def month_total_cost(self, **kwargs):
         """Compute and return the sum of the costs of the prestations of a month.
 
@@ -205,3 +233,163 @@ class ComputeWorker(AbcBusinessWorker):
             value=commission_base)
 
         return commission_base
+
+    def _get_commission_params(self, **kwargs):
+        """Compute and return a dict with all the commission params.
+
+        Keyword arguments:
+        prestation -- SQLA-Prestation (*)
+        prestation_id -- id of the prestation (*)
+        compute -- wether to compute missing data or not
+
+        * at least one is required
+
+        """
+        p = self._get_prestation(**kwargs)
+        m = self._get_month(date=p.month_date())
+        com_params = {
+            'm_ca': self._get_or_compute('month:revenu', m.id, instance=m),
+            'm_mb': self._get_or_compute('month:gross_margin', m.id, instance=m),
+            'm_mn': self._get_or_compute('month:net_margin', m.id, instance=m),
+            'm_bc': self._get_or_compute('month:commission_base', m.id, instance=m),
+            'm_tc': self._get_or_compute('month:total_cost', m.id, instance=m),
+            'm_c': m.cost,
+            'm_sr': m.breakeven,
+            'p_c': self._get_or_compute('prestation:cost', p.id, instance=p),
+            'p_m': self._get_or_compute('prestation:margin', p.id, instance=p),
+            'p_pv': p.selling_price,
+        }
+        for param in com_params:
+            if not isinstance(com_params[param], float):
+                return False
+        return com_params
+
+    def prestation_salesmen(self, compute=False, **kwargs):
+        """Compute and return a dict indexed by the salesman.id of the salesmen
+        of the prestation.
+
+        Not optimized yet (not the same process than previous computation)
+
+        Keyword arguments:
+        prestation -- SQLA-Prestation (*)
+        prestation_id -- id of the prestation (*)
+        compute -- wether to compute missing data or not
+
+        * at least one is required
+
+        """
+        presta = self._get_prestation(**kwargs)
+        salesmen_dict = {}
+
+        for salesman in presta.salesmen:
+
+            if not presta.custom_ratios:
+                ratio = float(1/len(presta.salesmen))
+            elif salesman.id in presta.custom_ratios:
+                ratio = presta.custom_ratios[salesman.id]
+            else:
+                ratio = float(1)
+            formula = salesman.commissions_formulae[presta.category][presta.sector]
+            salesman_dict = {
+                'formula': formula,
+                'ratio': ratio
+            }
+
+            comp_value = self._get_computed_value(
+                key='prestation:salesman:{}'.format(salesman.id),
+                target_id=presta.id)
+            if comp_value is not None:
+                salesman_dict['commission'] = comp_value.value
+                salesmen_dict[salesman.id] = salesman_dict
+                continue
+
+            if not compute:
+                salesmen_dict[salesman.id] = False
+                continue
+
+            com_params = self._get_commission_params(prestation=presta)
+            if not com_params:
+                salesmen_dict[salesman.id] = False
+                continue
+
+            commission = formula.format(**com_params)
+            commission = eval(commission)*ratio
+            salesman_dict['commission'] = commission
+            salesmen_dict[salesman.id] = salesman_dict
+            self.compvalues_data.set(
+                key='prestation:salesman:{}'.format(salesman.id),
+                target_id=presta.id,
+                value=commission)
+
+        return salesmen_dict
+
+    def month_salesmen(self, compute=False, **kwargs):
+        """Compute and return a dict indexed by the salesman.id of the salesmen
+        of the month.
+
+        Not optimized yet (not the same process than previous computation)
+
+        Keyword arguments:
+        month -- SQLA-Prestation (*)
+        month_id -- id of the prestation (*)
+        compute -- wether to compute missing data or not
+
+        * at least one is required
+
+        """
+        month = self._get_month(**kwargs)
+        salesmen_dict = {}
+
+        Salesman = self.Salesman.Salesman
+        Prestation = self.Prestation.Prestation
+        salesmen = self.session.query(Salesman).all()
+
+        for salesman in salesmen:
+
+            salesmen_dict[salesman.id] = {}
+            salesmen_dict[salesman.id]['commission'] = float(0)
+
+            comp_value = self._get_computed_value(
+                key='month:salesman:{}'.format(salesman.id),
+                target_id=month.id)
+
+            if comp_value is not None:
+                salesmen_dict[salesman.id]['commission'] = comp_value.value
+                continue
+
+            prestations = self.session.query(Prestation)\
+                .join(Prestation.salesmen)\
+                .filter(Salesman.id == salesman.id)\
+                .filter(Prestation.date >= month.date)\
+                .filter(Prestation.date < month.next_month())\
+                .all()
+
+            for presta in prestations:
+                comp_value = self._get_computed_value(
+                    key='prestation:salesman:{}'.format(salesman.id),
+                    target_id=presta.id)
+
+                if not comp_value and not compute:
+                    salesmen_dict[salesman.id] = False
+                    continue
+
+                if not salesmen_dict[salesman.id]:
+                    continue
+
+                if comp_value:
+                    salesmen_dict[salesman.id]['commission'] += comp_value.value
+                    continue
+
+                presta_sm = self.prestation_salesmen(
+                    compute=True,
+                    prestation=presta)
+
+                salesmen_dict[salesman.id]['commission'] += presta_sm[salesman.id]['commission']
+
+            if salesmen_dict[salesman.id]:
+                self.compvalues_data.set(
+                    key='month:salesman:{}'.format(salesman.id),
+                    target_id=month.id,
+                    value=salesmen_dict[salesman.id]['commission'])
+
+        return salesmen_dict

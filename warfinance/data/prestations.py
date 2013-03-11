@@ -35,6 +35,8 @@ class PrestationsData(DataRepository):
 
         self.session.commit()
 
+        self._expire_prestation_salesman(prestation=presta)
+
         if pop_action:
             msg = self.Prestation.ACT_PRESTATION_ADD_SALESMAN
             self.actions_data.create(message=msg.format(presta.id))
@@ -65,6 +67,8 @@ class PrestationsData(DataRepository):
         presta.salesmen.remove(salesman)
 
         self.session.commit()
+
+        self._expire_prestation_salesman(prestation=presta)
 
         if pop_action:
             msg = self.Prestation.ACT_PRESTATION_REMOVE_SALESMAN
@@ -148,6 +152,8 @@ class PrestationsData(DataRepository):
 
         self.session.commit()
 
+        self._expire_prestation_salesman(prestation=presta)
+
         if pop_action:
             msg = self.Prestation.ACT_PRESTATION_SET_CUSTOM_RATIOS
             self.actions_data.create(message=msg.format(presta.id))
@@ -181,6 +187,8 @@ class PrestationsData(DataRepository):
         presta.custom_ratios = { k: presta.custom_ratios[k] for k in presta.custom_ratios if k != salesman.id }
 
         self.session.commit()
+
+        self._expire_prestation_salesman(prestation=presta)
 
         if pop_action:
             msg = self.Prestation.ACT_PRESTATION_SET_CUSTOM_RATIOS

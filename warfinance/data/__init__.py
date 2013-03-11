@@ -134,6 +134,23 @@ class DataRepository(WarbDataRepository):
             return
         self.computed_values.expire(key='month:', target_id=month.id)
 
+    def _expire_prestation_salesman(self, **kwargs):
+        presta = self._get_prestation(**kwargs)
+        self.computed_values.expire(key='prestation:salesman:', target_id=presta.id)
+        self._expire_month_salesman(date=presta.month_date())
+
+    def _expire_month_salesman(self, **kwargs):
+        try:
+            month = self._get_month(**kwargs)
+        except NoResultFound:
+            return
+        self.computed_values.expire(key='month:salesman:', target_id=month.id)
+
+    def _expire_salesman(self, **kwargs):
+        salesman = self._get_salesman(**kwargs)
+        self.computed_values.expire_key(key='month:salesman:{}'.format(salesman.id))
+        self.computed_values.expire_key(key='prestation:salesman:{}'.format(salesman.id))
+
 
 class ModelPackageChecker():
     """Check if provided model package fits the requirements."""
