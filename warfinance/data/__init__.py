@@ -177,7 +177,7 @@ class ModelPackageChecker():
         """Test the Month object."""
         Month = import_module('.Month', package=self.package)
         dir_list = dir(Month.Month)
-        required_list = ['date', 'breakeven']
+        required_list = ['date', 'cost']
         for item in required_list:
             if not item in dir_list:
                 raise TypeError('Month\'s {} field missing'.format(item))

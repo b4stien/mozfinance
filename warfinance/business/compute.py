@@ -1,5 +1,3 @@
-from sqlalchemy.orm import joinedload
-
 from warbase.data.computed_values import ComputedValuesData
 
 from . import AbcBusinessWorker
@@ -211,32 +209,6 @@ class ComputeWorker(AbcBusinessWorker):
 
         return month_cost
 
-    def month_commission_base(self, **kwargs):
-        """Compute and return the commission base of a month.
-
-        Keyword arguments:
-        same as warfinance.business.compute.ComputeWorker.month_revenu
-
-        """
-        month = self._get_month(**kwargs)
-
-        month_gross_margin = self._get_or_compute(
-            'month:gross_margin',
-            month.id,
-            instance=month)
-
-        if not month.breakeven:
-            commission_base = float(0)
-        else:
-            commission_base = month_gross_margin - month.breakeven
-
-        self.compvalues_data.set(
-            key='month:commission_base',
-            target_id=month.id,
-            value=commission_base)
-
-        return commission_base
-
     def _get_commission_params(self, **kwargs):
         """Compute and return a dict with all the commission params.
 
@@ -254,10 +226,8 @@ class ComputeWorker(AbcBusinessWorker):
             'm_ca': self._get_or_compute('month:revenu', m.id, instance=m),
             'm_mb': self._get_or_compute('month:gross_margin', m.id, instance=m),
             'm_mn': self._get_or_compute('month:net_margin', m.id, instance=m),
-            'm_bc': self._get_or_compute('month:commission_base', m.id, instance=m),
             'm_tc': self._get_or_compute('month:total_cost', m.id, instance=m),
-            'm_c': m.cost,
-            'm_sr': m.breakeven,
+            'm_ff': m.cost,
             'p_c': self._get_or_compute('prestation:cost', p.id, instance=p),
             'p_m': self._get_or_compute('prestation:margin', p.id, instance=p),
             'p_pv': p.selling_price,

@@ -48,9 +48,9 @@ class TestCreateMonth(TestMonthsData):
         month_date = date(year=2008, month=7, day=1)
         month = self.months_data.create(
             date=month_date,
-            breakeven=float(27000))
+            cost=float(27000))
         self.assertEqual(month.date, month_date)
-        self.assertEqual(month.breakeven, float(27000))
+        self.assertEqual(month.cost, float(27000))
 
 
 class TestUpdateMonth(TestMonthsData):
@@ -62,9 +62,9 @@ class TestUpdateMonth(TestMonthsData):
         self.assertEqual(month.date, month_date)
         month = self.months_data.update(
             month=month,
-            breakeven=float(27000))
+            cost=float(27000))
         self.assertEqual(month.date, month_date)
-        self.assertEqual(month.breakeven, float(27000))
+        self.assertEqual(month.cost, float(27000))
 
     def test_update_with_date(self):
         month_date = date(year=2012, month=12, day=1)
@@ -72,8 +72,8 @@ class TestUpdateMonth(TestMonthsData):
             date=month_date)
         month = self.months_data.update(
             date=month_date,
-            breakeven=float(27000))
-        self.assertEqual(month.breakeven, float(27000))
+            cost=float(27000))
+        self.assertEqual(month.cost, float(27000))
 
     def test_update_with_month_id(self):
         month_date = date(year=2012, month=12, day=1)
@@ -81,14 +81,14 @@ class TestUpdateMonth(TestMonthsData):
             date=month_date)
         month = self.months_data.update(
             month_id=month.id,
-            breakeven=float(27000))
-        self.assertEqual(month.breakeven, float(27000))
+            cost=float(27000))
+        self.assertEqual(month.cost, float(27000))
 
     def test_update_with_action(self):
         month = self.months_data.create(date=date(year=2012, month=12, day=1))
         month = self.months_data.update(
             month=month,
-            breakeven=float(27000),
+            cost=float(27000),
             pop_action=True)
         action = self.session.query(Action.Action).one()
 
@@ -96,10 +96,10 @@ class TestUpdateMonth(TestMonthsData):
         month_date = date(year=2012, month=12, day=1)
         month = self.months_data.create(
             date=month_date,
-            breakeven=float(27000))
+            cost=float(27000))
         month = self.months_data.update(
             month=month,
-            breakeven=float(27000),
+            cost=float(27000),
             pop_action=False)
         self.assertTrue(not month)
 
@@ -107,20 +107,20 @@ class TestUpdateMonth(TestMonthsData):
         with self.assertRaises(AttributeError):
             month = self.months_data.update(
                 month='month',
-                breakeven=float(27000),
+                cost=float(27000),
                 pop_action=False)
 
     def test_wrong_date(self):
         with self.assertRaises(AttributeError):
             month = self.months_data.update(
                 date='month',
-                breakeven=float(27000),
+                cost=float(27000),
                 pop_action=False)
 
     def test_wrong_info(self):
         with self.assertRaises(TypeError):
             month = self.months_data.update(
-                breakeven=float(27000),
+                cost=float(27000),
                 pop_action=False)
 
 

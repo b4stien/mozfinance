@@ -16,7 +16,6 @@ _ATTRIBUTES_DICT = {
         'gross_margin': 'month_gross_margin',
         'net_margin': 'month_net_margin',
         'total_cost': 'month_total_cost',
-        'commission_base': 'month_commission_base',
     },
     'prestation': {
         'cost': 'prestation_cost',

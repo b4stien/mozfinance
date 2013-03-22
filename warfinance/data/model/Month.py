@@ -12,7 +12,6 @@ class Month(Base):
     id = Column(Integer, primary_key=True)
 
     date = Column(Date, index=True)  # First day of the month
-    breakeven = Column(Float)
     cost = Column(Float)
 
     def next_month(self):
@@ -31,8 +30,8 @@ class Month(Base):
                     month=in_prev_month.month,
                     day=1)
 
-    update_dict = set(['breakeven', 'cost'])  # For update purpose
-    create_dict = set(['date', 'cost', 'breakeven'])
+    update_dict = set(['cost'])  # For update purpose
+    create_dict = set(['date', 'cost'])
 
 
 def MonthDate(msg=None):
