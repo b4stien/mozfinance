@@ -1,3 +1,7 @@
+import datetime
+
+from sqlalchemy.orm.exc import NoResultFound
+
 from warbase.data.computed_values import ComputedValuesData
 
 from . import AbcBusinessWorker
@@ -209,6 +213,53 @@ class ComputeWorker(AbcBusinessWorker):
 
         return month_cost
 
+    def year_net_margin(self, **kwargs):
+        """Compute and return the comulated net margin of the year_net_margin
+
+        Keyword arguments:
+        date -- Date of the first day of the year
+        year_id -- Fake id, year as an int"""
+
+        if 'date' in kwargs:
+            year_date = kwargs['date']
+        elif 'year_id' in kwargs:
+            year_date = datetime.date(
+                year=kwargs['year_id'],
+                month=1,
+                day=1)
+
+        now_date = datetime.datetime.now().date()
+
+        net_margin = float(0)
+
+        for i in range(12):
+            month_date = datetime.date(
+                year=year_date.year,
+                month=i+1,
+                day=1)
+
+            # We don't go into the future !
+            if month_date > now_date:
+                break
+
+            # If the month is not found, we continue
+            try:
+                m = self._get_month(date=month_date)
+            except NoResultFound:
+                continue
+
+            month_net_margin = self._get_or_compute(
+                'month:net_margin', m.id, instance=m)
+
+            net_margin += month_net_margin
+
+        self.compvalues_data.set(
+            key='year:net_margin',
+            target_id=year_date.year,
+            value=net_margin)
+
+        return net_margin
+
     def _get_commission_params(self, **kwargs):
         """Compute and return a dict with all the commission params.
 
@@ -228,6 +279,7 @@ class ComputeWorker(AbcBusinessWorker):
             'm_mn': self._get_or_compute('month:net_margin', m.id, instance=m),
             'm_tc': self._get_or_compute('month:total_cost', m.id, instance=m),
             'm_ff': m.cost,
+            'y_mn': self._get_or_compute('year:net_margin', m.date.year),
             'p_c': self._get_or_compute('prestation:cost', p.id, instance=p),
             'p_m': self._get_or_compute('prestation:margin', p.id, instance=p),
             'p_pv': p.selling_price,

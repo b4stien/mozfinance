@@ -20,6 +20,9 @@ _ATTRIBUTES_DICT = {
     'prestation': {
         'cost': 'prestation_cost',
         'margin': 'prestation_margin'
+    },
+    'year': {
+        'net_margin': 'year_net_margin'
     }
 }
 

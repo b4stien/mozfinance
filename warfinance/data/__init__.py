@@ -71,7 +71,10 @@ class DataRepository(WarbDataRepository):
             raise TypeError('Salesman informations not provided')
 
     def _get_month(self, **kwargs):
-        """Return a month given a month (other SQLA-Session) or a month_id."""
+        """Return a month given a month (other SQLA-Session), a month_id or a
+        date.
+
+        """
         Month = import_module('.Month', package=self.package)
         if 'month' in kwargs:
             if not isinstance(kwargs['month'], Month.Month):

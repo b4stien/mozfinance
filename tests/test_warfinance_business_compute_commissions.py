@@ -1,10 +1,7 @@
  # -*- coding: utf-8 -*-
-import unittest
 import datetime
 
 from warfinance.data.model.Prestation import Prestation
-from warfinance.data.model.Cost import Cost
-from warfinance.data.model.Month import Month
 from warfinance.biz import BusinessWorker
 
 from . import TestData
@@ -71,10 +68,8 @@ class TestBusinessCompute(TestData):
         self.assertEqual(month_salesman_dict[salesman.id]['commission'], commission_ideal)
 
     def test_get_complexe_commission(self):
-        now = datetime.datetime.now()
-        now_date = now.date()
-        month_date = datetime.date(year=now.year, month=now.month, day=1)
-        another_month_date = datetime.date(year=now.year-1, month=now.month, day=1)
+        month_date = datetime.date(year=2013, month=1, day=1)
+        another_month_date = datetime.date(year=2013, month=2, day=1)
 
         self.biz.data.months.create(
             date=month_date,
@@ -84,13 +79,13 @@ class TestBusinessCompute(TestData):
             cost=float(2000))
 
         presta = Prestation(
-            date=now_date,
+            date=month_date,
             selling_price=float(25000),
             category=0,
             sector=0)
         self.session.add(presta)
         another_presta = Prestation(
-            date=now_date,
+            date=month_date,
             selling_price=float(25000),
             category=0,
             sector=0)
