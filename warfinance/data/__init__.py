@@ -109,8 +109,9 @@ class DataRepository(WarbDataRepository):
             pass
 
         if 'year' in kwargs:
-            if not isinstance(kwargs['year'], Year):
-                raise AttributeError('year provided is not an ad-hoc Year')
+            # Does not work with ad-hoc objects
+            # if not isinstance(kwargs['year'], Year):
+            #     raise AttributeError('year provided is not an ad-hoc Year')
             year = kwargs['year']
 
         elif 'date' in kwargs:
