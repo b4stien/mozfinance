@@ -120,17 +120,9 @@ class GetWorker(AbcBusinessWorker):
         if 'date' in kwargs:
             if not isinstance(kwargs['date'], datetime.date):
                 raise AttributeError('date provided is not a datetime.date')
-            kw_date = kwargs['date']
-            year_date = datetime.date(
-                year=kw_date.year,
-                month=1,
-                day=1)
 
-        # Ad-hoc class/object !
-        class Year():
-            pass
-        year = Year()
-        setattr(year, 'id', year_date.year)
+        year = self._get_year(year_id=kwargs['date'].year)
 
         year = self._add_attributes('year', year, compute)
+
         return year

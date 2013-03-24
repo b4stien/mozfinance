@@ -220,13 +220,7 @@ class ComputeWorker(AbcBusinessWorker):
         date -- Date of the first day of the year
         year_id -- Fake id, year as an int"""
 
-        if 'date' in kwargs:
-            year_date = kwargs['date']
-        elif 'year_id' in kwargs:
-            year_date = datetime.date(
-                year=kwargs['year_id'],
-                month=1,
-                day=1)
+        year = self._get_year(**kwargs)
 
         now_date = datetime.datetime.now().date()
 
@@ -234,7 +228,7 @@ class ComputeWorker(AbcBusinessWorker):
 
         for i in range(12):
             month_date = datetime.date(
-                year=year_date.year,
+                year=year.date.year,
                 month=i+1,
                 day=1)
 
@@ -255,7 +249,7 @@ class ComputeWorker(AbcBusinessWorker):
 
         self.compvalues_data.set(
             key='year:net_margin',
-            target_id=year_date.year,
+            target_id=year.id,
             value=net_margin)
 
         return net_margin

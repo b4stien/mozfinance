@@ -102,6 +102,42 @@ class DataRepository(WarbDataRepository):
 
         return month
 
+    def _get_year(self, **kwargs):
+        """Return a year (ad-hoc object) given a date or a year number."""
+
+        class Year():
+            pass
+
+        if 'year' in kwargs:
+            if not isinstance(kwargs['year'], Year):
+                raise AttributeError('year provided is not an ad-hoc Year')
+            year = kwargs['year']
+
+        elif 'date' in kwargs:
+            if not isinstance(kwargs['date'], datetime.date):
+                raise AttributeError('year provided is not a datetime.date')
+            if not kwargs['date'].month == 1 or not kwargs['date'].day == 1:
+                raise AttributeError('date provided is not correct')
+            year = Year()
+            setattr(year, 'id', kwargs['date'].year)
+            setattr(year, 'date', kwargs['date'])
+
+        elif 'year_id' in kwargs:
+            if not isinstance(kwargs['year_id'], int):
+                raise AttributeError('year_id provided is not an int')
+            year_date = datetime.date(
+                year=kwargs['year_id'],
+                month=1,
+                day=1)
+            year = Year()
+            setattr(year, 'id', year_date.year)
+            setattr(year, 'date', year_date)
+
+        else:
+            raise TypeError('year informations not provided')
+
+        return year
+
     def _get_prestation(self, **kwargs):
         """Return a prestation given a prestation (other SQLA-Session) or a
         prestation_id."""
@@ -136,6 +172,11 @@ class DataRepository(WarbDataRepository):
         except NoResultFound:
             return
         self.computed_values.expire(key='month:', target_id=month.id)
+        self._expire_year(year_id=month.date.year)
+
+    def _expire_year(self, **kwargs):
+        year = self._get_year(**kwargs)
+        self.computed_values.expire(key='year:', target_id=year.id)
 
     def _expire_prestation_salesman(self, **kwargs):
         presta = self._get_prestation(**kwargs)
