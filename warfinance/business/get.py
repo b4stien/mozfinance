@@ -1,5 +1,4 @@
 import datetime
-from collections import namedtuple
 
 from sqlalchemy.orm.exc import NoResultFound
 
@@ -79,6 +78,7 @@ class GetWorker(AbcBusinessWorker):
         prestas = self.session.query(Prestation.Prestation)\
             .filter(Prestation.Prestation.date >= month.date)\
             .filter(Prestation.Prestation.date < month.next_month())\
+            .order_by(Prestation.Prestation.date)\
             .all()
         setattr(month, 'prestations', prestas)
 
