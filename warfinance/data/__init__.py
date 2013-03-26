@@ -172,7 +172,17 @@ class DataRepository(WarbDataRepository):
             month = self._get_month(**kwargs)
         except NoResultFound:
             return
+
         self.computed_values.expire(key='month:', target_id=month.id)
+
+        Prestation = import_module('.Prestation', package=self.package)
+        prestas = self.session.query(Prestation.Prestation)\
+            .filter(Prestation.Prestation.date >= month.date)\
+            .filter(Prestation.Prestation.date < month.next_month())\
+            .all()
+        for presta in prestas:
+            self._expire_prestation_salesman(prestation=presta)
+
         self._expire_year(year_id=month.date.year)
 
     def _expire_year(self, **kwargs):
