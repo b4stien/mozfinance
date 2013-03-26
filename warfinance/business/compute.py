@@ -314,6 +314,7 @@ class ComputeWorker(AbcBusinessWorker):
                 'ratio': ratio
             }
 
+            # This is because we cannot store Pickle in ComputedValue from now
             comp_value = self._get_computed_value(
                 key='prestation:salesman:{}'.format(salesman.id),
                 target_id=presta.id)
@@ -326,8 +327,14 @@ class ComputeWorker(AbcBusinessWorker):
                 salesmen_dict[salesman.id] = False
                 continue
 
+            # If we can't get all params
             com_params = self._get_commission_params(prestation=presta)
             if not com_params:
+                salesmen_dict[salesman.id] = False
+                continue
+
+            # If the net margin is negative
+            if com_params['m_mn'] < float(0):
                 salesmen_dict[salesman.id] = False
                 continue
 
