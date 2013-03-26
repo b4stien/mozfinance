@@ -333,8 +333,8 @@ class ComputeWorker(AbcBusinessWorker):
                 salesmen_dict[salesman.id] = False
                 continue
 
-            # If the net margin is negative
-            if com_params['m_mn'] < float(0):
+            # If the net margin or prestation margin is negative
+            if com_params['m_mn'] < float(0) or com_params['p_m'] < float(0):
                 salesmen_dict[salesman.id] = False
                 continue
 
@@ -411,7 +411,6 @@ class ComputeWorker(AbcBusinessWorker):
                     prestation=presta)
 
                 if not presta_sm[salesman.id]:
-                    salesmen_dict[salesman.id] = False
                     continue
 
                 salesmen_dict[salesman.id]['commission'] += presta_sm[salesman.id]['commission']
