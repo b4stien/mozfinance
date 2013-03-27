@@ -5,6 +5,7 @@ from sqlalchemy.orm.exc import NoResultFound
 from warbase.data.computed_values import ComputedValuesData
 
 from . import AbcBusinessWorker
+from .. import COMMISSIONS_BONUS
 
 
 class ComputeWorker(AbcBusinessWorker):
@@ -14,6 +15,7 @@ class ComputeWorker(AbcBusinessWorker):
     def __init__(self, **kwargs):
         AbcBusinessWorker.__init__(self, **kwargs)
         self.compvalues_data = ComputedValuesData(**kwargs)
+        self.commissions_bonus = COMMISSIONS_BONUS
 
     def _get_or_compute(self, key, target_id, **kwargs):
         """Return a value (a real value and not a ComputedValue).
@@ -254,7 +256,7 @@ class ComputeWorker(AbcBusinessWorker):
 
         return net_margin
 
-    def _get_commission_params(self, **kwargs):
+    def _get_prestation_commission_params(self, **kwargs):
         """Compute and return a dict with all the commission params.
 
         Keyword arguments:
@@ -277,6 +279,20 @@ class ComputeWorker(AbcBusinessWorker):
             'p_c': self._get_or_compute('prestation:cost', p.id, instance=p),
             'p_m': self._get_or_compute('prestation:margin', p.id, instance=p),
             'p_pv': p.selling_price,
+        }
+        for param in com_params:
+            if not isinstance(com_params[param], float):
+                return False
+        return com_params
+
+    def _get_month_commission_params(self, **kwargs):
+        m = self._get_month(**kwargs)
+        com_params = {
+            'm_ca': self._get_or_compute('month:revenu', m.id, instance=m),
+            'm_mb': self._get_or_compute('month:gross_margin', m.id, instance=m),
+            'm_mn': self._get_or_compute('month:net_margin', m.id, instance=m),
+            'm_tc': self._get_or_compute('month:total_cost', m.id, instance=m),
+            'm_ff': m.cost,
         }
         for param in com_params:
             if not isinstance(com_params[param], float):
@@ -328,7 +344,7 @@ class ComputeWorker(AbcBusinessWorker):
                 continue
 
             # If we can't get all params
-            com_params = self._get_commission_params(prestation=presta)
+            com_params = self._get_prestation_commission_params(prestation=presta)
             if not com_params:
                 salesmen_dict[salesman.id] = False
                 continue
@@ -370,17 +386,18 @@ class ComputeWorker(AbcBusinessWorker):
         Prestation = self.Prestation.Prestation
         salesmen = self.session.query(Salesman).all()
 
+        # Computing total_prestation
         for salesman in salesmen:
 
             salesmen_dict[salesman.id] = {}
-            salesmen_dict[salesman.id]['commission'] = float(0)
+            salesmen_dict[salesman.id]['total_prestations'] = float(0)
 
             comp_value = self._get_computed_value(
-                key='month:salesman:{}'.format(salesman.id),
+                key='month:salesman:{}:total_prestations'.format(salesman.id),
                 target_id=month.id)
 
             if comp_value is not None:
-                salesmen_dict[salesman.id]['commission'] = comp_value.value
+                salesmen_dict[salesman.id]['total_prestations'] = comp_value.value
                 continue
 
             prestations = self.session.query(Prestation)\
@@ -403,7 +420,7 @@ class ComputeWorker(AbcBusinessWorker):
                     continue
 
                 if comp_value:
-                    salesmen_dict[salesman.id]['commission'] += comp_value.value
+                    salesmen_dict[salesman.id]['total_prestations'] += comp_value.value
                     continue
 
                 presta_sm = self.prestation_salesmen(
@@ -413,9 +430,56 @@ class ComputeWorker(AbcBusinessWorker):
                 if not presta_sm[salesman.id]:
                     continue
 
-                salesmen_dict[salesman.id]['commission'] += presta_sm[salesman.id]['commission']
+                salesmen_dict[salesman.id]['total_prestations'] += presta_sm[salesman.id]['total_prestations']
 
-            if salesmen_dict[salesman.id]:
+            if salesmen_dict[salesman.id]['total_prestations']:
+                self.compvalues_data.set(
+                    key='month:salesman:{}:total_prestations'.format(salesman.id),
+                    target_id=month.id,
+                    value=salesmen_dict[salesman.id]['total_prestations'])
+
+        # Computing total_bonuses
+        for salesman in salesmen:
+            salesmen_dict[salesman.id]['total_bonuses'] = float(0)
+
+            comp_value = self._get_computed_value(
+                key='month:salesman:{}:total_bonuses'.format(salesman.id),
+                target_id=month.id)
+
+            if comp_value is not None:
+                salesmen_dict[salesman.id]['total_bonuses'] = comp_value.value
+                continue
+
+            com_params = self._get_month_commission_params(month=month)
+            if com_params:
+                for bonus in self.commissions_bonus:
+                    salesmen_dict[salesman.id]['total_bonuses'] += bonus(**com_params)
+
+            if salesmen_dict[salesman.id]['total_bonuses']:
+                self.compvalues_data.set(
+                    key='month:salesman:{}:total_bonuses'.format(salesman.id),
+                    target_id=month.id,
+                    value=salesmen_dict[salesman.id]['total_bonuses'])
+
+        # Computing sum
+        for salesman in salesmen:
+            salesmen_dict[salesman.id]['commission'] = float(0)
+
+            comp_value = self._get_computed_value(
+                key='month:salesman:{}'.format(salesman.id),
+                target_id=month.id)
+
+            if comp_value is not None:
+                salesmen_dict[salesman.id]['commission'] = comp_value.value
+                continue
+
+            if salesmen_dict[salesman.id]['total_prestations']:
+                salesmen_dict[salesman.id]['commission'] += salesmen_dict[salesman.id]['total_prestations']
+
+            if salesmen_dict[salesman.id]['total_bonuses']:
+                salesmen_dict[salesman.id]['commission'] += salesmen_dict[salesman.id]['total_bonuses']
+
+            if salesmen_dict[salesman.id]['commission']:
                 self.compvalues_data.set(
                     key='month:salesman:{}'.format(salesman.id),
                     target_id=month.id,

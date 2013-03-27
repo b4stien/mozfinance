@@ -3,6 +3,7 @@ import datetime
 
 from warfinance.data.model.Prestation import Prestation
 from warfinance.biz import BusinessWorker
+import warfinance
 
 from . import TestData
 
@@ -11,6 +12,16 @@ class TestBusinessCompute(TestData):
 
     def setUp(self):
         TestData.setUp(self)
+
+        def a_bonus(**kwargs):
+            if kwargs['m_mn'] >= float(10000):
+                return 0.01*kwargs['m_mn']
+
+            return float(0)
+
+        if not a_bonus in warfinance.COMMISSIONS_BONUS:
+            warfinance.COMMISSIONS_BONUS.append(a_bonus)
+
         self.biz = BusinessWorker(
             package='warfinance.data.model',
             session=self.session,
@@ -18,6 +29,7 @@ class TestBusinessCompute(TestData):
 
     def tearDown(self):
         TestData.tearDown(self)
+        warfinance.COMMISSIONS_BONUS = []
         del self.biz
 
     def test_get_simple_commission(self):
@@ -65,7 +77,7 @@ class TestBusinessCompute(TestData):
 
         self.assertEqual(salesmen_dict[salesman.id]['formula'], '{p_m}*{m_mn}/{m_mb}*0.06')
         self.assertEqual(salesmen_dict[salesman.id]['commission'], commission_ideal)
-        self.assertEqual(month_salesman_dict[salesman.id]['commission'], commission_ideal)
+        self.assertEqual(month_salesman_dict[salesman.id]['total_prestations'], commission_ideal)
 
     def test_get_complexe_commission(self):
         month_date = datetime.date(year=2013, month=1, day=1)
@@ -148,7 +160,8 @@ class TestBusinessCompute(TestData):
 
         self.assertEqual(p_salesmen_dict[salesman.id]['commission'], commission_ideal_p)
         self.assertEqual(ap_salesmen_dict[salesman.id]['commission'], commission_ideal_ap)
-        self.assertEqual(month_salesman_dict[salesman.id]['commission'], commission_ideal_p+commission_ideal_ap)
+        self.assertEqual(month_salesman_dict[salesman.id]['total_prestations'], commission_ideal_p+commission_ideal_ap)
+        self.assertEqual(month_salesman_dict[salesman.id]['total_bonuses'], float(476))
 
     def test_get_complexe_commission_two_salesmen(self):
         now = datetime.datetime.now()
@@ -242,4 +255,6 @@ class TestBusinessCompute(TestData):
 
         self.assertEqual(p_salesmen_dict[salesman.id]['commission'], commission_ideal_p)
         self.assertEqual(ap_salesmen_dict[salesman.id]['commission'], commission_ideal_ap)
-        self.assertEqual(month_salesman_dict[salesman.id]['commission'], commission_ideal_p+commission_ideal_ap)
+        self.assertEqual(month_salesman_dict[salesman.id]['total_prestations'], commission_ideal_p+commission_ideal_ap)
+        self.assertEqual(month_salesman_dict[salesman.id]['total_bonuses'], float(476))
+        self.assertEqual(month_salesman_dict[salesman.id]['commission'], float(476)+commission_ideal_p+commission_ideal_ap)
