@@ -430,7 +430,7 @@ class ComputeWorker(AbcBusinessWorker):
                 if not presta_sm[salesman.id]:
                     continue
 
-                salesmen_dict[salesman.id]['total_prestations'] += presta_sm[salesman.id]['total_prestations']
+                salesmen_dict[salesman.id]['total_prestations'] += presta_sm[salesman.id]['commission']
 
             if salesmen_dict[salesman.id]['total_prestations']:
                 self.compvalues_data.set(
