@@ -5,14 +5,14 @@ from sqlalchemy import create_engine
 
 import warbase.model
 
-from warfinance.data.model import Cost, Month, Prestation, Salesman
+from warfinance.data.model import PrestationCost, Month, Prestation, Salesman
 from . import TestData
 
 
 class TestModelBase(TestData):
 
-    def test_cost(self):
-        user = Cost.Cost()
+    def test_prestation_cost(self):
+        user = PrestationCost.PrestationCost()
         self.assertTrue(True)
 
     def test_month(self):

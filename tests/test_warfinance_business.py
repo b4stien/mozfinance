@@ -1,9 +1,6 @@
  # -*- coding: utf-8 -*-
-import unittest
 import datetime
 
-from warfinance.data.model.Prestation import Prestation
-from warfinance.data.model.Cost import Cost
 from warfinance.data.model.Month import Month
 from warfinance.data.months import MonthsData
 from warfinance.biz import BusinessWorker

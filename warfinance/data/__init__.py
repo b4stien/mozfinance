@@ -220,14 +220,14 @@ class ModelPackageChecker():
 
         self.package = kwargs['package']
 
-    def _test_cost(self):
-        """Test the Cost object."""
-        Cost = import_module('.Cost', package=self.package)
-        dir_list = dir(Cost.Cost)
+    def _test_prestation_cost(self):
+        """Test the PrestationCost object."""
+        PrestationCost = import_module('.PrestationCost', package=self.package)
+        dir_list = dir(PrestationCost.PrestationCost)
         required_list = ['amount', 'reason', 'prestation', 'prestation_id']
         for item in required_list:
             if not item in dir_list:
-                raise TypeError('Cost\'s {} field missing'.format(item))
+                raise TypeError('PrestationCost\'s {} field missing'.format(item))
 
     def _test_month(self):
         """Test the Month object."""
@@ -260,7 +260,7 @@ class ModelPackageChecker():
 
     def run(self):
         """Run the test."""
-        self._test_cost()
+        self._test_prestation_cost()
         self._test_month()
         self._test_prestation()
         self._test_salesman()

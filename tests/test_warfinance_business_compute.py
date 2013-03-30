@@ -1,10 +1,8 @@
  # -*- coding: utf-8 -*-
-import unittest
 import datetime
 
 from warfinance.data.model.Prestation import Prestation
-from warfinance.data.model.Cost import Cost
-from warfinance.data.model.Month import Month
+from warfinance.data.model.PrestationCost import PrestationCost
 from warfinance.biz import BusinessWorker
 
 from . import TestData
@@ -60,7 +58,7 @@ class TestBusinessWithDatas(TestData):
         self.session.add(presta1)
         self.session.add(presta2)
         self.session.flush()
-        cost1 = Cost(prestation=presta1, amount=float(4))
+        cost1 = PrestationCost(prestation=presta1, amount=float(4))
         self.session.add(cost1)
         self.session.flush()
         month = self.biz.get.month(date=self.month_date, compute=True)

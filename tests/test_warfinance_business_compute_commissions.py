@@ -60,7 +60,7 @@ class TestBusinessCompute(TestData):
             prestation=presta,
             salesman=salesman)
 
-        self.biz.data.costs.create(
+        self.biz.data.prestations.costs.create(
             prestation=presta,
             amount=float(100),
             reason=u'Auto Cost 1')
@@ -127,19 +127,19 @@ class TestBusinessCompute(TestData):
             prestation=another_month_presta,
             salesman=salesman)
 
-        self.biz.data.costs.create(
+        self.biz.data.prestations.costs.create(
             prestation=presta,
             amount=float(100),
             reason=u'Auto Cost 1 P1')
-        self.biz.data.costs.create(
+        self.biz.data.prestations.costs.create(
             prestation=presta,
             amount=float(200),
             reason=u'Auto Cost 2 P1')
-        self.biz.data.costs.create(
+        self.biz.data.prestations.costs.create(
             prestation=another_presta,
             amount=float(100),
             reason=u'Auto Cost 1 P2')
-        self.biz.data.costs.create(
+        self.biz.data.prestations.costs.create(
             prestation=another_month_presta,
             amount=float(100),
             reason=u'Auto Cost 1 P3')
@@ -222,19 +222,19 @@ class TestBusinessCompute(TestData):
             prestation=another_month_presta,
             salesman=salesman)
 
-        self.biz.data.costs.create(
+        self.biz.data.prestations.costs.create(
             prestation=presta,
             amount=float(100),
             reason=u'Auto Cost 1 P1')
-        self.biz.data.costs.create(
+        self.biz.data.prestations.costs.create(
             prestation=presta,
             amount=float(200),
             reason=u'Auto Cost 2 P1')
-        self.biz.data.costs.create(
+        self.biz.data.prestations.costs.create(
             prestation=another_presta,
             amount=float(100),
             reason=u'Auto Cost 1 P2')
-        self.biz.data.costs.create(
+        self.biz.data.prestations.costs.create(
             prestation=another_month_presta,
             amount=float(100),
             reason=u'Auto Cost 1 P3')
