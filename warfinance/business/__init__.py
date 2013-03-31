@@ -14,6 +14,7 @@ _ATTRIBUTES_DICT = {
     'month': {
         'revenu': 'month_revenu',
         'gross_margin': 'month_gross_margin',
+        'commission_base': 'month_commission_base',
         'net_margin': 'month_net_margin',
         'total_cost': 'month_total_cost',
     },
@@ -43,6 +44,6 @@ class AbcBusinessWorker(DataRepository):
 
     def _get_computed_value(self, **kwargs):
         try:
-            return DataRepository._get_computed_value(self, **kwargs)
+            return self.cvalues_data._get_computed_value(self, **kwargs)
         except NoResultFound:
             return None

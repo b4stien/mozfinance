@@ -12,7 +12,10 @@ class Month(Base):
     id = Column(Integer, primary_key=True)
 
     date = Column(Date, index=True)  # First day of the month
+
     cost = Column(Float)
+    salaries = Column(Float)
+    taxes = Column(Float)
 
     def next_month(self):
         """Return the date of the first day of the following month"""
@@ -30,8 +33,8 @@ class Month(Base):
                     month=in_prev_month.month,
                     day=1)
 
-    update_dict = set(['cost'])  # For update purpose
-    create_dict = set(['date', 'cost'])
+    update_dict = set(['cost', 'salaries', 'taxes'])  # For update purpose
+    create_dict = set(['date', 'cost', 'salaries', 'taxes'])
 
 
 def MonthDate(msg=None):
@@ -45,8 +48,9 @@ def MonthDate(msg=None):
 
 MonthSchema = Schema({
     Required('date'): All(date, MonthDate()),
-    'breakeven': float,
-    'cost': float
+    'cost': float,
+    'salaries': float,
+    'taxes': float
 })
 
 ACT_MONTH_UPDATE = u'Modification des données du mois de {}'

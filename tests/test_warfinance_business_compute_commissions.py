@@ -14,8 +14,8 @@ class TestBusinessCompute(TestData):
         TestData.setUp(self)
 
         def a_bonus(**kwargs):
-            if kwargs['m_mn'] >= float(10000):
-                return 0.01*kwargs['m_mn']
+            if kwargs['m_bc'] >= float(10000):
+                return 0.01*kwargs['m_bc']
 
             return float(0)
 
@@ -54,7 +54,7 @@ class TestBusinessCompute(TestData):
             lastname=u'Gan')
         salesman = self.biz.data.salesmen.set_commissions_formulae(
             salesman=salesman,
-            commissions_formulae={0: {0: '{p_m}*{m_mn}/{m_mb}*0.06'}})
+            commissions_formulae={0: {0: '{p_m}*{m_bc}/{m_mb}*0.06'}})
 
         self.biz.data.prestations.add_salesman(
             prestation=presta,
@@ -75,7 +75,7 @@ class TestBusinessCompute(TestData):
 
         commission_ideal = float(3900)*float(1900)/float(3900)*float(0.06)
 
-        self.assertEqual(salesmen_dict[salesman.id]['formula'], '{p_m}*{m_mn}/{m_mb}*0.06')
+        self.assertEqual(salesmen_dict[salesman.id]['formula'], '{p_m}*{m_bc}/{m_mb}*0.06')
         self.assertEqual(salesmen_dict[salesman.id]['commission'], commission_ideal)
         self.assertEqual(month_salesman_dict[salesman.id]['total_prestations'], commission_ideal)
 
@@ -115,7 +115,7 @@ class TestBusinessCompute(TestData):
             lastname=u'Gan')
         salesman = self.biz.data.salesmen.set_commissions_formulae(
             salesman=salesman,
-            commissions_formulae={0: {0: '{p_m}*{m_mn}/{m_mb}*0.06'}})
+            commissions_formulae={0: {0: '{p_m}*{m_bc}/{m_mb}*0.06'}})
 
         self.biz.data.prestations.add_salesman(
             prestation=presta,
@@ -201,13 +201,13 @@ class TestBusinessCompute(TestData):
             lastname=u'Gan')
         salesman = self.biz.data.salesmen.set_commissions_formulae(
             salesman=salesman,
-            commissions_formulae={0: {0: '{p_m}*{m_mn}/{m_mb}*0.06'}})
+            commissions_formulae={0: {0: '{p_m}*{m_bc}/{m_mb}*0.06'}})
         a_salesman = self.biz.data.salesmen.create(
             firstname=u'Bas',
             lastname=u'Gan')
         a_salesman = self.biz.data.salesmen.set_commissions_formulae(
             salesman=a_salesman,
-            commissions_formulae={0: {0: '{p_m}*{m_mn}/{m_mb}*0.06'}})
+            commissions_formulae={0: {0: '{p_m}*{m_bc}/{m_mb}*0.06'}})
 
         self.biz.data.prestations.add_salesman(
             prestation=presta,

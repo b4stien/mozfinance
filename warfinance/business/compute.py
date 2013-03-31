@@ -2,8 +2,6 @@ import datetime
 
 from sqlalchemy.orm.exc import NoResultFound
 
-from warbase.data.computed_values import ComputedValuesData
-
 from . import AbcBusinessWorker
 from .. import COMMISSIONS_BONUS
 
@@ -14,7 +12,6 @@ class ComputeWorker(AbcBusinessWorker):
 
     def __init__(self, **kwargs):
         AbcBusinessWorker.__init__(self, **kwargs)
-        self.compvalues_data = ComputedValuesData(**kwargs)
         self.commissions_bonus = COMMISSIONS_BONUS
 
     def _get_or_compute(self, key, target_id, **kwargs):
@@ -66,7 +63,7 @@ class ComputeWorker(AbcBusinessWorker):
             presta_cost += cost.amount
 
         # Storing value in DB
-        self.compvalues_data.set(
+        self.cvalues_data.set(
             key='prestation:cost',
             target_id=presta.id,
             value=presta_cost)
@@ -96,7 +93,7 @@ class ComputeWorker(AbcBusinessWorker):
             presta_margin = float(0)
 
         # Storing value in DB
-        self.compvalues_data.set(
+        self.cvalues_data.set(
             key='prestation:margin',
             target_id=presta.id,
             value=presta_margin)
@@ -127,7 +124,7 @@ class ComputeWorker(AbcBusinessWorker):
             if presta.selling_price is not None:
                 month_revenu += presta.selling_price
 
-        self.compvalues_data.set(
+        self.cvalues_data.set(
             key='month:revenu',
             target_id=month.id,
             value=month_revenu)
@@ -153,12 +150,39 @@ class ComputeWorker(AbcBusinessWorker):
             instance=month)
 
         month_gross_margin = month_revenu - month_cost
-        self.compvalues_data.set(
+        self.cvalues_data.set(
             key='month:gross_margin',
             target_id=month.id,
             value=month_gross_margin)
 
         return month_gross_margin
+
+    def month_commission_base(self, **kwargs):
+        """Compute and return the commission base of a month.
+
+        Keyword arguments:
+        same as warfinance.business.compute.ComputeWorker.month_revenu
+
+        """
+        month = self._get_month(**kwargs)
+
+        month_gross_margin = self._get_or_compute(
+            'month:gross_margin',
+            month.id,
+            instance=month)
+
+        month_commission_base = month_gross_margin
+        if month.cost:
+            month_commission_base -= month.cost
+        if month.salaries:
+            month_commission_base -= month.salaries
+
+        self.cvalues_data.set(
+            key='month:commission_base',
+            target_id=month.id,
+            value=month_commission_base)
+
+        return month_commission_base
 
     def month_net_margin(self, **kwargs):
         """Compute and return the net margin of a month.
@@ -174,12 +198,19 @@ class ComputeWorker(AbcBusinessWorker):
             month.id,
             instance=month)
 
-        if not month.cost:
-            month_net_margin = float(0)
-        else:
-            month_net_margin = month_gross_margin - month.cost
+        month_net_margin = month_gross_margin
+        if month.cost:
+            month_net_margin -= month.cost
+        if month.salaries:
+            month_net_margin -= month.salaries
+        if month.taxes:
+            month_net_margin -= month.taxes
 
-        self.compvalues_data.set(
+        coms_salesmen = self.month_salesmen(month=month, compute=True)
+        for salesman in coms_salesmen:
+            month_net_margin -= salesman['total_bonuses']
+
+        self.cvalues_data.set(
             key='month:net_margin',
             target_id=month.id,
             value=month_net_margin)
@@ -208,7 +239,7 @@ class ComputeWorker(AbcBusinessWorker):
                 presta.id,
                 instance=presta)
 
-        self.compvalues_data.set(
+        self.cvalues_data.set(
             key='month:total_cost',
             target_id=month.id,
             value=month_cost)
@@ -249,7 +280,7 @@ class ComputeWorker(AbcBusinessWorker):
 
             net_margin += month_net_margin
 
-        self.compvalues_data.set(
+        self.cvalues_data.set(
             key='year:net_margin',
             target_id=year.id,
             value=net_margin)
@@ -272,10 +303,9 @@ class ComputeWorker(AbcBusinessWorker):
         com_params = {
             'm_ca': self._get_or_compute('month:revenu', m.id, instance=m),
             'm_mb': self._get_or_compute('month:gross_margin', m.id, instance=m),
-            'm_mn': self._get_or_compute('month:net_margin', m.id, instance=m),
+            'm_bc': self._get_or_compute('month:commission_base', m.id, instance=m),
             'm_tc': self._get_or_compute('month:total_cost', m.id, instance=m),
             'm_ff': m.cost,
-            'y_mn': self._get_or_compute('year:net_margin', m.date.year),
             'p_c': self._get_or_compute('prestation:cost', p.id, instance=p),
             'p_m': self._get_or_compute('prestation:margin', p.id, instance=p),
             'p_pv': p.selling_price,
@@ -290,7 +320,7 @@ class ComputeWorker(AbcBusinessWorker):
         com_params = {
             'm_ca': self._get_or_compute('month:revenu', m.id, instance=m),
             'm_mb': self._get_or_compute('month:gross_margin', m.id, instance=m),
-            'm_mn': self._get_or_compute('month:net_margin', m.id, instance=m),
+            'm_bc': self._get_or_compute('month:commission_base', m.id, instance=m),
             'm_tc': self._get_or_compute('month:total_cost', m.id, instance=m),
             'm_ff': m.cost,
         }
@@ -350,7 +380,7 @@ class ComputeWorker(AbcBusinessWorker):
                 continue
 
             # If the net margin or prestation margin is negative
-            if com_params['m_mn'] < float(0) or com_params['p_m'] < float(0):
+            if com_params['m_bc'] < float(0) or com_params['p_m'] < float(0):
                 salesmen_dict[salesman.id] = False
                 continue
 
@@ -358,7 +388,7 @@ class ComputeWorker(AbcBusinessWorker):
             commission = eval(commission)*ratio
             salesman_dict['commission'] = commission
             salesmen_dict[salesman.id] = salesman_dict
-            self.compvalues_data.set(
+            self.cvalues_data.set(
                 key='prestation:salesman:{}'.format(salesman.id),
                 target_id=presta.id,
                 value=commission)
@@ -433,7 +463,7 @@ class ComputeWorker(AbcBusinessWorker):
                 salesmen_dict[salesman.id]['total_prestations'] += presta_sm[salesman.id]['commission']
 
             if salesmen_dict[salesman.id]['total_prestations']:
-                self.compvalues_data.set(
+                self.cvalues_data.set(
                     key='month:salesman:{}:total_prestations'.format(salesman.id),
                     target_id=month.id,
                     value=salesmen_dict[salesman.id]['total_prestations'])
@@ -456,7 +486,7 @@ class ComputeWorker(AbcBusinessWorker):
                     salesmen_dict[salesman.id]['total_bonuses'] += bonus(**com_params)
 
             if salesmen_dict[salesman.id]['total_bonuses']:
-                self.compvalues_data.set(
+                self.cvalues_data.set(
                     key='month:salesman:{}:total_bonuses'.format(salesman.id),
                     target_id=month.id,
                     value=salesmen_dict[salesman.id]['total_bonuses'])
@@ -480,7 +510,7 @@ class ComputeWorker(AbcBusinessWorker):
                 salesmen_dict[salesman.id]['commission'] += salesmen_dict[salesman.id]['total_bonuses']
 
             if salesmen_dict[salesman.id]['commission']:
-                self.compvalues_data.set(
+                self.cvalues_data.set(
                     key='month:salesman:{}'.format(salesman.id),
                     target_id=month.id,
                     value=salesmen_dict[salesman.id]['commission'])
