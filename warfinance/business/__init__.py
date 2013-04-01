@@ -17,10 +17,12 @@ _ATTRIBUTES_DICT = {
         'commission_base': 'month_commission_base',
         'net_margin': 'month_net_margin',
         'total_cost': 'month_total_cost',
+        'salesmen_com': 'month_salesmen_com'
     },
     'prestation': {
         'cost': 'prestation_cost',
-        'margin': 'prestation_margin'
+        'margin': 'prestation_margin',
+        'salesmen_com': 'prestation_salesmen_com'
     },
     'year': {
         'net_margin': 'year_net_margin'
@@ -41,9 +43,3 @@ class AbcBusinessWorker(DataRepository):
         self.Prestation = import_module('.Prestation', package=self.package)
         self.Month = import_module('.Month', package=self.package)
         self.Salesman = import_module('.Salesman', package=self.package)
-
-    def _get_computed_value(self, **kwargs):
-        try:
-            return self.cvalues_data._get_computed_value(self, **kwargs)
-        except NoResultFound:
-            return None

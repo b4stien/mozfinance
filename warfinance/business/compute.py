@@ -14,7 +14,7 @@ class ComputeWorker(AbcBusinessWorker):
         AbcBusinessWorker.__init__(self, **kwargs)
         self.commissions_bonus = COMMISSIONS_BONUS
 
-    def _get_or_compute(self, key, target_id, **kwargs):
+    def _get_or_compute(self, key, **kwargs):
         """Return a value (a real value and not a ComputedValue).
 
         Arguments:
@@ -27,22 +27,22 @@ class ComputeWorker(AbcBusinessWorker):
 
         """
         # The "get" part of "get_or_compute"
-        comp_value = self._get_computed_value(
-            key=key,
-            target_id=target_id)
+        comp_value = self.cvalues_data.get(key=key)
 
-        if comp_value is not None:
-            return comp_value.value
+        if comp_value:
+            return comp_value
 
         # And the "compute" part
-        (instance_type, sep, prefix_key) = key.partition(':')
-        method = self._attributes_dict[instance_type][prefix_key]
+        split_key = key.split(':')
+        if len(split_key) != 3:
+            raise AttributeError('Incorrect key')
+        method = self._attributes_dict[split_key[0]][split_key[2]]
 
         # To avoid useless DB call.
         if 'instance' in kwargs:
-            method_kwargs = {instance_type: kwargs['instance']}
+            method_kwargs = {split_key[0]: kwargs['instance']}
         else:
-            method_kwargs = {instance_type+'_id': target_id}
+            method_kwargs = {split_key[0]+'_id': split_key[1]}
 
         return getattr(self, method)(**method_kwargs)
 
@@ -64,8 +64,7 @@ class ComputeWorker(AbcBusinessWorker):
 
         # Storing value in DB
         self.cvalues_data.set(
-            key='prestation:cost',
-            target_id=presta.id,
+            key='prestation:{}:cost'.format(presta.id),
             value=presta_cost)
 
         return presta_cost
@@ -83,8 +82,7 @@ class ComputeWorker(AbcBusinessWorker):
         presta = self._get_prestation(**kwargs)
 
         presta_cost = self._get_or_compute(
-            'prestation:cost',
-            presta.id,
+            'prestation:{}:cost'.format(presta.id),
             instance=presta)
 
         if presta.selling_price:
@@ -94,8 +92,7 @@ class ComputeWorker(AbcBusinessWorker):
 
         # Storing value in DB
         self.cvalues_data.set(
-            key='prestation:margin',
-            target_id=presta.id,
+            key='prestation:{}:margin'.format(presta.id),
             value=presta_margin)
 
         return presta_margin
@@ -125,8 +122,7 @@ class ComputeWorker(AbcBusinessWorker):
                 month_revenu += presta.selling_price
 
         self.cvalues_data.set(
-            key='month:revenu',
-            target_id=month.id,
+            key='month:{}:revenu'.format(month.id),
             value=month_revenu)
 
         return month_revenu
@@ -141,18 +137,15 @@ class ComputeWorker(AbcBusinessWorker):
         month = self._get_month(**kwargs)
 
         month_revenu = self._get_or_compute(
-            'month:revenu',
-            month.id,
+            'month:{}:revenu'.format(month.id),
             instance=month)
         month_cost = self._get_or_compute(
-            'month:total_cost',
-            month.id,
+            'month:{}:total_cost'.format(month.id),
             instance=month)
 
         month_gross_margin = month_revenu - month_cost
         self.cvalues_data.set(
-            key='month:gross_margin',
-            target_id=month.id,
+            key='month:{}:gross_margin'.format(month.id),
             value=month_gross_margin)
 
         return month_gross_margin
@@ -167,8 +160,7 @@ class ComputeWorker(AbcBusinessWorker):
         month = self._get_month(**kwargs)
 
         month_gross_margin = self._get_or_compute(
-            'month:gross_margin',
-            month.id,
+            'month:{}:gross_margin'.format(month.id),
             instance=month)
 
         month_commission_base = month_gross_margin
@@ -178,8 +170,7 @@ class ComputeWorker(AbcBusinessWorker):
             month_commission_base -= month.salaries
 
         self.cvalues_data.set(
-            key='month:commission_base',
-            target_id=month.id,
+            key='month:{}:commission_base'.format(month.id),
             value=month_commission_base)
 
         return month_commission_base
@@ -194,8 +185,7 @@ class ComputeWorker(AbcBusinessWorker):
         month = self._get_month(**kwargs)
 
         month_gross_margin = self._get_or_compute(
-            'month:gross_margin',
-            month.id,
+            'month:{}:gross_margin'.format(month.id),
             instance=month)
 
         month_net_margin = month_gross_margin
@@ -206,13 +196,12 @@ class ComputeWorker(AbcBusinessWorker):
         if month.taxes:
             month_net_margin -= month.taxes
 
-        coms_salesmen = self.month_salesmen(month=month, compute=True)
+        coms_salesmen = self.month_salesmen_com(month=month, compute=True)
         for salesman in coms_salesmen:
             month_net_margin -= salesman['total_bonuses']
 
         self.cvalues_data.set(
-            key='month:net_margin',
-            target_id=month.id,
+            key='month:{}:net_margin'.format(month.id),
             value=month_net_margin)
 
         return month_net_margin
@@ -235,13 +224,11 @@ class ComputeWorker(AbcBusinessWorker):
         month_cost = float(0)
         for presta in prestations:
             month_cost += self._get_or_compute(
-                'prestation:cost',
-                presta.id,
+                'prestation:{}:cost'.format(presta.id),
                 instance=presta)
 
         self.cvalues_data.set(
-            key='month:total_cost',
-            target_id=month.id,
+            key='month:{}:total_cost'.format(month.id),
             value=month_cost)
 
         return month_cost
@@ -276,13 +263,12 @@ class ComputeWorker(AbcBusinessWorker):
                 continue
 
             month_net_margin = self._get_or_compute(
-                'month:net_margin', m.id, instance=m)
+                'month:{}:net_margin'.format(m.id), instance=m)
 
             net_margin += month_net_margin
 
         self.cvalues_data.set(
-            key='year:net_margin',
-            target_id=year.id,
+            key='year:{}:net_margin'.format(year.id),
             value=net_margin)
 
         return net_margin
@@ -301,13 +287,13 @@ class ComputeWorker(AbcBusinessWorker):
         p = self._get_prestation(**kwargs)
         m = self._get_month(date=p.month_date())
         com_params = {
-            'm_ca': self._get_or_compute('month:revenu', m.id, instance=m),
-            'm_mb': self._get_or_compute('month:gross_margin', m.id, instance=m),
-            'm_bc': self._get_or_compute('month:commission_base', m.id, instance=m),
-            'm_tc': self._get_or_compute('month:total_cost', m.id, instance=m),
+            'm_ca': self._get_or_compute('month:{}:revenu'.format(m.id), instance=m),
+            'm_mb': self._get_or_compute('month:{}:gross_margin'.format(m.id), instance=m),
+            'm_bc': self._get_or_compute('month:{}:commission_base'.format(m.id), instance=m),
+            'm_tc': self._get_or_compute('month:{}:total_cost'.format(m.id), instance=m),
             'm_ff': m.cost,
-            'p_c': self._get_or_compute('prestation:cost', p.id, instance=p),
-            'p_m': self._get_or_compute('prestation:margin', p.id, instance=p),
+            'p_c': self._get_or_compute('prestation:{}:cost'.format(p.id), instance=p),
+            'p_m': self._get_or_compute('prestation:{}:margin'.format(p.id), instance=p),
             'p_pv': p.selling_price,
         }
         for param in com_params:
@@ -318,10 +304,10 @@ class ComputeWorker(AbcBusinessWorker):
     def _get_month_commission_params(self, **kwargs):
         m = self._get_month(**kwargs)
         com_params = {
-            'm_ca': self._get_or_compute('month:revenu', m.id, instance=m),
-            'm_mb': self._get_or_compute('month:gross_margin', m.id, instance=m),
-            'm_bc': self._get_or_compute('month:commission_base', m.id, instance=m),
-            'm_tc': self._get_or_compute('month:total_cost', m.id, instance=m),
+            'm_ca': self._get_or_compute('month:{}:revenu'.format(m.id), instance=m),
+            'm_mb': self._get_or_compute('month:{}:gross_margin'.format(m.id), instance=m),
+            'm_bc': self._get_or_compute('month:{}:commission_base'.format(m.id), instance=m),
+            'm_tc': self._get_or_compute('month:{}:total_cost'.format(m.id), instance=m),
             'm_ff': m.cost,
         }
         for param in com_params:
@@ -329,11 +315,9 @@ class ComputeWorker(AbcBusinessWorker):
                 return False
         return com_params
 
-    def prestation_salesmen(self, compute=False, **kwargs):
+    def prestation_salesmen_com(self, compute=False, **kwargs):
         """Compute and return a dict indexed by the salesman.id of the salesmen
         of the prestation.
-
-        Not optimized yet (not the same process than previous computation)
 
         Keyword arguments:
         prestation -- SQLA-Prestation (*)
@@ -354,48 +338,37 @@ class ComputeWorker(AbcBusinessWorker):
                 ratio = presta.custom_ratios[salesman.id]
             else:
                 ratio = float(1)
+
+            # Will eventualy change to keep history of formulae
             formula = salesman.commissions_formulae[presta.category][presta.sector]
             salesman_dict = {
                 'formula': formula,
                 'ratio': ratio
             }
 
-            # This is because we cannot store Pickle in ComputedValue from now
-            comp_value = self._get_computed_value(
-                key='prestation:salesman:{}'.format(salesman.id),
-                target_id=presta.id)
-            if comp_value is not None:
-                salesman_dict['commission'] = comp_value.value
-                salesmen_dict[salesman.id] = salesman_dict
-                continue
-
-            if not compute:
-                salesmen_dict[salesman.id] = False
-                continue
-
             # If we can't get all params
             com_params = self._get_prestation_commission_params(prestation=presta)
             if not com_params:
-                salesmen_dict[salesman.id] = False
+                salesman_dict['commission'] = False
                 continue
 
             # If the net margin or prestation margin is negative
             if com_params['m_bc'] < float(0) or com_params['p_m'] < float(0):
-                salesmen_dict[salesman.id] = False
+                salesman_dict['commission'] = False
                 continue
 
             commission = formula.format(**com_params)
             commission = eval(commission)*ratio
             salesman_dict['commission'] = commission
             salesmen_dict[salesman.id] = salesman_dict
-            self.cvalues_data.set(
-                key='prestation:salesman:{}'.format(salesman.id),
-                target_id=presta.id,
-                value=commission)
+
+        self.cvalues_data.set(
+            key='prestation:{}:salesmen_com'.format(presta.id),
+            value=salesmen_dict)
 
         return salesmen_dict
 
-    def month_salesmen(self, compute=False, **kwargs):
+    def month_salesmen_com(self, compute=False, **kwargs):
         """Compute and return a dict indexed by the salesman.id of the salesmen
         of the month.
 
@@ -421,15 +394,10 @@ class ComputeWorker(AbcBusinessWorker):
 
             salesmen_dict[salesman.id] = {}
             salesmen_dict[salesman.id]['total_prestations'] = float(0)
+            salesmen_dict[salesman.id]['total_bonuses'] = float(0)
+            salesmen_dict[salesman.id]['commission'] = float(0)
 
-            comp_value = self._get_computed_value(
-                key='month:salesman:{}:total_prestations'.format(salesman.id),
-                target_id=month.id)
-
-            if comp_value is not None:
-                salesmen_dict[salesman.id]['total_prestations'] = comp_value.value
-                continue
-
+            # Computing prestations
             prestations = self.session.query(Prestation)\
                 .join(Prestation.salesmen)\
                 .filter(Salesman.id == salesman.id)\
@@ -438,81 +406,27 @@ class ComputeWorker(AbcBusinessWorker):
                 .all()
 
             for presta in prestations:
-                comp_value = self._get_computed_value(
-                    key='prestation:salesman:{}'.format(salesman.id),
-                    target_id=presta.id)
+                presta_sm = self._get_or_compute(
+                    key='prestation:{}:salesmen_com'.format(presta.id),
+                    instance=presta)
 
-                if not comp_value and not compute:
-                    salesmen_dict[salesman.id] = False
-                    continue
-
-                if not salesmen_dict[salesman.id]:
-                    continue
-
-                if comp_value:
-                    salesmen_dict[salesman.id]['total_prestations'] += comp_value.value
-                    continue
-
-                presta_sm = self.prestation_salesmen(
-                    compute=True,
-                    prestation=presta)
-
-                if not presta_sm[salesman.id]:
+                if not presta_sm[salesman.id]['commission']:
                     continue
 
                 salesmen_dict[salesman.id]['total_prestations'] += presta_sm[salesman.id]['commission']
 
-            if salesmen_dict[salesman.id]['total_prestations']:
-                self.cvalues_data.set(
-                    key='month:salesman:{}:total_prestations'.format(salesman.id),
-                    target_id=month.id,
-                    value=salesmen_dict[salesman.id]['total_prestations'])
-
-        # Computing total_bonuses
-        for salesman in salesmen:
-            salesmen_dict[salesman.id]['total_bonuses'] = float(0)
-
-            comp_value = self._get_computed_value(
-                key='month:salesman:{}:total_bonuses'.format(salesman.id),
-                target_id=month.id)
-
-            if comp_value is not None:
-                salesmen_dict[salesman.id]['total_bonuses'] = comp_value.value
-                continue
-
+            # Computing bonuses
             com_params = self._get_month_commission_params(month=month)
             if com_params:
                 for bonus in self.commissions_bonus:
                     salesmen_dict[salesman.id]['total_bonuses'] += bonus(**com_params)
 
-            if salesmen_dict[salesman.id]['total_bonuses']:
-                self.cvalues_data.set(
-                    key='month:salesman:{}:total_bonuses'.format(salesman.id),
-                    target_id=month.id,
-                    value=salesmen_dict[salesman.id]['total_bonuses'])
+            # Computing sum
+            salesmen_dict[salesman.id]['commission'] += salesmen_dict[salesman.id]['total_prestations']
+            salesmen_dict[salesman.id]['commission'] += salesmen_dict[salesman.id]['total_bonuses']
 
-        # Computing sum
-        for salesman in salesmen:
-            salesmen_dict[salesman.id]['commission'] = float(0)
-
-            comp_value = self._get_computed_value(
-                key='month:salesman:{}'.format(salesman.id),
-                target_id=month.id)
-
-            if comp_value is not None:
-                salesmen_dict[salesman.id]['commission'] = comp_value.value
-                continue
-
-            if salesmen_dict[salesman.id]['total_prestations']:
-                salesmen_dict[salesman.id]['commission'] += salesmen_dict[salesman.id]['total_prestations']
-
-            if salesmen_dict[salesman.id]['total_bonuses']:
-                salesmen_dict[salesman.id]['commission'] += salesmen_dict[salesman.id]['total_bonuses']
-
-            if salesmen_dict[salesman.id]['commission']:
-                self.cvalues_data.set(
-                    key='month:salesman:{}'.format(salesman.id),
-                    target_id=month.id,
-                    value=salesmen_dict[salesman.id]['commission'])
+        self.cvalues_data.set(
+            key='month:{}:salesmen_com'.format(month.id),
+            value=salesmen_dict)
 
         return salesmen_dict

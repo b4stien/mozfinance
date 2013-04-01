@@ -49,7 +49,11 @@ class DataRepository(WarbDataRepository):
         self.user = self._get_user(**kwargs)
 
         self.actions_data = ActionsData(**kwargs)
-        self.cvalues_data = ComputedValuesData(**kwargs)
+
+        if 'cvalues_data' in kwargs:
+            self.cvalues_data = kwargs['cvalues_data']
+        else:
+            self.cvalues_data = ComputedValuesData()
 
     def _get_salesman(self, **kwargs):
         """Return a salesman given a salesman (other SQLA-Session) or
@@ -164,7 +168,7 @@ class DataRepository(WarbDataRepository):
 
     def _expire_prestation(self, **kwargs):
         presta = self._get_prestation(**kwargs)
-        self.cvalues_data.expire(key='prestation:', target_id=presta.id)
+        self.cvalues_data.expire(key='prestation:{}:'.format(presta.id))
         self._expire_month(date=presta.month_date())
 
     def _expire_month(self, **kwargs):
@@ -182,17 +186,17 @@ class DataRepository(WarbDataRepository):
         for presta in prestas:
             self._expire_prestation_salesman(prestation=presta)
 
-        self.cvalues_data.expire(key='month:', target_id=month.id)
+        self.cvalues_data.expire(key='month:{}:'.format(month.id))
 
         self._expire_year(year_id=month.date.year)
 
     def _expire_year(self, **kwargs):
         year = self._get_year(**kwargs)
-        self.cvalues_data.expire(key='year:', target_id=year.id)
+        self.cvalues_data.expire(key='year:{}:'.format(year.id))
 
     def _expire_prestation_salesman(self, **kwargs):
         presta = self._get_prestation(**kwargs)
-        self.cvalues_data.expire(key='prestation:salesman:', target_id=presta.id)
+        self.cvalues_data.expire(key='prestation:{}:salesman'.format(presta.id))
         self._expire_month_salesman(date=presta.month_date())
 
     def _expire_month_salesman(self, **kwargs):
@@ -200,12 +204,7 @@ class DataRepository(WarbDataRepository):
             month = self._get_month(**kwargs)
         except NoResultFound:
             return
-        self.cvalues_data.expire(key='month:salesman:', target_id=month.id)
-
-    def _expire_salesman(self, **kwargs):
-        salesman = self._get_salesman(**kwargs)
-        self.cvalues_data.expire_key(key='month:salesman:{}'.format(salesman.id))
-        self.cvalues_data.expire_key(key='prestation:salesman:{}'.format(salesman.id))
+        self.cvalues_data.expire(key='month:{}:salesman'.format(month.id))
 
 
 class ModelPackageChecker():

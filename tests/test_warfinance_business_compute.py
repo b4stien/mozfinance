@@ -1,6 +1,9 @@
  # -*- coding: utf-8 -*-
 import datetime
 
+from warbase.data.computed_values import ComputedValuesData
+from warbase.data.cache_systems.db_cache import DbCache
+
 from warfinance.data.model.Prestation import Prestation
 from warfinance.data.model.PrestationCost import PrestationCost
 from warfinance.biz import BusinessWorker
@@ -12,10 +15,13 @@ class TestBusinessCompute(TestData):
 
     def setUp(self):
         TestData.setUp(self)
+        cvalues_data = ComputedValuesData()
+        cvalues_data.append_cache(DbCache(session=self.session))
         self.biz = BusinessWorker(
             package='warfinance.data.model',
             session=self.session,
-            user=self.user)
+            user=self.user,
+            cvalues_data=cvalues_data)
 
     def tearDown(self):
         TestData.tearDown(self)
@@ -39,10 +45,13 @@ class TestBusinessWithDatas(TestData):
 
     def setUp(self):
         TestData.setUp(self)
+        cvalues_data = ComputedValuesData()
+        cvalues_data.append_cache(DbCache(session=self.session))
         self.biz = BusinessWorker(
             package='warfinance.data.model',
             session=self.session,
-            user=self.user)
+            user=self.user,
+            cvalues_data=cvalues_data)
 
     def tearDown(self):
         TestData.tearDown(self)

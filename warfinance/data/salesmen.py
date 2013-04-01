@@ -97,7 +97,8 @@ class SalesmenData(DataRepository):
 
         self.session.commit()
 
-        self._expire_salesman(salesman=salesman)
+        for prestation in salesman.prestations:
+            self._expire_prestation(prestation=prestation)
 
         if pop_action:
             msg = self.Salesman.ACT_SALESMAN_UPDATE
@@ -117,7 +118,10 @@ class SalesmenData(DataRepository):
 
         """
         salesman = self._get_salesman(**kwargs)
-        self._expire_salesman(salesman=salesman)
+
+        for prestation in salesman.prestations:
+            self._expire_prestation(prestation=prestation)
+
         self.session.delete(salesman)
         self.session.commit()
 

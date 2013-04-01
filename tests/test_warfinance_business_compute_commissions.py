@@ -65,11 +65,11 @@ class TestBusinessCompute(TestData):
             amount=float(100),
             reason=u'Auto Cost 1')
 
-        salesmen_dict = self.biz._compute.prestation_salesmen(
+        salesmen_dict = self.biz._compute.prestation_salesmen_com(
             prestation=presta,
             compute=True)
 
-        month_salesman_dict = self.biz._compute.month_salesmen(
+        month_salesman_dict = self.biz._compute.month_salesmen_com(
             date=month_date,
             compute=True)
 
@@ -144,14 +144,14 @@ class TestBusinessCompute(TestData):
             amount=float(100),
             reason=u'Auto Cost 1 P3')
 
-        p_salesmen_dict = self.biz._compute.prestation_salesmen(
+        p_salesmen_dict = self.biz._compute.prestation_salesmen_com(
             prestation=presta,
             compute=True)
-        ap_salesmen_dict = self.biz._compute.prestation_salesmen(
+        ap_salesmen_dict = self.biz._compute.prestation_salesmen_com(
             prestation=another_presta,
             compute=True)
 
-        month_salesman_dict = self.biz._compute.month_salesmen(
+        month_salesman_dict = self.biz._compute.month_salesmen_com(
             date=month_date,
             compute=True)
 
@@ -239,14 +239,14 @@ class TestBusinessCompute(TestData):
             amount=float(100),
             reason=u'Auto Cost 1 P3')
 
-        p_salesmen_dict = self.biz._compute.prestation_salesmen(
+        p_salesmen_dict = self.biz._compute.prestation_salesmen_com(
             prestation=presta,
             compute=True)
-        ap_salesmen_dict = self.biz._compute.prestation_salesmen(
+        ap_salesmen_dict = self.biz._compute.prestation_salesmen_com(
             prestation=another_presta,
             compute=True)
 
-        month_salesman_dict = self.biz._compute.month_salesmen(
+        month_salesman_dict = self.biz._compute.month_salesmen_com(
             date=month_date,
             compute=True)
 

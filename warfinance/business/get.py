@@ -21,13 +21,12 @@ class GetWorker(AbcBusinessWorker):
         attr_dict = self._attributes_dict[instance_type]
 
         for key in attr_dict:
-            comp_value = self._get_computed_value(
-                key=instance_type+':'+key,
-                target_id=instance.id)
+            comp_value = self.cvalues_data.get(
+                key='{}:{}:{}'.format(instance_type, instance.id, key))
 
             # The value of the additional attribute is in DB.
             if comp_value is not None:
-                setattr(instance, key, comp_value.value)
+                setattr(instance, key, comp_value)
 
             # The value is not in DB but "compute" is True
             elif compute:
@@ -82,9 +81,6 @@ class GetWorker(AbcBusinessWorker):
             .all()
         setattr(month, 'prestations', prestas)
 
-        salesmen_com = self._compute.month_salesmen(month=month, compute=compute)
-        setattr(month, 'salesmen_com', salesmen_com)
-
         return month
 
     def prestation(self, compute=False, **kwargs):
@@ -102,8 +98,8 @@ class GetWorker(AbcBusinessWorker):
 
         presta = self._add_attributes('prestation', presta, compute)
 
-        salesmen_com = self._compute.prestation_salesmen(prestation=presta, compute=compute)
-        setattr(presta, 'salesmen_com', salesmen_com)
+        # salesmen_com = self._compute.prestation_salesmen(prestation=presta, compute=compute)
+        # setattr(presta, 'salesmen_com', salesmen_com)
 
         return presta
 

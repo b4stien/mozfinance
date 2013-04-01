@@ -1,6 +1,9 @@
  # -*- coding: utf-8 -*-
 import datetime
 
+from warbase.data.computed_values import ComputedValuesData
+from warbase.data.cache_systems.db_cache import DbCache
+
 from warfinance.data.model.Month import Month
 from warfinance.data.months import MonthsData
 from warfinance.biz import BusinessWorker
@@ -12,10 +15,13 @@ class TestBusiness(TestData):
 
     def setUp(self):
         TestData.setUp(self)
+        cvalues_data = ComputedValuesData()
+        cvalues_data.append_cache(DbCache(session=self.session))
         self.biz = BusinessWorker(
             package='warfinance.data.model',
             session=self.session,
-            user=self.user)
+            user=self.user,
+            cvalues_data=cvalues_data)
         self.months_data = MonthsData(
             package='warfinance.data.model',
             session=self.session,
@@ -52,6 +58,10 @@ class TestBusinessBase(TestBusiness):
         month_date = datetime.date(year=now.year, month=now.month, day=1)
         self.months_data.create(date=month_date)
         month = self.biz.get.month(date=month_date, compute=True)
+
+        other_test = self.biz.get.cvalues_data.get(key='month:1:revenu')
+        self.assertEqual(other_test, float(0))
+
         other_month = self.biz.get.month(date=month_date)
         self.assertEqual(other_month.revenu, 0)
         self.assertEqual(other_month.total_cost, 0)
