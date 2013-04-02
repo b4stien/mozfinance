@@ -198,7 +198,7 @@ class ComputeWorker(AbcBusinessWorker):
 
         coms_salesmen = self.month_salesmen_com(month=month, compute=True)
         for salesman in coms_salesmen:
-            month_net_margin -= salesman['total_bonuses']
+            month_net_margin -= coms_salesmen[salesman]['commission']
 
         self.cvalues_data.set(
             key='month:{}:net_margin'.format(month.id),
