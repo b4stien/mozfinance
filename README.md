@@ -1,4 +1,3 @@
 TODO:
 
-* Salesman & commissions on computation
-* Use of memcached !
+* Save commission formula with salesman association (formula history)
