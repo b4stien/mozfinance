@@ -98,9 +98,6 @@ class GetWorker(AbcBusinessWorker):
 
         presta = self._add_attributes('prestation', presta, compute)
 
-        # salesmen_com = self._compute.prestation_salesmen(prestation=presta, compute=compute)
-        # setattr(presta, 'salesmen_com', salesmen_com)
-
         return presta
 
     def year(self, compute=False, **kwargs):
