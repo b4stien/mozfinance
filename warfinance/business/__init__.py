@@ -41,5 +41,6 @@ class AbcBusinessWorker(DataRepository):
         DataRepository.__init__(self, **kwargs)
         self._attributes_dict = _ATTRIBUTES_DICT
         self.Prestation = import_module('.Prestation', package=self.package)
+        self.PrestationSalesman = import_module('.PrestationSalesman', package=self.package)
         self.Month = import_module('.Month', package=self.package)
         self.Salesman = import_module('.Salesman', package=self.package)

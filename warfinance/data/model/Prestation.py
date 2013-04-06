@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 from datetime import date
 
-from sqlalchemy import Column, Integer, Date, Unicode, Float, PickleType
+from sqlalchemy import Column, Integer, Date, Unicode, Float
+from sqlalchemy.ext.associationproxy import association_proxy
 from voluptuous import Schema, Required, All, Length
 
 from . import Base
@@ -36,11 +37,11 @@ class Prestation(Base):
     date = Column(Date, index=True)
     client = Column(Unicode(length=30))
     selling_price = Column(Float)
-    custom_com_formulae = Column(PickleType)
-    custom_ratios = Column(PickleType)
 
-    category = Column(Integer, index=True)
-    sector = Column(Integer, index=True)
+    salesmen = association_proxy('prestation_salesmen', 'salesman')
+
+    category = Column(Integer, index=True, default=PRESTATION_CATEGORY_NONE)
+    sector = Column(Integer, index=True, default=PRESTATION_SECTOR_NONE)
 
     create_dict = set(['date', 'client', 'category', 'sector'])  # For update purpose
     update_dict = set(['date', 'client', 'category', 'sector'])

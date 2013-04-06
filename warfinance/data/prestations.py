@@ -9,13 +9,13 @@ class PrestationsData(DataRepository):
     def __init__(self, **kwargs):
         DataRepository.__init__(self, **kwargs)
         self.Prestation = import_module('.Prestation', package=self.package)
+        self.PrestationSalesman = import_module('.PrestationSalesman', package=self.package)
 
-    def add_salesman(self, pop_action=False, **kwargs):
-        """Add a salesman to a prestation. If this salesman is already
-        associated with the prestation, do nothing.
+    def _get_prestation_salesman(self, **kwargs):
+        """Get and return a PrestationSalesman object Will raise an exception if
+        no result is found.
 
         Keyword arguments:
-        pop_action -- wether to pop an action or not
         prestation_id -- id of the prestation (*)
         prestation -- prestation (*)
         salesman_id -- salesman (**)
@@ -28,53 +28,13 @@ class PrestationsData(DataRepository):
         presta = self._get_prestation(**kwargs)
         salesman = self._get_salesman(**kwargs)
 
-        if salesman in presta.salesmen:
-            return presta
+        PrestaSm = self.PrestationSalesman.PrestationSalesman
+        presta_sm = self.session.query(PrestaSm)\
+            .filter(PrestaSm.salesman == salesman)\
+            .filter(PrestaSm.prestation == presta)\
+            .one()
 
-        presta.salesmen.append(salesman)
-
-        self.session.commit()
-
-        self._expire_prestation_salesman(prestation=presta)
-
-        if pop_action:
-            msg = self.Prestation.ACT_PRESTATION_ADD_SALESMAN
-            self.actions_data.create(message=msg.format(presta.id))
-
-        return presta
-
-    def remove_salesman(self, pop_action=False, **kwargs):
-        """Remove a salesman from a prestation. If this salesman wasn't
-        associated with the prestation, do nothing.
-
-        Keyword arguments:
-        pop_action -- wether to pop an action or not
-        prestation_id -- id of the prestation (*)
-        prestation -- prestation (*)
-        salesman_id -- salesman (**)
-        salesman -- id of the salesman (**)
-
-        * at least one is required
-        ** at least one is required
-
-        """
-        presta = self._get_prestation(**kwargs)
-        salesman = self._get_salesman(**kwargs)
-
-        if not salesman in presta.salesmen:
-            return presta
-
-        presta.salesmen.remove(salesman)
-
-        self.session.commit()
-
-        self._expire_prestation_salesman(prestation=presta)
-
-        if pop_action:
-            msg = self.Prestation.ACT_PRESTATION_REMOVE_SALESMAN
-            self.actions_data.create(message=msg.format(presta.id))
-
-        return presta
+        return presta_sm
 
     def set_selling_price(self, pop_action=False, **kwargs):
         """Set the price of a prestation. Return False if there is no update or
@@ -113,9 +73,9 @@ class PrestationsData(DataRepository):
 
         return presta
 
-    def set_custom_ratio(self, pop_action=False, **kwargs):
-        """Set a custom ratio for a specific salesman/prestation. Return False
-        if there is no update or the updated prestation otherwise.
+    def add_salesman(self, pop_action=False, **kwargs):
+        """Add a salesman to a prestation and return Rue. If this salesman is
+        already associated with the prestation, return False.
 
         Keyword arguments:
         pop_action -- wether to pop an action or not
@@ -123,7 +83,6 @@ class PrestationsData(DataRepository):
         prestation -- prestation (*)
         salesman_id -- salesman (**)
         salesman -- id of the salesman (**)
-        ratio -- the ratio to set
 
         * at least one is required
         ** at least one is required
@@ -131,25 +90,92 @@ class PrestationsData(DataRepository):
         """
         presta = self._get_prestation(**kwargs)
         salesman = self._get_salesman(**kwargs)
+
+        if salesman in presta.salesmen:
+            return False
+
+        presta_sm = self.PrestationSalesman.PrestationSalesman()
+        presta_sm.prestation = presta
+        presta_sm.salesman = salesman
+        presta_sm.formula = salesman.commissions_formulae[presta.sector][presta.category]
+
+        self.session.add(presta_sm)
+        self.session.commit()
+
+        self._expire_prestation_salesman(prestation=presta)
+
+        if pop_action:
+            msg = self.Prestation.ACT_PRESTATION_ADD_SALESMAN
+            self.actions_data.create(message=msg.format(presta.id))
+
+        return True
+
+    def remove_salesman(self, pop_action=False, **kwargs):
+        """Remove a salesman from a prestation. If this salesman wasn't
+        associated with the prestation, do nothing.
+
+        Keyword arguments:
+        pop_action -- wether to pop an action or not
+        prestation_id -- id of the prestation (*)
+        prestation -- prestation (*)
+        salesman_id -- salesman (**)
+        salesman -- id of the salesman (**)
+
+        * at least one is required
+        ** at least one is required
+
+        """
+        presta = self._get_prestation(**kwargs)
+        salesman = self._get_salesman(**kwargs)
+
+        if not salesman in presta.salesmen:
+            return presta
+
+        # We have to get the correct PrestationSalesman object.
+        presta_sm = self._get_prestation_salesman(**kwargs)
+
+        self.session.delete(presta_sm)
+        self.session.commit()
+
+        self._expire_prestation_salesman(prestation=presta)
+
+        if pop_action:
+            msg = self.Prestation.ACT_PRESTATION_REMOVE_SALESMAN
+            self.actions_data.create(message=msg.format(presta.id))
+
+        return presta
+
+    def set_salesman_ratio(self, pop_action=False, **kwargs):
+        """Set a custom ratio for a specific salesman/prestation. Return False
+        if there is no update or True otherwise.
+
+        Keyword arguments:
+        pop_action -- wether to pop an action or not
+        prestation_id -- id of the prestation (*)
+        prestation -- prestation (*)
+        salesman_id -- salesman (**)
+        salesman -- id of the salesman (**)
+        ratio -- the ratio to set (or None)
+
+        * at least one is required
+        ** at least one is required
+
+        """
+        presta = self._get_prestation(**kwargs)
 
         if not 'ratio' in kwargs:
             raise TypeError('ratio missing')
 
-        if not isinstance(kwargs['ratio'], float):
-            raise AttributeError('ratio isn\'t a float')
+        if not isinstance(kwargs['ratio'], float) and not kwargs['ratio'] is None:
+            raise AttributeError('ratio isn\'t a float and isn\'t None')
 
-        if presta.custom_ratios is None:
-            presta.custom_ratios = {}
+        presta_sm = self._get_prestation_salesman(**kwargs)
 
-        elif salesman.id in presta.custom_ratios\
-                and presta.custom_ratios[salesman.id] == kwargs['ratio']:
+        if presta_sm.ratio == kwargs['ratio']:
             return False
 
-        # To trigger model change, SQLA cannot detect changes in dict
-        new_custom_ratios = presta.custom_ratios.copy()
-        new_custom_ratios[salesman.id] = kwargs['ratio']
-        presta.custom_ratios = new_custom_ratios
-
+        presta_sm.ratio = kwargs['ratio']
+        self.session.add(presta_sm)
         self.session.commit()
 
         self._expire_prestation_salesman(prestation=presta)
@@ -158,47 +184,13 @@ class PrestationsData(DataRepository):
             msg = self.Prestation.ACT_PRESTATION_SET_CUSTOM_RATIOS
             self.actions_data.create(message=msg.format(presta.id))
 
-        return presta
+        return True
 
-    def remove_custom_ratio(self, pop_action=False, **kwargs):
-        """Remove a custom ratio for a specific salesman/prestation. Return
-        False if there is no update or the updated prestation otherwise.
-
-        Keyword arguments:
-        pop_action -- wether to pop an action or not
-        prestation_id -- id of the prestation (*)
-        prestation -- prestation (*)
-        salesman_id -- salesman (**)
-        salesman -- id of the salesman (**)
-
-        * at least one is required
-        ** at least one is required
-
-        """
-        presta = self._get_prestation(**kwargs)
-        salesman = self._get_salesman(**kwargs)
-
-        if presta.custom_ratios is None:
-            return False
-
-        if not salesman.id in presta.custom_ratios:
-            return False
-
-        presta.custom_ratios = { k: presta.custom_ratios[k] for k in presta.custom_ratios if k != salesman.id }
-
-        self.session.commit()
-
-        self._expire_prestation_salesman(prestation=presta)
-
-        if pop_action:
-            msg = self.Prestation.ACT_PRESTATION_SET_CUSTOM_RATIOS
-            self.actions_data.create(message=msg.format(presta.id))
-
-        return presta
-
-    def set_custom_com_formula(self, pop_action=False, **kwargs):
+    def set_salesman_formula(self, pop_action=False, **kwargs):
         """Set a custom commission formula for a specific salesman/prestation.
-        Return False if there is no update or the updated prestation otherwise.
+        Return False if there is no update or True otherwise.
+
+        If no formula is given, we use the default salesman's formula.
 
         Keyword arguments:
         pop_action -- wether to pop an action or not
@@ -206,7 +198,7 @@ class PrestationsData(DataRepository):
         prestation -- prestation (*)
         salesman_id -- salesman (**)
         salesman -- id of the salesman (**)
-        commission_formula -- the formula to set
+        formula -- the formula to set (or None)
 
         * at least one is required
         ** at least one is required
@@ -215,28 +207,23 @@ class PrestationsData(DataRepository):
         presta = self._get_prestation(**kwargs)
         salesman = self._get_salesman(**kwargs)
 
-        if not 'commission_formula' in kwargs:
-            raise TypeError('commission_formula missing')
+        if not 'formula' in kwargs:
+            raise TypeError('formula missing')
 
-        if not isinstance(kwargs['commission_formula'], str):
-            raise AttributeError('commission_formula isn\'t a string')
+        if not isinstance(kwargs['formula'], str) and not kwargs['formula'] is None:
+            raise AttributeError('formula isn\'t a string and isn\'t None')
 
-        # We may test kwargs['commission_formula'] here ...
+        presta_sm = self._get_prestation_salesman(**kwargs)
 
-        custom_com_formula = (salesman.id, kwargs['commission_formula'])
-
-        if presta.custom_com_formulae is None:
-            presta.custom_com_formulae = [custom_com_formula]
-
-        elif custom_com_formula in presta.custom_com_formulae:
+        if presta_sm.formula == kwargs['formula']:
             return False
 
-        for (sm_id, com) in presta.custom_com_formulae:
-            if sm_id == salesman.id:
-                presta.custom_com_formulae.remove((sm_id, com))
+        if kwargs['formula'] is None:
+            presta_sm.formula = salesman.commissions_formulae[presta.sector][presta.category]
+        else:
+            presta_sm.formula = kwargs['formula']
 
-        presta.custom_com_formulae.append(custom_com_formula)
-
+        self.session.add(presta_sm)
         self.session.commit()
 
         if pop_action:

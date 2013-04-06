@@ -330,17 +330,15 @@ class ComputeWorker(AbcBusinessWorker):
         presta = self._get_prestation(**kwargs)
         salesmen_dict = {}
 
-        for salesman in presta.salesmen:
+        for presta_sm in presta.prestation_salesmen:
 
-            if not presta.custom_ratios:
-                ratio = float(1) / float(len(presta.salesmen))
-            elif salesman.id in presta.custom_ratios:
-                ratio = presta.custom_ratios[salesman.id]
+            if presta_sm.ratio:
+                ratio = presta_sm.ratio
             else:
-                ratio = float(1)
+                ratio = float(1) / float(len(presta.salesmen))
 
             # Will eventualy change to keep history of formulae
-            formula = salesman.commissions_formulae[presta.category][presta.sector]
+            formula = presta_sm.formula
             salesman_dict = {
                 'formula': formula,
                 'ratio': ratio
@@ -360,7 +358,7 @@ class ComputeWorker(AbcBusinessWorker):
             commission = formula.format(**com_params)
             commission = eval(commission)*ratio
             salesman_dict['commission'] = commission
-            salesmen_dict[salesman.id] = salesman_dict
+            salesmen_dict[presta_sm.salesman.id] = salesman_dict
 
         self.cvalues_data.set(
             key='prestation:{}:salesmen_com'.format(presta.id),
@@ -387,6 +385,7 @@ class ComputeWorker(AbcBusinessWorker):
 
         Salesman = self.Salesman.Salesman
         Prestation = self.Prestation.Prestation
+        PrestationSalesman = self.PrestationSalesman.PrestationSalesman
         salesmen = self.session.query(Salesman).all()
 
         # Computing total_prestation
@@ -399,8 +398,8 @@ class ComputeWorker(AbcBusinessWorker):
 
             # Computing prestations
             prestations = self.session.query(Prestation)\
-                .join(Prestation.salesmen)\
-                .filter(Salesman.id == salesman.id)\
+                .join(Prestation.prestation_salesmen)\
+                .filter(PrestationSalesman.salesman_id == salesman.id)\
                 .filter(Prestation.date >= month.date)\
                 .filter(Prestation.date < month.next_month())\
                 .all()

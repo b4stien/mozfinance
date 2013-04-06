@@ -1,16 +1,9 @@
 # -*- coding: utf-8 -*-
-from sqlalchemy import Table, Column, ForeignKey, Integer, Unicode, PickleType
-from sqlalchemy.orm import backref, relationship
+from sqlalchemy import Column, Integer, Unicode, PickleType
+from sqlalchemy.ext.associationproxy import association_proxy
 from voluptuous import Schema, Required, All, Length
 
 from . import Base
-
-
-association_table = Table(
-    'association_prestations_salesmen', Base.metadata,
-    Column('salesman_id', Integer, ForeignKey('salesmen.id')),
-    Column('prestation_id', Integer, ForeignKey('prestations.id'))
-)
 
 
 class Salesman(Base):
@@ -22,10 +15,7 @@ class Salesman(Base):
 
     commissions_formulae = Column(PickleType)
 
-    prestations = relationship(
-        "Prestation",
-        secondary=association_table,
-        backref=backref('salesmen'))
+    prestations = association_proxy('salesman_prestations', 'prestation')
 
     update_dict = set(['firstname', 'lastname'])  # For update purpose
     create_dict = set(['firstname', 'lastname'])

@@ -90,56 +90,57 @@ class TestPrestationsSalesmen(TestPrestationsData):
             package='warfinance.data.model',
             session=self.session,
             user=self.user)
+        self.salesman = self.salesmen_data.create(
+            firstname=u'Johny',
+            lastname=u'Doe')
+        com_form = {}
+        com_form[0] = {}
+        com_form[0][0] = 'bla'
+        self.salesmen_data.set_commissions_formulae(
+            salesman=self.salesman,
+            commissions_formulae=com_form)
 
     def test_correct_add_salesman(self):
-        salesman = self.salesmen_data.create(
-            firstname=u'Johny',
-            lastname=u'Doe')
-        self.prestation = self.presta_data.add_salesman(
+        self.presta_data.add_salesman(
             prestation=self.prestation,
-            salesman=salesman,
+            salesman=self.salesman,
             pop_action=True)
+        presta_sm = self.presta_data._get_prestation_salesman(
+            salesman=self.salesman,
+            prestation=self.prestation)
+        self.assertEqual(presta_sm.formula, 'bla')
 
     def test_readd_salesman(self):
-        salesman = self.salesmen_data.create(
-            firstname=u'Johny',
-            lastname=u'Doe')
-        self.prestation = self.presta_data.add_salesman(
+        self.presta_data.add_salesman(
             prestation=self.prestation,
-            salesman=salesman,
+            salesman=self.salesman,
             pop_action=True)
-        presta = self.presta_data.add_salesman(
+        a_bool = self.presta_data.add_salesman(
             prestation=self.prestation,
-            salesman=salesman,
+            salesman=self.salesman,
             pop_action=True)
-        self.assertEqual(presta, self.prestation)
+        self.assertTrue(not a_bool)
 
     def test_correct_remove_salesman(self):
-        salesman = self.salesmen_data.create(
-            firstname=u'Johny',
-            lastname=u'Doe')
-        self.prestation = self.presta_data.add_salesman(
+        self.presta_data.add_salesman(
             prestation=self.prestation,
-            salesman=salesman,
+            salesman=self.salesman,
             pop_action=True)
-        self.prestation = self.presta_data.remove_salesman(
+        self.presta_data.remove_salesman(
             prestation=self.prestation,
-            salesman=salesman,
+            salesman=self.salesman,
             pop_action=True)
         self.assertEqual([], self.prestation.salesmen)
 
     def test_remove_non_salesman(self):
-        salesman = self.salesmen_data.create(
-            firstname=u'Johny',
-            lastname=u'Doe')
         presta = self.presta_data.remove_salesman(
             prestation=self.prestation,
-            salesman=salesman,
+            salesman=self.salesman,
             pop_action=True)
         self.assertEqual(presta, self.prestation)
 
 
-class TestCustomFormulae(TestPrestationsData):
+class TestFormulae(TestPrestationsData):
 
     def setUp(self):
         TestPrestationsData.setUp(self)
@@ -150,40 +151,74 @@ class TestCustomFormulae(TestPrestationsData):
         self.salesman = self.salesmen_data.create(
             firstname=u'Robert',
             lastname=u'Louis')
-        self.prestation = self.presta_data.add_salesman(
+        com_form = {}
+        com_form[0] = {}
+        com_form[0][0] = 'bla'
+        self.salesmen_data.set_commissions_formulae(
+            salesman=self.salesman,
+            commissions_formulae=com_form)
+        self.presta_data.add_salesman(
             salesman=self.salesman,
             prestation=self.prestation)
 
-    def test_set_correct_custom_formula(self):
-        presta = self.presta_data.set_custom_com_formula(
+    def test_set_correct_formula(self):
+        self.presta_data.set_salesman_formula(
             salesman=self.salesman,
             prestation=self.prestation,
-            commission_formula='lol')
-        self.assertTrue((self.salesman.id, 'lol') in presta.custom_com_formulae)
+            formula='lol')
+        presta_sm = self.presta_data._get_prestation_salesman(
+            salesman=self.salesman,
+            prestation=self.prestation)
+        self.assertEqual(presta_sm.formula, 'lol')
 
     def test_wrong_custom_formula(self):
         with self.assertRaises(AttributeError):
-            presta = self.presta_data.set_custom_com_formula(
+            self.presta_data.set_salesman_formula(
                 salesman=self.salesman,
                 prestation=self.prestation,
-                commission_formula=u'lol')
+                formula=u'lol')
 
     def test_no_update_set_custom_formula(self):
-        presta = self.presta_data.set_custom_com_formula(
+        self.presta_data.set_salesman_formula(
             salesman=self.salesman,
             prestation=self.prestation,
-            commission_formula='lol')
-        presta = self.presta_data.set_custom_com_formula(
+            formula='lol')
+        a_bool = self.presta_data.set_salesman_formula(
             salesman=self.salesman,
             prestation=self.prestation,
-            commission_formula='lol')
-        self.assertTrue(not presta)
+            formula='lol')
+        self.assertTrue(not a_bool)
 
-    def test_another_no_update_set_custom_formula(self):
-        presta = self.presta_data.set_custom_com_formula(
+    def test_backup_default_formula(self):
+        # Default formula
+        presta_sm = self.presta_data._get_prestation_salesman(
+            salesman=self.salesman,
+            prestation=self.prestation)
+        self.assertEqual(presta_sm.formula, 'bla')
+        # We change the formula
+        self.presta_data.set_salesman_formula(
             salesman=self.salesman,
             prestation=self.prestation,
-            commission_formula='lol',
+            formula='lol')
+        presta_sm = self.presta_data._get_prestation_salesman(
+            salesman=self.salesman,
+            prestation=self.prestation)
+        self.assertEqual(presta_sm.formula, 'lol')
+        # And we go back to default
+        self.presta_data.set_salesman_formula(
+            salesman=self.salesman,
+            prestation=self.prestation,
+            formula=None)
+        presta_sm = self.presta_data._get_prestation_salesman(
+            salesman=self.salesman,
+            prestation=self.prestation)
+        self.assertEqual(presta_sm.formula, 'bla')
+
+    def test_pop_action_set_salesman_formula(self):
+        self.presta_data.set_salesman_formula(
+            salesman=self.salesman,
+            prestation=self.prestation,
+            formula='lol',
             pop_action=True)
         self.session.query(Action.Action).one()
 
@@ -199,59 +234,74 @@ class TestRatios(TestPrestationsData):
         self.salesman = self.salesmen_data.create(
             firstname=u'Robert',
             lastname=u'Louis')
-        self.prestation = self.presta_data.add_salesman(
+        com_form = {}
+        com_form[0] = {}
+        com_form[0][0] = 'bla'
+        self.salesmen_data.set_commissions_formulae(
+            salesman=self.salesman,
+            commissions_formulae=com_form)
+        self.presta_data.add_salesman(
             salesman=self.salesman,
             prestation=self.prestation)
 
     def test_set_correct_ratio(self):
-        presta = self.presta_data.set_custom_ratio(
+        self.presta_data.set_salesman_ratio(
             salesman=self.salesman,
             prestation=self.prestation,
             ratio=float(0.3))
-        self.assertEqual(presta.custom_ratios[self.salesman.id], float(0.3))
+        presta_sm = self.presta_data._get_prestation_salesman(
+            salesman=self.salesman,
+            prestation=self.prestation)
+        self.assertEqual(presta_sm.ratio, float(0.3))
 
     def test_update_ratio(self):
-        presta = self.presta_data.set_custom_ratio(
+        self.presta_data.set_salesman_ratio(
             salesman=self.salesman,
             prestation=self.prestation,
             ratio=float(0.3))
-        presta = self.presta_data.set_custom_ratio(
+        self.presta_data.set_salesman_ratio(
             salesman=self.salesman,
             prestation=self.prestation,
             ratio=float(0.8))
-        self.assertEqual(presta.custom_ratios[self.salesman.id], float(0.8))
+        presta_sm = self.presta_data._get_prestation_salesman(
+            salesman=self.salesman,
+            prestation=self.prestation)
+        self.assertEqual(presta_sm.ratio, float(0.8))
 
-    def test_remove_correct_ratio(self):
-        presta = self.presta_data.set_custom_ratio(
+    def test_remove_ratio(self):
+        self.presta_data.set_salesman_ratio(
             salesman=self.salesman,
             prestation=self.prestation,
             ratio=float(0.3))
-        presta = self.presta_data.remove_custom_ratio(
+        self.presta_data.set_salesman_ratio(
+            salesman=self.salesman,
+            prestation=self.prestation,
+            ratio=None)
+        presta_sm = self.presta_data._get_prestation_salesman(
             salesman=self.salesman,
             prestation=self.prestation)
-        self.assertTrue(not self.salesman.id in presta.custom_ratios)
-        print presta.custom_ratios
+        self.assertTrue(presta_sm.ratio is None)
 
-    def test_wrong_custom_formula(self):
+    def test_wrong_ratio(self):
         with self.assertRaises(AttributeError):
-            self.presta_data.set_custom_ratio(
+            self.presta_data.set_salesman_ratio(
                 salesman=self.salesman,
                 prestation=self.prestation,
                 ratio=u'lol')
 
     def test_no_update_set_custom_ratios(self):
-        presta = self.presta_data.set_custom_ratio(
+        self.presta_data.set_salesman_ratio(
             salesman=self.salesman,
             prestation=self.prestation,
             ratio=float(0.3))
-        presta = self.presta_data.set_custom_ratio(
+        a_bool = self.presta_data.set_salesman_ratio(
             salesman=self.salesman,
             prestation=self.prestation,
             ratio=float(0.3))
-        self.assertTrue(not presta)
+        self.assertTrue(not a_bool)
 
-    def test_pop_action_set_custom_formula(self):
-        self.presta_data.set_custom_ratio(
+    def test_pop_action_set_salesman_ratio(self):
+        self.presta_data.set_salesman_ratio(
             salesman=self.salesman,
             prestation=self.prestation,
             ratio=float(0.3),

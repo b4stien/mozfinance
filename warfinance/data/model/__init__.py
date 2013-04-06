@@ -6,4 +6,4 @@ attribute/method of each SQLA-Class is mandatory.
 """
 from warbase.model import Base
 
-__all__ = ['Month', 'Prestation', 'PrestationCost', 'Salesman']
+__all__ = ['Month', 'Prestation', 'Salesman', 'PrestationCost', 'PrestationSalesman']
