@@ -52,6 +52,8 @@ class TestBusinessWithDatas(TestData):
             session=self.session,
             user=self.user,
             cvalues_data=cvalues_data)
+        self.session.delete(self.prestation)
+        self.session.flush()
 
     def tearDown(self):
         TestData.tearDown(self)

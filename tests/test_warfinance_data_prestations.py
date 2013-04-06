@@ -19,8 +19,6 @@ class TestPrestationsData(TestData):
             package='warfinance.data.model',
             session=self.session,
             user=self.user)
-        self.session.add(self.prestation)
-        self.session.flush()
 
     def tearDown(self):
         TestData.tearDown(self)

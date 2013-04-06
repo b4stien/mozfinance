@@ -27,6 +27,8 @@ class TestData(unittest.TestCase):
 
         now = datetime.datetime.now().date()
         self.prestation = Prestation.Prestation(date=now)
+        self.session.add(self.prestation)
+        self.session.flush()
 
     def tearDown(self):
         self.session.close()
