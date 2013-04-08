@@ -348,11 +348,13 @@ class ComputeWorker(AbcBusinessWorker):
             com_params = self._get_prestation_commission_params(prestation=presta)
             if not com_params:
                 salesman_dict['commission'] = False
+                salesmen_dict[presta_sm.salesman.id] = salesman_dict
                 continue
 
             # If the net margin or prestation margin is negative
             if com_params['m_bc'] < float(0) or com_params['p_m'] < float(0):
                 salesman_dict['commission'] = False
+                salesmen_dict[presta_sm.salesman.id] = salesman_dict
                 continue
 
             commission = formula.format(**com_params)
