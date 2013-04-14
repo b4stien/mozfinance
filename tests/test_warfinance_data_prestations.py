@@ -137,6 +137,28 @@ class TestPrestationsSalesmen(TestPrestationsData):
             pop_action=True)
         self.assertEqual(presta, self.prestation)
 
+    def test_correct_delete_salesman(self):
+        self.presta_data.add_salesman(
+            prestation=self.prestation,
+            salesman=self.salesman,
+            pop_action=True)
+        self.salesmen_data.remove(salesman=self.salesman)
+        with self.assertRaises(NoResultFound):
+            self.session.query(PrestationSalesman.PrestationSalesman).one()
+
+    def test_correct_delete_prestation(self):
+        self.presta_data.add_salesman(
+            prestation=self.prestation,
+            salesman=self.salesman,
+            pop_action=True)
+
+        # Prestation create/remove not handle by warfinance.data.prestations
+        self.session.delete(self.prestation)
+        self.session.commit()
+
+        with self.assertRaises(NoResultFound):
+            self.session.query(PrestationSalesman.PrestationSalesman).one()
+
 
 class TestFormulae(TestPrestationsData):
 

@@ -21,7 +21,7 @@ class PrestationSalesman(Base):
     # bidirectional attribute
     prestation = relationship(
         Prestation.Prestation,
-        backref=backref("prestation_salesmen"))
+        backref=backref("prestation_salesmen", cascade="all, delete-orphan"))
     salesman = relationship(
         Salesman.Salesman,
-        backref=backref("salesman_prestations"))
+        backref=backref("salesman_prestations", cascade="all, delete-orphan"))

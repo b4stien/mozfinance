@@ -111,5 +111,15 @@ class TestSalesmenBase(TestSalesmenData):
             pop_action=True)
         self.session.query(Action.Action).one()
 
+    def test_set_commissions_formulae(self):
+        salesman = self.salesmen_data.create(
+            firstname=u'Hubërt',
+            lastname=u'Jean Claude Douze')
+        self.salesmen_data.set_commissions_formulae(
+            salesman=salesman,
+            commissions_formulae={})
+        self.salesmen_data.remove(
+            salesman=salesman)
+
 if __name__ == '__main__':
     unittest.main()
