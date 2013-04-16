@@ -358,7 +358,7 @@ class ComputeWorker(AbcBusinessWorker):
                 continue
 
             commission = formula.format(**com_params)
-            commission = eval(commission)*ratio
+            commission = round(eval(commission)*ratio, 1)
             salesman_dict['commission'] = commission
             salesmen_dict[presta_sm.salesman.id] = salesman_dict
 
@@ -421,6 +421,9 @@ class ComputeWorker(AbcBusinessWorker):
             if com_params:
                 for bonus in self.commissions_bonus:
                     salesmen_dict[salesman.id]['total_bonuses'] += bonus(**com_params)
+
+            # Rounding bonuses sum
+            salesmen_dict[salesman.id]['total_bonuses'] = round(salesmen_dict[salesman.id]['total_bonuses'], 1)
 
             # Computing sum
             salesmen_dict[salesman.id]['commission'] += salesmen_dict[salesman.id]['total_prestations']

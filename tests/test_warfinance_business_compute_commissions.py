@@ -73,7 +73,7 @@ class TestBusinessCompute(TestData):
             date=month_date,
             compute=True)
 
-        commission_ideal = float(3900)*float(1900)/float(3900)*float(0.06)
+        commission_ideal = round(float(3900)*float(1900)/float(3900)*float(0.06), 1)
 
         self.assertEqual(salesmen_dict[salesman.id]['formula'], '{p_m}*{m_bc}/{m_mb}*0.06')
         self.assertEqual(salesmen_dict[salesman.id]['commission'], commission_ideal)
@@ -155,8 +155,8 @@ class TestBusinessCompute(TestData):
             date=month_date,
             compute=True)
 
-        commission_ideal_p = float(24700)*float(47600)/float(49600)*float(0.06)
-        commission_ideal_ap = float(24900)*float(47600)/float(49600)*float(0.06)
+        commission_ideal_p = round(float(24700)*float(47600)/float(49600)*float(0.06), 1)
+        commission_ideal_ap = round(float(24900)*float(47600)/float(49600)*float(0.06), 1)
 
         self.assertEqual(p_salesmen_dict[salesman.id]['commission'], commission_ideal_p)
         self.assertEqual(ap_salesmen_dict[salesman.id]['commission'], commission_ideal_ap)
@@ -250,11 +250,11 @@ class TestBusinessCompute(TestData):
             date=month_date,
             compute=True)
 
-        commission_ideal_p = float(24700)*float(47600)/float(49600)*float(0.06)*0.5
-        commission_ideal_ap = float(24900)*float(47600)/float(49600)*float(0.06)
+        commission_ideal_p = round(float(24700)*float(47600)/float(49600)*float(0.06)*0.5, 1)
+        commission_ideal_ap = round(float(24900)*float(47600)/float(49600)*float(0.06), 1)
 
         self.assertEqual(p_salesmen_dict[salesman.id]['commission'], commission_ideal_p)
         self.assertEqual(ap_salesmen_dict[salesman.id]['commission'], commission_ideal_ap)
         self.assertEqual(month_salesman_dict[salesman.id]['total_prestations'], commission_ideal_p+commission_ideal_ap)
         self.assertEqual(month_salesman_dict[salesman.id]['total_bonuses'], float(476))
-        self.assertEqual(month_salesman_dict[salesman.id]['commission'], float(476)+commission_ideal_p+commission_ideal_ap)
+        self.assertEqual(month_salesman_dict[salesman.id]['commission'], round(float(476)+commission_ideal_p+commission_ideal_ap, 1))
