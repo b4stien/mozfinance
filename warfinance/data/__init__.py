@@ -196,7 +196,7 @@ class DataRepository(WarbDataRepository):
 
     def _expire_prestation_salesman(self, **kwargs):
         presta = self._get_prestation(**kwargs)
-        self.cvalues_data.expire(key='prestation:{}:salesman'.format(presta.id))
+        self.cvalues_data.expire(key='prestation:{}:salesmen_com'.format(presta.id))
         self._expire_month_salesman(date=presta.month_date())
 
     def _expire_month_salesman(self, **kwargs):
@@ -204,7 +204,7 @@ class DataRepository(WarbDataRepository):
             month = self._get_month(**kwargs)
         except NoResultFound:
             return
-        self.cvalues_data.expire(key='month:{}:salesman'.format(month.id))
+        self.cvalues_data.expire(key='month:{}:salesmen_com'.format(month.id))
 
 
 class ModelPackageChecker():
