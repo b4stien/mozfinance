@@ -219,7 +219,7 @@ class PrestationsData(DataRepository):
             return False
 
         if kwargs['formula'] is None:
-            presta_sm.formula = salesman.commissions_formulae[presta.sector][presta.category]
+            presta_sm.formula = salesman.commissions_formulae[presta.category][presta.sector]
         else:
             presta_sm.formula = kwargs['formula']
 

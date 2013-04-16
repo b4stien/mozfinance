@@ -13,6 +13,8 @@ class Salesman(Base):
     firstname = Column(Unicode(length=30))
     lastname = Column(Unicode(length=30))
 
+    # Dict with prestation.category first and prestation.sector then.
+    # Eg: com_form[presta.category][presta.sector]
     commissions_formulae = Column(PickleType)
 
     prestations = association_proxy('salesman_prestations', 'prestation')
