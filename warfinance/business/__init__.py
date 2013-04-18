@@ -6,8 +6,6 @@ in warfinance.data).
 """
 from importlib import import_module
 
-from sqlalchemy.orm.exc import NoResultFound
-
 from warfinance.data import DataRepository
 
 _ATTRIBUTES_DICT = {
@@ -25,6 +23,8 @@ _ATTRIBUTES_DICT = {
         'salesmen_com': 'prestation_salesmen_com'
     },
     'year': {
+        'revenu': 'year_revenu',
+        'gross_margin': 'year_gross_margin',
         'net_margin': 'year_net_margin'
     }
 }

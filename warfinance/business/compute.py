@@ -233,8 +233,88 @@ class ComputeWorker(AbcBusinessWorker):
 
         return month_cost
 
+    def year_revenu(self, **kwargs):
+        """Compute and return the cumulated revenu of the year
+
+        Keyword arguments:
+        date -- Date of the first day of the year
+        year_id -- Fake id, year as an int"""
+
+        year = self._get_year(**kwargs)
+
+        now_date = datetime.datetime.now().date()
+
+        revenu = float(0)
+
+        for i in range(12):
+            month_date = datetime.date(
+                year=year.date.year,
+                month=i+1,
+                day=1)
+
+            # We don't go into the future !
+            if month_date > now_date:
+                break
+
+            # If the month is not found, we continue
+            try:
+                m = self._get_month(date=month_date)
+            except NoResultFound:
+                continue
+
+            month_revenu = self._get_or_compute(
+                'month:{}:revenu'.format(m.id), instance=m)
+
+            revenu += month_revenu
+
+        self.cvalues_data.set(
+            key='year:{}:revenu'.format(year.id),
+            value=revenu)
+
+        return revenu
+
+    def year_gross_margin(self, **kwargs):
+        """Compute and return the cumulated gross margin of the year
+
+        Keyword arguments:
+        date -- Date of the first day of the year
+        year_id -- Fake id, year as an int"""
+
+        year = self._get_year(**kwargs)
+
+        now_date = datetime.datetime.now().date()
+
+        gross_margin = float(0)
+
+        for i in range(12):
+            month_date = datetime.date(
+                year=year.date.year,
+                month=i+1,
+                day=1)
+
+            # We don't go into the future !
+            if month_date > now_date:
+                break
+
+            # If the month is not found, we continue
+            try:
+                m = self._get_month(date=month_date)
+            except NoResultFound:
+                continue
+
+            month_gross_margin = self._get_or_compute(
+                'month:{}:gross_margin'.format(m.id), instance=m)
+
+            gross_margin += month_gross_margin
+
+        self.cvalues_data.set(
+            key='year:{}:gross_margin'.format(year.id),
+            value=gross_margin)
+
+        return gross_margin
+
     def year_net_margin(self, **kwargs):
-        """Compute and return the comulated net margin of the year_net_margin
+        """Compute and return the cumulated net margin of the year
 
         Keyword arguments:
         date -- Date of the first day of the year
