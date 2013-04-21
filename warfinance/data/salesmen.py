@@ -97,9 +97,6 @@ class SalesmenData(DataRepository):
 
         self.session.commit()
 
-        for prestation in salesman.prestations:
-            self._expire_prestation(prestation=prestation)
-
         if pop_action:
             msg = self.Salesman.ACT_SALESMAN_UPDATE
             self.actions_data.create(message=msg)
