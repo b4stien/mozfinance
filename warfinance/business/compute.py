@@ -191,14 +191,12 @@ class ComputeWorker(AbcBusinessWorker):
         month_net_margin = month_gross_margin
         if month.cost:
             month_net_margin -= month.cost
-        if month.salaries:
-            month_net_margin -= month.salaries
         if month.taxes:
             month_net_margin -= month.taxes
-
-        coms_salesmen = self.month_salesmen_com(month=month, compute=True)
-        for salesman in coms_salesmen:
-            month_net_margin -= coms_salesmen[salesman]['commission']
+        if month.salaries:
+            month_net_margin -= month.salaries
+        if month.commissions_refined:
+            month_net_margin -= month.commissions_refined
 
         self.cvalues_data.set(
             key='month:{}:net_margin'.format(month.id),
