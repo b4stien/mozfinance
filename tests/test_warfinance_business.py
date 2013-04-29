@@ -40,7 +40,7 @@ class TestBusinessBase(TestBusiness):
         month_date = datetime.date(year=now.year, month=now.month, day=1)
         self.months_data.create(date=month_date)
         month = self.biz.get.month(date=month_date)
-        self.assertEqual(month.revenu, None)
+        self.assertEqual(month.revenue, None)
         self.assertEqual(month.total_cost, None)
         self.assertEqual(month.gross_margin, None)
 
@@ -49,7 +49,7 @@ class TestBusinessBase(TestBusiness):
         month_date = datetime.date(year=now.year, month=now.month, day=1)
         self.months_data.create(date=month_date)
         month = self.biz.get.month(date=month_date, compute=True)
-        self.assertEqual(month.revenu, 0)
+        self.assertEqual(month.revenue, 0)
         self.assertEqual(month.total_cost, 0)
         self.assertEqual(month.gross_margin, 0)
 
@@ -59,11 +59,11 @@ class TestBusinessBase(TestBusiness):
         self.months_data.create(date=month_date)
         month = self.biz.get.month(date=month_date, compute=True)
 
-        other_test = self.biz.get.cvalues_data.get(key='month:1:revenu')
+        other_test = self.biz.get.cvalues_data.get(key='month:1:revenue')
         self.assertEqual(other_test, float(0))
 
         other_month = self.biz.get.month(date=month_date)
-        self.assertEqual(other_month.revenu, 0)
+        self.assertEqual(other_month.revenue, 0)
         self.assertEqual(other_month.total_cost, 0)
         self.assertEqual(other_month.gross_margin, 0)
 

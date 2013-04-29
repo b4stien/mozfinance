@@ -18,7 +18,7 @@ class ComputeWorker(AbcBusinessWorker):
         """Return a value (a real value and not a ComputedValue).
 
         Arguments:
-        key -- key of the value (eg: "month:revenu").
+        key -- key of the value (eg: "month:revenue").
                See warfinance.business.__ATTRIBUTES_DICT
         target_id -- id of the target
 
@@ -97,8 +97,8 @@ class ComputeWorker(AbcBusinessWorker):
 
         return presta_margin
 
-    def month_revenu(self, **kwargs):
-        """Compute and return the revenu of a month.
+    def month_revenue(self, **kwargs):
+        """Compute and return the revenue of a month.
 
         Keyword arguments:
         month -- SQLA-Month (*)
@@ -116,34 +116,34 @@ class ComputeWorker(AbcBusinessWorker):
             .filter(Prestation.date < month.next_month())\
             .all()
 
-        month_revenu = float(0)
+        month_revenue = float(0)
         for presta in prestations:
             if presta.selling_price is not None:
-                month_revenu += presta.selling_price
+                month_revenue += presta.selling_price
 
         self.cvalues_data.set(
-            key='month:{}:revenu'.format(month.id),
-            value=month_revenu)
+            key='month:{}:revenue'.format(month.id),
+            value=month_revenue)
 
-        return month_revenu
+        return month_revenue
 
     def month_gross_margin(self, **kwargs):
         """Compute and return the gross margin of a month.
 
         Keyword arguments:
-        same as warfinance.business.compute.ComputeWorker.month_revenu
+        same as warfinance.business.compute.ComputeWorker.month_revenue
 
         """
         month = self._get_month(**kwargs)
 
-        month_revenu = self._get_or_compute(
-            'month:{}:revenu'.format(month.id),
+        month_revenue = self._get_or_compute(
+            'month:{}:revenue'.format(month.id),
             instance=month)
         month_cost = self._get_or_compute(
             'month:{}:total_cost'.format(month.id),
             instance=month)
 
-        month_gross_margin = month_revenu - month_cost
+        month_gross_margin = month_revenue - month_cost
         self.cvalues_data.set(
             key='month:{}:gross_margin'.format(month.id),
             value=month_gross_margin)
@@ -154,7 +154,7 @@ class ComputeWorker(AbcBusinessWorker):
         """Compute and return the commission base of a month.
 
         Keyword arguments:
-        same as warfinance.business.compute.ComputeWorker.month_revenu
+        same as warfinance.business.compute.ComputeWorker.month_revenue
 
         """
         month = self._get_month(**kwargs)
@@ -179,7 +179,7 @@ class ComputeWorker(AbcBusinessWorker):
         """Compute and return the net margin of a month.
 
         Keyword arguments:
-        same as warfinance.business.compute.ComputeWorker.month_revenu
+        same as warfinance.business.compute.ComputeWorker.month_revenue
 
         """
         month = self._get_month(**kwargs)
@@ -208,7 +208,7 @@ class ComputeWorker(AbcBusinessWorker):
         """Compute and return the sum of the costs of the prestations of a month.
 
         Keyword arguments:
-        same as warfinance.business.compute.ComputeWorker.month_revenu
+        same as warfinance.business.compute.ComputeWorker.month_revenue
 
         """
         month = self._get_month(**kwargs)
@@ -231,8 +231,8 @@ class ComputeWorker(AbcBusinessWorker):
 
         return month_cost
 
-    def year_revenu(self, **kwargs):
-        """Compute and return the cumulated revenu of the year
+    def year_revenue(self, **kwargs):
+        """Compute and return the cumulated revenue of the year
 
         Keyword arguments:
         date -- Date of the first day of the year
@@ -242,7 +242,7 @@ class ComputeWorker(AbcBusinessWorker):
 
         now_date = datetime.datetime.now().date()
 
-        revenu = float(0)
+        revenue = float(0)
 
         for i in range(12):
             month_date = datetime.date(
@@ -260,16 +260,16 @@ class ComputeWorker(AbcBusinessWorker):
             except NoResultFound:
                 continue
 
-            month_revenu = self._get_or_compute(
-                'month:{}:revenu'.format(m.id), instance=m)
+            month_revenue = self._get_or_compute(
+                'month:{}:revenue'.format(m.id), instance=m)
 
-            revenu += month_revenu
+            revenue += month_revenue
 
         self.cvalues_data.set(
-            key='year:{}:revenu'.format(year.id),
-            value=revenu)
+            key='year:{}:revenue'.format(year.id),
+            value=revenue)
 
-        return revenu
+        return revenue
 
     def year_gross_margin(self, **kwargs):
         """Compute and return the cumulated gross margin of the year
@@ -365,7 +365,7 @@ class ComputeWorker(AbcBusinessWorker):
         p = self._get_prestation(**kwargs)
         m = self._get_month(date=p.month_date())
         com_params = {
-            'm_ca': self._get_or_compute('month:{}:revenu'.format(m.id), instance=m),
+            'm_ca': self._get_or_compute('month:{}:revenue'.format(m.id), instance=m),
             'm_mb': self._get_or_compute('month:{}:gross_margin'.format(m.id), instance=m),
             'm_bc': self._get_or_compute('month:{}:commission_base'.format(m.id), instance=m),
             'm_tc': self._get_or_compute('month:{}:total_cost'.format(m.id), instance=m),
@@ -382,7 +382,7 @@ class ComputeWorker(AbcBusinessWorker):
     def _get_month_commission_params(self, **kwargs):
         m = self._get_month(**kwargs)
         com_params = {
-            'm_ca': self._get_or_compute('month:{}:revenu'.format(m.id), instance=m),
+            'm_ca': self._get_or_compute('month:{}:revenue'.format(m.id), instance=m),
             'm_mb': self._get_or_compute('month:{}:gross_margin'.format(m.id), instance=m),
             'm_bc': self._get_or_compute('month:{}:commission_base'.format(m.id), instance=m),
             'm_tc': self._get_or_compute('month:{}:total_cost'.format(m.id), instance=m),

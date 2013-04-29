@@ -10,7 +10,7 @@ from warfinance.data import DataRepository
 
 _ATTRIBUTES_DICT = {
     'month': {
-        'revenu': 'month_revenu',
+        'revenue': 'month_revenue',
         'gross_margin': 'month_gross_margin',
         'commission_base': 'month_commission_base',
         'net_margin': 'month_net_margin',
@@ -23,7 +23,7 @@ _ATTRIBUTES_DICT = {
         'salesmen_com': 'prestation_salesmen_com'
     },
     'year': {
-        'revenu': 'year_revenu',
+        'revenue': 'year_revenue',
         'gross_margin': 'year_gross_margin',
         'net_margin': 'year_net_margin'
     }

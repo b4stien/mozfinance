@@ -27,7 +27,7 @@ class TestBusinessCompute(TestData):
         TestData.tearDown(self)
         del self.biz
 
-    def test_get_month_revenu_with_none_presta_selling_price(self):
+    def test_get_month_revenue_with_none_presta_selling_price(self):
         now = datetime.datetime.now()
         now_date = now.date()
         self.month_date = datetime.date(year=now.year, month=now.month, day=1)
@@ -38,7 +38,7 @@ class TestBusinessCompute(TestData):
         self.session.add(presta2)
         self.session.flush()
         month = self.biz.get.month(date=self.month_date, compute=True)
-        self.assertEqual(month.revenu, float(16))
+        self.assertEqual(month.revenue, float(16))
 
 
 class TestBusinessWithDatas(TestData):
@@ -74,7 +74,7 @@ class TestBusinessWithDatas(TestData):
         self.session.flush()
         month = self.biz.get.month(date=self.month_date, compute=True)
         presta = self.biz.get.prestation(prestation=presta1, compute=True)
-        self.assertEqual(month.revenu, float(28))
+        self.assertEqual(month.revenue, float(28))
         self.assertEqual(month.total_cost, float(4))
         self.assertEqual(month.gross_margin, float(24))
         self.assertEqual(month.net_margin, float(21))
