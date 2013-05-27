@@ -3,16 +3,12 @@ import datetime
 from sqlalchemy.orm.exc import NoResultFound
 
 from . import AbcBusinessWorker
-from .. import COMMISSIONS_BONUS
+import warfinance
 
 
 class ComputeWorker(AbcBusinessWorker):
     """BusinessWorker for computation. All recipes to compute values are stored
     here."""
-
-    def __init__(self, **kwargs):
-        AbcBusinessWorker.__init__(self, **kwargs)
-        self.commissions_bonus = COMMISSIONS_BONUS
 
     def _get_or_compute(self, key, **kwargs):
         """Return a value (a real value and not a ComputedValue).
@@ -110,11 +106,7 @@ class ComputeWorker(AbcBusinessWorker):
         """
         month = self._get_month(**kwargs)
 
-        Prestation = self.Prestation.Prestation  # abbr
-        prestations = self.session.query(Prestation)\
-            .filter(Prestation.date >= month.date)\
-            .filter(Prestation.date < month.next_month())\
-            .all()
+        prestations = self._get_month_prestations(month=month)
 
         month_revenue = float(0)
         for presta in prestations:
@@ -213,11 +205,7 @@ class ComputeWorker(AbcBusinessWorker):
         """
         month = self._get_month(**kwargs)
 
-        Prestation = self.Prestation
-        prestations = self.session.query(Prestation.Prestation)\
-            .filter(Prestation.Prestation.date >= month.date)\
-            .filter(Prestation.Prestation.date < month.next_month())\
-            .all()
+        prestations = self._get_month_prestations(month=month)
 
         month_cost = float(0)
         for presta in prestations:
@@ -497,7 +485,7 @@ class ComputeWorker(AbcBusinessWorker):
             # Computing bonuses
             com_params = self._get_month_commission_params(month=month)
             if com_params:
-                for bonus in self.commissions_bonus:
+                for bonus in warfinance.COMMISSIONS_BONUS:
                     salesmen_dict[salesman.id]['total_bonuses'] += bonus(**com_params)
 
             # Rounding bonuses sum

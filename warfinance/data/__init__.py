@@ -20,6 +20,8 @@ from warbase.data import DataRepository as WarbDataRepository
 from warbase.data.actions import ActionsData
 from warbase.data.computed_values import ComputedValuesData
 
+import warfinance
+
 
 class DataRepository(WarbDataRepository):
     """ABC for data repository objects.
@@ -158,13 +160,34 @@ class DataRepository(WarbDataRepository):
 
         elif 'prestation_id' in kwargs:
             presta_id = kwargs['prestation_id']
-            return self.session.query(Prestation.Prestation)\
-                .filter(Prestation.Prestation.id == presta_id)\
-                .one()
+            prestation_query = self.session.query(Prestation.Prestation)\
+                .filter(Prestation.Prestation.id == presta_id)
+
+            # Restrictions on the prestations that we will consider
+            for query_filter in warfinance.PRESTATIONS_FILTERS:
+                prestation_query = prestation_query.filter(query_filter)
+
+            return prestation_query.one()
 
         else:
             raise TypeError(
                 'Prestation informations (prestation or prestation_id) not provided')
+
+    def _get_month_prestations(self, **kwargs):
+        """Return the list of the prestations ot the given month."""
+        month = self._get_month(**kwargs)
+
+        Prestation = import_module('.Prestation', package=self.package)
+        prestations_query = self.session.query(Prestation.Prestation)\
+            .filter(Prestation.Prestation.date >= month.date)\
+            .filter(Prestation.Prestation.date < month.next_month())
+
+        for query_filter in warfinance.PRESTATIONS_FILTERS:
+            prestations_query = prestations_query.filter(query_filter)
+
+        prestations = prestations_query.all()
+
+        return prestations
 
     def _expire_prestation(self, **kwargs):
         presta = self._get_prestation(**kwargs)

@@ -2,6 +2,8 @@ import datetime
 
 from sqlalchemy.orm.exc import NoResultFound
 
+import warfinance
+
 from . import AbcBusinessWorker
 from compute import ComputeWorker
 from data import DataWorker
@@ -74,11 +76,15 @@ class GetWorker(AbcBusinessWorker):
         month = self._add_attributes('month', month, compute)
 
         Prestation = self.Prestation
-        prestas = self.session.query(Prestation.Prestation)\
+        prestas_query = self.session.query(Prestation.Prestation)\
             .filter(Prestation.Prestation.date >= month.date)\
-            .filter(Prestation.Prestation.date < month.next_month())\
-            .order_by(Prestation.Prestation.date)\
-            .all()
+            .filter(Prestation.Prestation.date < month.next_month())
+
+        # Restrictions on the prestations that we will consider
+        for query_filter in warfinance.PRESTATIONS_FILTERS:
+            prestas_query = prestas_query.filter(query_filter)
+
+        prestas = prestas_query.order_by(Prestation.Prestation.date).all()
         setattr(month, 'prestations', prestas)
 
         return month
