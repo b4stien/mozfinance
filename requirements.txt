@@ -1,4 +1,4 @@
 SQLAlchemy==0.8.0
 voluptuous==0.7.0
 
--e git://github.com/b4stien/warbase.git#egg=warbase
+-e git+ssh://git@github.com/b4stien/warbase.git#egg=warbase
