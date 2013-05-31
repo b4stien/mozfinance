@@ -213,6 +213,13 @@ class DataRepository(WarbDataRepository):
 
         self._expire_year(year_id=month.date.year)
 
+    def _expire_all_months(self):
+        Month = import_module('.Month', package=self.package)
+        months = self.session.query(Month.Month).all()
+
+        for month in months:
+            self._expire_month(month=month)
+
     def _expire_year(self, **kwargs):
         year = self._get_year(**kwargs)
         self.cvalues_data.expire(key='year:{}:'.format(year.id))

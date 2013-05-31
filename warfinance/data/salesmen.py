@@ -24,6 +24,10 @@ class SalesmenData(DataRepository):
 
         self.session.commit()
 
+        # Needed because of month.salesmen_com which is indexed using
+        # salesman.id.
+        self._expire_all_months()
+
         if pop_action:
             msg = self.Salesman.ACT_SALESMAN_CREATE
             self.actions_data.create(message=msg)
