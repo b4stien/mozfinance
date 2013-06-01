@@ -2,7 +2,7 @@ import datetime
 
 from sqlalchemy.orm.exc import NoResultFound
 
-import warfinance
+import mozfinance
 
 from . import AbcBusinessWorker
 from compute import ComputeWorker
@@ -23,7 +23,7 @@ class GetWorker(AbcBusinessWorker):
         attr_dict = self._attributes_dict[instance_type]
 
         for key in attr_dict:
-            comp_value = self.cvalues_data.get(
+            comp_value = self._cache.get(
                 key='{}:{}:{}'.format(instance_type, instance.id, key))
 
             # The value of the additional attribute is in DB.
@@ -46,8 +46,8 @@ class GetWorker(AbcBusinessWorker):
         """Return a month with additional attributes.
 
         Keyword arguments:
-        month -- see warfinance.data.DataRepository._get_month (*)
-        month_id -- see warfinance.data.DataRepository._get_month (*)
+        month -- see mozfinance.data.DataRepository._get_month (*)
+        month_id -- see mozfinance.data.DataRepository._get_month (*)
         date -- any datetime.date of the month
         compute -- (bool) Wether to compute missing attributes or not.
         create -- (bool) Wether to create a non-existent month or not.
@@ -70,18 +70,18 @@ class GetWorker(AbcBusinessWorker):
         except NoResultFound:
             if not create or not 'date' in kwargs:
                 raise NoResultFound
-            month = self._data.months.create(date=kwargs['date'])
-            self.session.commit()
+            month = self._data.month.create(date=kwargs['date'])
+            self._dbsession.commit()
 
         month = self._add_attributes('month', month, compute)
 
         Prestation = self.Prestation
-        prestas_query = self.session.query(Prestation.Prestation)\
+        prestas_query = self._dbsession.query(Prestation.Prestation)\
             .filter(Prestation.Prestation.date >= month.date)\
             .filter(Prestation.Prestation.date < month.next_month())
 
         # Restrictions on the prestations that we will consider
-        for query_filter in warfinance.PRESTATIONS_FILTERS:
+        for query_filter in mozfinance.PRESTATIONS_FILTERS:
             prestas_query = prestas_query.filter(query_filter)
 
         prestas = prestas_query.order_by(Prestation.Prestation.date).all()
@@ -93,8 +93,8 @@ class GetWorker(AbcBusinessWorker):
         """Return a presta with additional attributes.
 
         Keyword arguments:
-        prestation -- see warfinance.data.DataRepository._get_prestation (*)
-        prestation_id -- see warfinance.data.DataRepository._get_prestation (*)
+        prestation -- see mozfinance.data.DataRepository._get_prestation (*)
+        prestation_id -- see mozfinance.data.DataRepository._get_prestation (*)
         compute -- (bool) Wether to compute missing attributes or not.
 
         * at least one is required

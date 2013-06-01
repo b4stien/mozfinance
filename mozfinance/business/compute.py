@@ -3,7 +3,7 @@ import datetime
 from sqlalchemy.orm.exc import NoResultFound
 
 from . import AbcBusinessWorker
-import warfinance
+import mozfinance
 
 
 class ComputeWorker(AbcBusinessWorker):
@@ -15,7 +15,7 @@ class ComputeWorker(AbcBusinessWorker):
 
         Arguments:
         key -- key of the value (eg: "month:revenue").
-               See warfinance.business.__ATTRIBUTES_DICT
+               See mozfinance.business.__ATTRIBUTES_DICT
         target_id -- id of the target
 
         Keyword arguments:
@@ -23,7 +23,7 @@ class ComputeWorker(AbcBusinessWorker):
 
         """
         # The "get" part of "get_or_compute"
-        comp_value = self.cvalues_data.get(key=key)
+        comp_value = self._cache.get(key=key)
 
         if comp_value:
             return comp_value
@@ -59,7 +59,7 @@ class ComputeWorker(AbcBusinessWorker):
             presta_cost += cost.amount
 
         # Storing value in DB
-        self.cvalues_data.set(
+        self._cache.set(
             key='prestation:{}:cost'.format(presta.id),
             value=presta_cost)
 
@@ -87,7 +87,7 @@ class ComputeWorker(AbcBusinessWorker):
             presta_margin = float(0)
 
         # Storing value in DB
-        self.cvalues_data.set(
+        self._cache.set(
             key='prestation:{}:margin'.format(presta.id),
             value=presta_margin)
 
@@ -113,7 +113,7 @@ class ComputeWorker(AbcBusinessWorker):
             if presta.selling_price is not None:
                 month_revenue += presta.selling_price
 
-        self.cvalues_data.set(
+        self._cache.set(
             key='month:{}:revenue'.format(month.id),
             value=month_revenue)
 
@@ -123,7 +123,7 @@ class ComputeWorker(AbcBusinessWorker):
         """Compute and return the gross margin of a month.
 
         Keyword arguments:
-        same as warfinance.business.compute.ComputeWorker.month_revenue
+        same as mozfinance.business.compute.ComputeWorker.month_revenue
 
         """
         month = self._get_month(**kwargs)
@@ -136,7 +136,7 @@ class ComputeWorker(AbcBusinessWorker):
             instance=month)
 
         month_gross_margin = month_revenue - month_cost
-        self.cvalues_data.set(
+        self._cache.set(
             key='month:{}:gross_margin'.format(month.id),
             value=month_gross_margin)
 
@@ -146,7 +146,7 @@ class ComputeWorker(AbcBusinessWorker):
         """Compute and return the commission base of a month.
 
         Keyword arguments:
-        same as warfinance.business.compute.ComputeWorker.month_revenue
+        same as mozfinance.business.compute.ComputeWorker.month_revenue
 
         """
         month = self._get_month(**kwargs)
@@ -161,7 +161,7 @@ class ComputeWorker(AbcBusinessWorker):
         if month.salaries:
             month_commission_base -= month.salaries
 
-        self.cvalues_data.set(
+        self._cache.set(
             key='month:{}:commission_base'.format(month.id),
             value=month_commission_base)
 
@@ -171,7 +171,7 @@ class ComputeWorker(AbcBusinessWorker):
         """Compute and return the net margin of a month.
 
         Keyword arguments:
-        same as warfinance.business.compute.ComputeWorker.month_revenue
+        same as mozfinance.business.compute.ComputeWorker.month_revenue
 
         """
         month = self._get_month(**kwargs)
@@ -190,7 +190,7 @@ class ComputeWorker(AbcBusinessWorker):
         if month.commissions_refined:
             month_net_margin -= month.commissions_refined
 
-        self.cvalues_data.set(
+        self._cache.set(
             key='month:{}:net_margin'.format(month.id),
             value=month_net_margin)
 
@@ -200,7 +200,7 @@ class ComputeWorker(AbcBusinessWorker):
         """Compute and return the sum of the costs of the prestations of a month.
 
         Keyword arguments:
-        same as warfinance.business.compute.ComputeWorker.month_revenue
+        same as mozfinance.business.compute.ComputeWorker.month_revenue
 
         """
         month = self._get_month(**kwargs)
@@ -213,7 +213,7 @@ class ComputeWorker(AbcBusinessWorker):
                 'prestation:{}:cost'.format(presta.id),
                 instance=presta)
 
-        self.cvalues_data.set(
+        self._cache.set(
             key='month:{}:total_cost'.format(month.id),
             value=month_cost)
 
@@ -253,7 +253,7 @@ class ComputeWorker(AbcBusinessWorker):
 
             revenue += month_revenue
 
-        self.cvalues_data.set(
+        self._cache.set(
             key='year:{}:revenue'.format(year.id),
             value=revenue)
 
@@ -293,7 +293,7 @@ class ComputeWorker(AbcBusinessWorker):
 
             gross_margin += month_gross_margin
 
-        self.cvalues_data.set(
+        self._cache.set(
             key='year:{}:gross_margin'.format(year.id),
             value=gross_margin)
 
@@ -333,7 +333,7 @@ class ComputeWorker(AbcBusinessWorker):
 
             net_margin += month_net_margin
 
-        self.cvalues_data.set(
+        self._cache.set(
             key='year:{}:net_margin'.format(year.id),
             value=net_margin)
 
@@ -428,7 +428,7 @@ class ComputeWorker(AbcBusinessWorker):
             salesman_dict['commission'] = commission
             salesmen_dict[presta_sm.salesman.id] = salesman_dict
 
-        self.cvalues_data.set(
+        self._cache.set(
             key='prestation:{}:salesmen_com'.format(presta.id),
             value=salesmen_dict)
 
@@ -454,7 +454,7 @@ class ComputeWorker(AbcBusinessWorker):
         Salesman = self.Salesman.Salesman
         Prestation = self.Prestation.Prestation
         PrestationSalesman = self.PrestationSalesman.PrestationSalesman
-        salesmen = self.session.query(Salesman).all()
+        salesmen = self._dbsession.query(Salesman).all()
 
         # Computing total_prestation
         for salesman in salesmen:
@@ -465,7 +465,7 @@ class ComputeWorker(AbcBusinessWorker):
             salesmen_dict[salesman.id]['commission'] = float(0)
 
             # Computing prestations
-            prestations = self.session.query(Prestation)\
+            prestations = self._dbsession.query(Prestation)\
                 .join(Prestation.prestation_salesmen)\
                 .filter(PrestationSalesman.salesman_id == salesman.id)\
                 .filter(Prestation.date >= month.date)\
@@ -485,7 +485,7 @@ class ComputeWorker(AbcBusinessWorker):
             # Computing bonuses
             com_params = self._get_month_commission_params(month=month)
             if com_params:
-                for bonus in warfinance.COMMISSIONS_BONUS:
+                for bonus in mozfinance.COMMISSIONS_BONUS:
                     salesmen_dict[salesman.id]['total_bonuses'] += bonus(**com_params)
 
             # Rounding bonuses sum
@@ -495,7 +495,7 @@ class ComputeWorker(AbcBusinessWorker):
             salesmen_dict[salesman.id]['commission'] += salesmen_dict[salesman.id]['total_prestations']
             salesmen_dict[salesman.id]['commission'] += salesmen_dict[salesman.id]['total_bonuses']
 
-        self.cvalues_data.set(
+        self._cache.set(
             key='month:{}:salesmen_com'.format(month.id),
             value=salesmen_dict)
 

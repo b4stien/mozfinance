@@ -3,28 +3,28 @@ import unittest
 
 from sqlalchemy import create_engine
 
-import warbase.model
+import mozbase.model
 
-from warfinance.data.model import PrestationCost, Month, Prestation, Salesman
+from mozfinance.data.model import PrestationCost, Month, Prestation, Salesman
 from . import TestData
 
 
 class TestModelBase(TestData):
 
     def test_prestation_cost(self):
-        user = PrestationCost.PrestationCost()
+        PrestationCost.PrestationCost()
         self.assertTrue(True)
 
     def test_month(self):
-        user = Month.Month()
+        Month.Month()
         self.assertTrue(True)
 
     def test_prestation(self):
-        user = Prestation.Prestation()
+        Prestation.Prestation()
         self.assertTrue(True)
 
     def test_salesman(self):
-        user = Salesman.Salesman()
+        Salesman.Salesman()
         self.assertTrue(True)
 
 

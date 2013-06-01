@@ -16,14 +16,14 @@ except locale.Error:
 
 from sqlalchemy.orm.exc import NoResultFound
 
-from warbase.data import DataRepository as WarbDataRepository
-from warbase.data.actions import ActionsData
-from warbase.data.computed_values import ComputedValuesData
+from mozbase.data import AuthenticatedDataRepository
+from mozbase.data.action import ActionData
+from mozbase.util.cache import Cache
 
-import warfinance
+import mozfinance
 
 
-class DataRepository(WarbDataRepository):
+class DataRepository(AuthenticatedDataRepository):
     """ABC for data repository objects.
 
     Provide a base with a fully functionnal SQLA-Session.
@@ -35,11 +35,11 @@ class DataRepository(WarbDataRepository):
 
         Keyword arguments (all required):
         package -- package holding the models
-        session -- SQLA-Session
+        dbsession -- SQLA-Session
         user -- user using the DataRepository
 
         """
-        WarbDataRepository.__init__(self, **kwargs)
+        AuthenticatedDataRepository.__init__(self, **kwargs)
 
         if not 'package' in kwargs:
             raise TypeError('package not provided')
@@ -48,14 +48,12 @@ class DataRepository(WarbDataRepository):
 
         self.package = kwargs['package']
 
-        self.user = self._get_user(**kwargs)
+        self.action_data = ActionData(**kwargs)
 
-        self.actions_data = ActionsData(**kwargs)
-
-        if 'cvalues_data' in kwargs:
-            self.cvalues_data = kwargs['cvalues_data']
+        if 'cache' in kwargs:
+            self._cache = kwargs['cache']
         else:
-            self.cvalues_data = ComputedValuesData()
+            self._cache = Cache()
 
     def _get_salesman(self, **kwargs):
         """Return a salesman given a salesman (other SQLA-Session) or
@@ -66,10 +64,10 @@ class DataRepository(WarbDataRepository):
                 raise AttributeError('salesman provided is not a wb-Salesman')
 
             # Merging salesman which may come from another session
-            return self.session.merge(kwargs['salesman'])
+            return self._dbsession.merge(kwargs['salesman'])
 
         elif 'salesman_id' in kwargs:
-            return self.session.query(Salesman.Salesman)\
+            return self._dbsession.query(Salesman.Salesman)\
                 .filter(Salesman.Salesman.id == kwargs['salesman_id'])\
                 .one()
 
@@ -87,10 +85,10 @@ class DataRepository(WarbDataRepository):
                 raise AttributeError('month provided is not a wb-Month')
 
             # Merging month which may come from another session
-            month = self.session.merge(kwargs['month'])
+            month = self._dbsession.merge(kwargs['month'])
 
         elif 'month_id' in kwargs:
-            month = self.session.query(Month.Month)\
+            month = self._dbsession.query(Month.Month)\
                 .filter(Month.Month.id == kwargs['month_id'])\
                 .one()
 
@@ -98,7 +96,7 @@ class DataRepository(WarbDataRepository):
             if not isinstance(kwargs['date'], datetime.date):
                 raise AttributeError('date provided is not a datetime.date')
 
-            month = self.session.query(Month.Month)\
+            month = self._dbsession.query(Month.Month)\
                 .filter(Month.Month.date == kwargs['date'])\
                 .one()
 
@@ -156,15 +154,15 @@ class DataRepository(WarbDataRepository):
                     'prestation provided is not a wb-Prestation')
 
             # Merging prestation which may come from another session
-            return self.session.merge(kwargs['prestation'])
+            return self._dbsession.merge(kwargs['prestation'])
 
         elif 'prestation_id' in kwargs:
             presta_id = kwargs['prestation_id']
-            prestation_query = self.session.query(Prestation.Prestation)\
+            prestation_query = self._dbsession.query(Prestation.Prestation)\
                 .filter(Prestation.Prestation.id == presta_id)
 
             # Restrictions on the prestations that we will consider
-            for query_filter in warfinance.PRESTATIONS_FILTERS:
+            for query_filter in mozfinance.PRESTATIONS_FILTERS:
                 prestation_query = prestation_query.filter(query_filter)
 
             return prestation_query.one()
@@ -178,11 +176,11 @@ class DataRepository(WarbDataRepository):
         month = self._get_month(**kwargs)
 
         Prestation = import_module('.Prestation', package=self.package)
-        prestations_query = self.session.query(Prestation.Prestation)\
+        prestations_query = self._dbsession.query(Prestation.Prestation)\
             .filter(Prestation.Prestation.date >= month.date)\
             .filter(Prestation.Prestation.date < month.next_month())
 
-        for query_filter in warfinance.PRESTATIONS_FILTERS:
+        for query_filter in mozfinance.PRESTATIONS_FILTERS:
             prestations_query = prestations_query.filter(query_filter)
 
         prestations = prestations_query.all()
@@ -191,7 +189,7 @@ class DataRepository(WarbDataRepository):
 
     def _expire_prestation(self, **kwargs):
         presta = self._get_prestation(**kwargs)
-        self.cvalues_data.expire(key='prestation:{}:'.format(presta.id))
+        self._cache.expire(key='prestation:{}:'.format(presta.id))
         self._expire_month(date=presta.month_date())
 
     def _expire_month(self, **kwargs):
@@ -202,31 +200,31 @@ class DataRepository(WarbDataRepository):
 
         # To expire commissions
         Prestation = import_module('.Prestation', package=self.package)
-        prestas = self.session.query(Prestation.Prestation)\
+        prestas = self._dbsession.query(Prestation.Prestation)\
             .filter(Prestation.Prestation.date >= month.date)\
             .filter(Prestation.Prestation.date < month.next_month())\
             .all()
         for presta in prestas:
             self._expire_prestation_salesman(prestation=presta)
 
-        self.cvalues_data.expire(key='month:{}:'.format(month.id))
+        self._cache.expire(key='month:{}:'.format(month.id))
 
         self._expire_year(year_id=month.date.year)
 
     def _expire_all_months(self):
         Month = import_module('.Month', package=self.package)
-        months = self.session.query(Month.Month).all()
+        months = self._dbsession.query(Month.Month).all()
 
         for month in months:
             self._expire_month(month=month)
 
     def _expire_year(self, **kwargs):
         year = self._get_year(**kwargs)
-        self.cvalues_data.expire(key='year:{}:'.format(year.id))
+        self._cache.expire(key='year:{}:'.format(year.id))
 
     def _expire_prestation_salesman(self, **kwargs):
         presta = self._get_prestation(**kwargs)
-        self.cvalues_data.expire(key='prestation:{}:salesmen_com'.format(presta.id))
+        self._cache.expire(key='prestation:{}:salesmen_com'.format(presta.id))
         self._expire_month_salesman(date=presta.month_date())
 
     def _expire_month_salesman(self, **kwargs):
@@ -234,7 +232,7 @@ class DataRepository(WarbDataRepository):
             month = self._get_month(**kwargs)
         except NoResultFound:
             return
-        self.cvalues_data.expire(key='month:{}:salesmen_com'.format(month.id))
+        self._cache.expire(key='month:{}:salesmen_com'.format(month.id))
 
 
 class ModelPackageChecker():

@@ -2,10 +2,10 @@
 from sqlalchemy.orm.exc import NoResultFound
 from voluptuous import MultipleInvalid
 
-from warbase.model import *
+from mozbase.model import *
 
-from warfinance.data.salesmen import SalesmenData
-from warfinance.data.model import *
+from mozfinance.data.salesman import SalesmanData
+from mozfinance.data.model import *
 from . import TestData
 
 
@@ -13,9 +13,9 @@ class TestSalesmenData(TestData):
 
     def setUp(self):
         TestData.setUp(self)
-        self.salesmen_data = SalesmenData(
-            package='warfinance.data.model',
-            session=self.session,
+        self.salesmen_data = SalesmanData(
+            package='mozfinance.data.model',
+            dbsession=self.dbsession,
             user=self.user)
 
     def tearDown(self):
@@ -53,15 +53,15 @@ class TestSalesmenBase(TestSalesmenData):
         self.assertEqual(salesman.lastname, u'Jean Claude Douze')
 
     def test_correct_create_with_action(self):
-        salesman = self.salesmen_data.create(
+        self.salesmen_data.create(
             firstname=u'Hubërt',
             lastname=u'Jean Claude Douze',
             pop_action=True)
-        self.session.query(Action.Action).one()
+        self.dbsession.query(Action.Action).one()
 
     def test_wrong_create(self):
         with self.assertRaises(MultipleInvalid):
-            salesman = self.salesmen_data.create(
+            self.salesmen_data.create(
                 firstname='Hubërt',
                 lastname=u'Jean Claude Douze')
 
@@ -82,7 +82,7 @@ class TestSalesmenBase(TestSalesmenData):
             salesman=salesman,
             lastname=u'Jean-Louis',
             pop_action=True)
-        self.session.query(Action.Action).one()
+        self.dbsession.query(Action.Action).one()
 
     def test_no_update(self):
         salesman = self.salesmen_data.create(
@@ -100,7 +100,7 @@ class TestSalesmenBase(TestSalesmenData):
         salesman = self.salesmen_data.remove(
             salesman=salesman)
         with self.assertRaises(NoResultFound):
-            self.session.query(Salesman.Salesman).one()
+            self.dbsession.query(Salesman.Salesman).one()
 
     def test_remove_with_action(self):
         salesman = self.salesmen_data.create(
@@ -109,7 +109,7 @@ class TestSalesmenBase(TestSalesmenData):
         salesman = self.salesmen_data.remove(
             salesman=salesman,
             pop_action=True)
-        self.session.query(Action.Action).one()
+        self.dbsession.query(Action.Action).one()
 
     def test_set_commissions_formulae(self):
         salesman = self.salesmen_data.create(

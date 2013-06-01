@@ -1,9 +1,9 @@
  # -*- coding: utf-8 -*-
 import datetime
 
-from warfinance.data.model.Prestation import Prestation
-from warfinance.biz import BusinessWorker
-import warfinance
+from mozfinance.data.model.Prestation import Prestation
+from mozfinance.biz import BusinessWorker
+import mozfinance
 
 from . import TestData
 
@@ -19,17 +19,17 @@ class TestBusinessCompute(TestData):
 
             return float(0)
 
-        if not a_bonus in warfinance.COMMISSIONS_BONUS:
-            warfinance.COMMISSIONS_BONUS.append(a_bonus)
+        if not a_bonus in mozfinance.COMMISSIONS_BONUS:
+            mozfinance.COMMISSIONS_BONUS.append(a_bonus)
 
         self.biz = BusinessWorker(
-            package='warfinance.data.model',
-            session=self.session,
+            package='mozfinance.data.model',
+            dbsession=self.dbsession,
             user=self.user)
 
     def tearDown(self):
         TestData.tearDown(self)
-        warfinance.COMMISSIONS_BONUS = []
+        mozfinance.COMMISSIONS_BONUS = []
         del self.biz
 
     def test_get_simple_commission(self):
@@ -37,7 +37,7 @@ class TestBusinessCompute(TestData):
         now_date = now.date()
         month_date = datetime.date(year=now.year, month=now.month, day=1)
 
-        self.biz.data.months.create(
+        self.biz.data.month.create(
             date=month_date,
             cost=float(2000))
 
@@ -46,21 +46,21 @@ class TestBusinessCompute(TestData):
             selling_price=float(4000),
             category=0,
             sector=0)
-        self.session.add(presta)
-        self.session.commit()
+        self.dbsession.add(presta)
+        self.dbsession.commit()
 
-        salesman = self.biz.data.salesmen.create(
+        salesman = self.biz.data.salesman.create(
             firstname=u'Bas',
             lastname=u'Gan')
-        salesman = self.biz.data.salesmen.set_commissions_formulae(
+        salesman = self.biz.data.salesman.set_commissions_formulae(
             salesman=salesman,
             commissions_formulae={0: {0: '{p_m}*{m_bc}/{m_mb}*0.06'}})
 
-        self.biz.data.prestations.add_salesman(
+        self.biz.data.prestation.add_salesman(
             prestation=presta,
             salesman=salesman)
 
-        self.biz.data.prestations.costs.create(
+        self.biz.data.prestation.cost.create(
             prestation=presta,
             amount=float(100),
             reason=u'Auto Cost 1')
@@ -83,10 +83,10 @@ class TestBusinessCompute(TestData):
         month_date = datetime.date(year=2013, month=1, day=1)
         another_month_date = datetime.date(year=2013, month=2, day=1)
 
-        self.biz.data.months.create(
+        self.biz.data.month.create(
             date=month_date,
             cost=float(2000))
-        self.biz.data.months.create(
+        self.biz.data.month.create(
             date=another_month_date,
             cost=float(2000))
 
@@ -95,51 +95,51 @@ class TestBusinessCompute(TestData):
             selling_price=float(25000),
             category=0,
             sector=0)
-        self.session.add(presta)
+        self.dbsession.add(presta)
         another_presta = Prestation(
             date=month_date,
             selling_price=float(25000),
             category=0,
             sector=0)
-        self.session.add(another_presta)
+        self.dbsession.add(another_presta)
         another_month_presta = Prestation(
             date=another_month_date,
             selling_price=float(25000),
             category=0,
             sector=0)
-        self.session.add(another_month_presta)
-        self.session.commit()
+        self.dbsession.add(another_month_presta)
+        self.dbsession.commit()
 
-        salesman = self.biz.data.salesmen.create(
+        salesman = self.biz.data.salesman.create(
             firstname=u'Bas',
             lastname=u'Gan')
-        salesman = self.biz.data.salesmen.set_commissions_formulae(
+        salesman = self.biz.data.salesman.set_commissions_formulae(
             salesman=salesman,
             commissions_formulae={0: {0: '{p_m}*{m_bc}/{m_mb}*0.06'}})
 
-        self.biz.data.prestations.add_salesman(
+        self.biz.data.prestation.add_salesman(
             prestation=presta,
             salesman=salesman)
-        self.biz.data.prestations.add_salesman(
+        self.biz.data.prestation.add_salesman(
             prestation=another_presta,
             salesman=salesman)
-        self.biz.data.prestations.add_salesman(
+        self.biz.data.prestation.add_salesman(
             prestation=another_month_presta,
             salesman=salesman)
 
-        self.biz.data.prestations.costs.create(
+        self.biz.data.prestation.cost.create(
             prestation=presta,
             amount=float(100),
             reason=u'Auto Cost 1 P1')
-        self.biz.data.prestations.costs.create(
+        self.biz.data.prestation.cost.create(
             prestation=presta,
             amount=float(200),
             reason=u'Auto Cost 2 P1')
-        self.biz.data.prestations.costs.create(
+        self.biz.data.prestation.cost.create(
             prestation=another_presta,
             amount=float(100),
             reason=u'Auto Cost 1 P2')
-        self.biz.data.prestations.costs.create(
+        self.biz.data.prestation.cost.create(
             prestation=another_month_presta,
             amount=float(100),
             reason=u'Auto Cost 1 P3')
@@ -169,10 +169,10 @@ class TestBusinessCompute(TestData):
         month_date = datetime.date(year=now.year, month=now.month, day=1)
         another_month_date = datetime.date(year=now.year-1, month=now.month, day=1)
 
-        self.biz.data.months.create(
+        self.biz.data.month.create(
             date=month_date,
             cost=float(2000))
-        self.biz.data.months.create(
+        self.biz.data.month.create(
             date=another_month_date,
             cost=float(2000))
 
@@ -181,60 +181,60 @@ class TestBusinessCompute(TestData):
             selling_price=float(25000),
             category=0,
             sector=0)
-        self.session.add(presta)
+        self.dbsession.add(presta)
         another_presta = Prestation(
             date=now_date,
             selling_price=float(25000),
             category=0,
             sector=0)
-        self.session.add(another_presta)
+        self.dbsession.add(another_presta)
         another_month_presta = Prestation(
             date=another_month_date,
             selling_price=float(25000),
             category=0,
             sector=0)
-        self.session.add(another_month_presta)
-        self.session.commit()
+        self.dbsession.add(another_month_presta)
+        self.dbsession.commit()
 
-        salesman = self.biz.data.salesmen.create(
+        salesman = self.biz.data.salesman.create(
             firstname=u'Bas',
             lastname=u'Gan')
-        salesman = self.biz.data.salesmen.set_commissions_formulae(
+        salesman = self.biz.data.salesman.set_commissions_formulae(
             salesman=salesman,
             commissions_formulae={0: {0: '{p_m}*{m_bc}/{m_mb}*0.06'}})
-        a_salesman = self.biz.data.salesmen.create(
+        a_salesman = self.biz.data.salesman.create(
             firstname=u'Bas',
             lastname=u'Gan')
-        a_salesman = self.biz.data.salesmen.set_commissions_formulae(
+        a_salesman = self.biz.data.salesman.set_commissions_formulae(
             salesman=a_salesman,
             commissions_formulae={0: {0: '{p_m}*{m_bc}/{m_mb}*0.06'}})
 
-        self.biz.data.prestations.add_salesman(
+        self.biz.data.prestation.add_salesman(
             prestation=presta,
             salesman=salesman)
-        self.biz.data.prestations.add_salesman(
+        self.biz.data.prestation.add_salesman(
             prestation=presta,
             salesman=a_salesman)
-        self.biz.data.prestations.add_salesman(
+        self.biz.data.prestation.add_salesman(
             prestation=another_presta,
             salesman=salesman)
-        self.biz.data.prestations.add_salesman(
+        self.biz.data.prestation.add_salesman(
             prestation=another_month_presta,
             salesman=salesman)
 
-        self.biz.data.prestations.costs.create(
+        self.biz.data.prestation.cost.create(
             prestation=presta,
             amount=float(100),
             reason=u'Auto Cost 1 P1')
-        self.biz.data.prestations.costs.create(
+        self.biz.data.prestation.cost.create(
             prestation=presta,
             amount=float(200),
             reason=u'Auto Cost 2 P1')
-        self.biz.data.prestations.costs.create(
+        self.biz.data.prestation.cost.create(
             prestation=another_presta,
             amount=float(100),
             reason=u'Auto Cost 1 P2')
-        self.biz.data.prestations.costs.create(
+        self.biz.data.prestation.cost.create(
             prestation=another_month_presta,
             amount=float(100),
             reason=u'Auto Cost 1 P3')

@@ -5,51 +5,51 @@ import datetime
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-import warbase.model
-from warbase.model import *
-from warbase.data.users import UsersData
+import mozbase.model
+from mozbase.model import *
+from mozbase.data.user import UserData
 
-from warfinance.data.model import *
+from mozfinance.data.model import *
 
-import warfinance
-from warfinance.biz import BusinessWorker
+import mozfinance
+from mozfinance.biz import BusinessWorker
 
 
 class TestPrestationsFilter(unittest.TestCase):
 
     def setUp(self):
         self.engine = create_engine('sqlite:///:memory:', echo=False)
-        warbase.model.Base.metadata.create_all(self.engine)
+        mozbase.model.Base.metadata.create_all(self.engine)
 
         Session = sessionmaker(bind=self.engine)
-        self.session = Session()
+        self.dbsession = Session()
 
-        self.users_data = UsersData(session=self.session)
+        self.users_data = UserData(dbsession=self.dbsession)
         self.user = self.users_data.create(
             login='bastien', mail='bastien@test')
 
         self.biz = BusinessWorker(
-            package='warfinance.data.model',
-            session=self.session,
+            package='mozfinance.data.model',
+            dbsession=self.dbsession,
             user=self.user)
 
     def tearDown(self):
-        self.session.close()
-        warbase.model.Base.metadata.drop_all(self.engine)
-        warfinance.PRESTATIONS_FILTERS = []
-        del self.session
+        self.dbsession.close()
+        mozbase.model.Base.metadata.drop_all(self.engine)
+        mozfinance.PRESTATIONS_FILTERS = []
+        del self.dbsession
         del self.users_data
         del self.user
 
     def test_basic_filter(self):
         # Dumb filter
-        warfinance.PRESTATIONS_FILTERS.append(Prestation.Prestation.id == 1)
+        mozfinance.PRESTATIONS_FILTERS.append(Prestation.Prestation.id == 1)
 
         now = datetime.datetime.now()
         now_date = now.date()
         month_date = datetime.date(year=now.year, month=now.month, day=1)
 
-        self.biz.data.months.create(
+        self.biz.data.month.create(
             date=month_date,
             cost=float(2000))
 
@@ -58,16 +58,16 @@ class TestPrestationsFilter(unittest.TestCase):
             selling_price=float(4000),
             category=0,
             sector=0)
-        self.session.add(presta)
-        self.session.commit()
+        self.dbsession.add(presta)
+        self.dbsession.commit()
 
         presta_two = Prestation.Prestation(
             date=now_date,
             selling_price=float(8000),
             category=0,
             sector=0)
-        self.session.add(presta_two)
-        self.session.commit()
+        self.dbsession.add(presta_two)
+        self.dbsession.commit()
 
         month = self.biz.get.month(date=month_date, compute=True)
 

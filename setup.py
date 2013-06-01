@@ -1,11 +1,11 @@
 from setuptools import setup
 
 setup(
-    name='warfinance',
-    version='0.0.1dev',
-    packages=['warfinance'],
+    name='mozfinance',
+    version='0.0.2',
+    packages=['mozfinance'],
     test_suite='tests',
-    install_requires=['SQLAlchemy', 'voluptuous', 'warbase'],
+    install_requires=['SQLAlchemy', 'voluptuous', 'mozbase'],
     author='Bastien GANDOUET',
-    author_email="bastien@pectoribus.net"
+    author_email="bastien@mozaiqu.es"
 )

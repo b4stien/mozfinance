@@ -1,9 +1,11 @@
 from importlib import import_module
 
+from mozbase.util.database import db_method
+
 from . import DataRepository
 
 
-class PrestationsData(DataRepository):
+class PrestationData(DataRepository):
     """DataRepository object for prestations."""
 
     def __init__(self, **kwargs):
@@ -29,13 +31,14 @@ class PrestationsData(DataRepository):
         salesman = self._get_salesman(**kwargs)
 
         PrestaSm = self.PrestationSalesman.PrestationSalesman
-        presta_sm = self.session.query(PrestaSm)\
+        presta_sm = self._dbsession.query(PrestaSm)\
             .filter(PrestaSm.salesman == salesman)\
             .filter(PrestaSm.prestation == presta)\
             .one()
 
         return presta_sm
 
+    @db_method()
     def set_selling_price(self, pop_action=False, **kwargs):
         """Set the price of a prestation. Return False if there is no update or
         the updated prestation otherwise.
@@ -63,16 +66,15 @@ class PrestationsData(DataRepository):
 
         presta.selling_price = kwargs['selling_price']
 
-        self.session.commit()
-
         self._expire_prestation(prestation=presta)
 
         if pop_action:
             msg = self.Prestation.ACT_PRESTATION_SET_SELLING_PRICE
-            self.actions_data.create(message=msg.format(presta.id))
+            self.action_data.create(message=msg.format(presta.id))
 
         return presta
 
+    @db_method()
     def add_salesman(self, pop_action=False, **kwargs):
         """Add a salesman to a prestation and return Rue. If this salesman is
         already associated with the prestation, return False.
@@ -99,17 +101,17 @@ class PrestationsData(DataRepository):
         presta_sm.salesman = salesman
         presta_sm.formula = salesman.commissions_formulae[presta.sector][presta.category]
 
-        self.session.add(presta_sm)
-        self.session.commit()
+        self._dbsession.add(presta_sm)
 
         self._expire_prestation_salesman(prestation=presta)
 
         if pop_action:
             msg = self.Prestation.ACT_PRESTATION_ADD_SALESMAN
-            self.actions_data.create(message=msg.format(presta.id))
+            self.action_data.create(message=msg.format(presta.id))
 
         return True
 
+    @db_method()
     def remove_salesman(self, pop_action=False, **kwargs):
         """Remove a salesman from a prestation. If this salesman wasn't
         associated with the prestation, do nothing.
@@ -134,17 +136,17 @@ class PrestationsData(DataRepository):
         # We have to get the correct PrestationSalesman object.
         presta_sm = self._get_prestation_salesman(**kwargs)
 
-        self.session.delete(presta_sm)
-        self.session.commit()
+        self._dbsession.delete(presta_sm)
 
         self._expire_prestation_salesman(prestation=presta)
 
         if pop_action:
             msg = self.Prestation.ACT_PRESTATION_REMOVE_SALESMAN
-            self.actions_data.create(message=msg.format(presta.id))
+            self.action_data.create(message=msg.format(presta.id))
 
         return presta
 
+    @db_method()
     def set_salesman_ratio(self, pop_action=False, **kwargs):
         """Set a custom ratio for a specific salesman/prestation. Return False
         if there is no update or True otherwise.
@@ -175,17 +177,17 @@ class PrestationsData(DataRepository):
             return False
 
         presta_sm.ratio = kwargs['ratio']
-        self.session.add(presta_sm)
-        self.session.commit()
+        self._dbsession.add(presta_sm)
 
         self._expire_prestation_salesman(prestation=presta)
 
         if pop_action:
             msg = self.Prestation.ACT_PRESTATION_SET_CUSTOM_RATIOS
-            self.actions_data.create(message=msg.format(presta.id))
+            self.action_data.create(message=msg.format(presta.id))
 
         return True
 
+    @db_method()
     def set_salesman_formula(self, pop_action=False, **kwargs):
         """Set a custom commission formula for a specific salesman/prestation.
         Return False if there is no update or True otherwise.
@@ -223,11 +225,10 @@ class PrestationsData(DataRepository):
         else:
             presta_sm.formula = kwargs['formula']
 
-        self.session.add(presta_sm)
-        self.session.commit()
+        self._dbsession.add(presta_sm)
 
         if pop_action:
             msg = self.Prestation.ACT_PRESTATION_SET_CUSTOM_COM_FORMULAE
-            self.actions_data.create(message=msg.format(presta.id))
+            self.action_data.create(message=msg.format(presta.id))
 
         return presta

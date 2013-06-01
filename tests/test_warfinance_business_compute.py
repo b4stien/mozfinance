@@ -1,12 +1,12 @@
  # -*- coding: utf-8 -*-
 import datetime
 
-from warbase.data.computed_values import ComputedValuesData
-from warbase.data.cache_systems.db_cache import DbCache
+from mozbase.util.cache import Cache
+from mozbase.util.cache_systems.database_cache import DatabaseCache
 
-from warfinance.data.model.Prestation import Prestation
-from warfinance.data.model.PrestationCost import PrestationCost
-from warfinance.biz import BusinessWorker
+from mozfinance.data.model.Prestation import Prestation
+from mozfinance.data.model.PrestationCost import PrestationCost
+from mozfinance.biz import BusinessWorker
 
 from . import TestData
 
@@ -15,13 +15,13 @@ class TestBusinessCompute(TestData):
 
     def setUp(self):
         TestData.setUp(self)
-        cvalues_data = ComputedValuesData()
-        cvalues_data.append_cache(DbCache(session=self.session))
+        cache = Cache()
+        cache.append_cache(DatabaseCache(dbsession=self.dbsession))
         self.biz = BusinessWorker(
-            package='warfinance.data.model',
-            session=self.session,
+            package='mozfinance.data.model',
+            dbsession=self.dbsession,
             user=self.user,
-            cvalues_data=cvalues_data)
+            cache=cache)
 
     def tearDown(self):
         TestData.tearDown(self)
@@ -31,12 +31,12 @@ class TestBusinessCompute(TestData):
         now = datetime.datetime.now()
         now_date = now.date()
         self.month_date = datetime.date(year=now.year, month=now.month, day=1)
-        self.biz.data.months.create(date=self.month_date)
+        self.biz.data.month.create(date=self.month_date)
         presta1 = Prestation(date=now_date)
         presta2 = Prestation(date=now_date, selling_price=float(16))
-        self.session.add(presta1)
-        self.session.add(presta2)
-        self.session.flush()
+        self.dbsession.add(presta1)
+        self.dbsession.add(presta2)
+        self.dbsession.flush()
         month = self.biz.get.month(date=self.month_date, compute=True)
         self.assertEqual(month.revenue, float(16))
 
@@ -45,15 +45,15 @@ class TestBusinessWithDatas(TestData):
 
     def setUp(self):
         TestData.setUp(self)
-        cvalues_data = ComputedValuesData()
-        cvalues_data.append_cache(DbCache(session=self.session))
+        cache = Cache()
+        cache.append_cache(DatabaseCache(dbsession=self.dbsession))
         self.biz = BusinessWorker(
-            package='warfinance.data.model',
-            session=self.session,
+            package='mozfinance.data.model',
+            dbsession=self.dbsession,
             user=self.user,
-            cvalues_data=cvalues_data)
-        self.session.delete(self.prestation)
-        self.session.flush()
+            cache=cache)
+        self.dbsession.delete(self.prestation)
+        self.dbsession.flush()
 
     def tearDown(self):
         TestData.tearDown(self)
@@ -63,15 +63,15 @@ class TestBusinessWithDatas(TestData):
         now = datetime.datetime.now()
         now_date = now.date()
         self.month_date = datetime.date(year=now.year, month=now.month, day=1)
-        self.biz.data.months.create(date=self.month_date, cost=float(3))
+        self.biz.data.month.create(date=self.month_date, cost=float(3))
         presta1 = Prestation(date=now_date, selling_price=float(12))
         presta2 = Prestation(date=now_date, selling_price=float(16))
-        self.session.add(presta1)
-        self.session.add(presta2)
-        self.session.flush()
+        self.dbsession.add(presta1)
+        self.dbsession.add(presta2)
+        self.dbsession.flush()
         cost1 = PrestationCost(prestation=presta1, amount=float(4))
-        self.session.add(cost1)
-        self.session.flush()
+        self.dbsession.add(cost1)
+        self.dbsession.flush()
         month = self.biz.get.month(date=self.month_date, compute=True)
         presta = self.biz.get.prestation(prestation=presta1, compute=True)
         self.assertEqual(month.revenue, float(28))
@@ -85,10 +85,10 @@ class TestBusinessWithDatas(TestData):
         month_date = datetime.date(year=2013, month=1, day=1)
         another_month_date = datetime.date(year=2013, month=2, day=1)
 
-        self.biz.data.months.create(
+        self.biz.data.month.create(
             date=month_date,
             cost=float(1000))
-        self.biz.data.months.create(
+        self.biz.data.month.create(
             date=another_month_date,
             cost=float(2000))
 
@@ -97,13 +97,13 @@ class TestBusinessWithDatas(TestData):
             selling_price=float(3000),
             category=0,
             sector=0)
-        self.session.add(presta)
+        self.dbsession.add(presta)
         another_presta = Prestation(
             date=another_month_date,
             selling_price=float(4000),
             category=0,
             sector=0)
-        self.session.add(another_presta)
+        self.dbsession.add(another_presta)
 
         year_net_margin = self.biz._compute.year_net_margin(date=month_date)
 

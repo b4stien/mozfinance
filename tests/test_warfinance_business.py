@@ -1,12 +1,12 @@
  # -*- coding: utf-8 -*-
 import datetime
 
-from warbase.data.computed_values import ComputedValuesData
-from warbase.data.cache_systems.db_cache import DbCache
+from mozbase.util.cache import Cache
+from mozbase.util.cache_systems.database_cache import DatabaseCache
 
-from warfinance.data.model.Month import Month
-from warfinance.data.months import MonthsData
-from warfinance.biz import BusinessWorker
+from mozfinance.data.model.Month import Month
+from mozfinance.data.month import MonthData
+from mozfinance.biz import BusinessWorker
 
 from . import TestData
 
@@ -15,22 +15,22 @@ class TestBusiness(TestData):
 
     def setUp(self):
         TestData.setUp(self)
-        cvalues_data = ComputedValuesData()
-        cvalues_data.append_cache(DbCache(session=self.session))
+        cache = Cache()
+        cache.append_cache(DatabaseCache(dbsession=self.dbsession))
         self.biz = BusinessWorker(
-            package='warfinance.data.model',
-            session=self.session,
+            package='mozfinance.data.model',
+            dbsession=self.dbsession,
             user=self.user,
-            cvalues_data=cvalues_data)
-        self.months_data = MonthsData(
-            package='warfinance.data.model',
-            session=self.session,
+            cache=cache)
+        self.month_data = MonthData(
+            package='mozfinance.data.model',
+            dbsession=self.dbsession,
             user=self.user)
 
     def tearDown(self):
         TestData.tearDown(self)
         del self.biz
-        del self.months_data
+        del self.month_data
 
 
 class TestBusinessBase(TestBusiness):
@@ -38,7 +38,7 @@ class TestBusinessBase(TestBusiness):
     def test_get_none_value(self):
         now = datetime.datetime.now()
         month_date = datetime.date(year=now.year, month=now.month, day=1)
-        self.months_data.create(date=month_date)
+        self.month_data.create(date=month_date)
         month = self.biz.get.month(date=month_date)
         self.assertEqual(month.revenue, None)
         self.assertEqual(month.total_cost, None)
@@ -47,7 +47,7 @@ class TestBusinessBase(TestBusiness):
     def test_get_computed_values(self):
         now = datetime.datetime.now()
         month_date = datetime.date(year=now.year, month=now.month, day=1)
-        self.months_data.create(date=month_date)
+        self.month_data.create(date=month_date)
         month = self.biz.get.month(date=month_date, compute=True)
         self.assertEqual(month.revenue, 0)
         self.assertEqual(month.total_cost, 0)
@@ -56,10 +56,10 @@ class TestBusinessBase(TestBusiness):
     def test_get_stored_computed_values(self):
         now = datetime.datetime.now()
         month_date = datetime.date(year=now.year, month=now.month, day=1)
-        self.months_data.create(date=month_date)
-        month = self.biz.get.month(date=month_date, compute=True)
+        self.month_data.create(date=month_date)
+        self.biz.get.month(date=month_date, compute=True)
 
-        other_test = self.biz.get.cvalues_data.get(key='month:1:revenue')
+        other_test = self.biz.get._cache.get(key='month:1:revenue')
         self.assertEqual(other_test, float(0))
 
         other_month = self.biz.get.month(date=month_date)
@@ -76,10 +76,10 @@ class TestBusinessBase(TestBusiness):
     def test_get_month_with_raw_date(self):
         now = datetime.datetime.now()
         month_date = datetime.date(year=now.year, month=now.month, day=1)
-        self.months_data.create(date=month_date)
+        self.month_data.create(date=month_date)
         month = self.biz.get.month(date=now.date())
         self.assertTrue(isinstance(month, Month))
 
     def test_get_month_with_wrong_date(self):
         with self.assertRaises(AttributeError):
-            month = self.biz.get.month(date='now.date()')
+            self.biz.get.month(date='now.date()')

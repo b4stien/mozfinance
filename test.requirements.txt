@@ -1,9 +1,0 @@
-SQLAlchemy==0.8.0
-voluptuous==0.7.0
-
--e git+ssh://git@github.com/b4stien/warbase.git#egg=warbase
-
-# To test
-coverage==3.6
-nose==1.2.1
-nosexcover==1.0.8

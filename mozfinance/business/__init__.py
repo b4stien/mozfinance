@@ -6,7 +6,7 @@ in warfinance.data).
 """
 from importlib import import_module
 
-from warfinance.data import DataRepository
+from mozfinance.data import DataRepository
 
 _ATTRIBUTES_DICT = {
     'month': {

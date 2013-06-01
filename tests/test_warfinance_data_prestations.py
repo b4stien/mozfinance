@@ -3,11 +3,11 @@ import datetime
 
 from sqlalchemy.orm.exc import NoResultFound
 
-from warbase.model import *
+from mozbase.model import *
 
-from warfinance.data.prestations import PrestationsData
-from warfinance.data.salesmen import SalesmenData
-from warfinance.data.model import *
+from mozfinance.data.prestation import PrestationData
+from mozfinance.data.salesman import SalesmanData
+from mozfinance.data.model import *
 from . import TestData
 
 
@@ -15,9 +15,9 @@ class TestPrestationsData(TestData):
 
     def setUp(self):
         TestData.setUp(self)
-        self.presta_data = PrestationsData(
-            package='warfinance.data.model',
-            session=self.session,
+        self.presta_data = PrestationData(
+            package='mozfinance.data.model',
+            dbsession=self.dbsession,
             user=self.user)
 
     def tearDown(self):
@@ -33,7 +33,7 @@ class TestPrestationsBase(TestPrestationsData):
             selling_price=float(12))
         self.assertEqual(self.prestation.selling_price, float(12))
         with self.assertRaises(NoResultFound):
-            self.session.query(Action.Action).one()
+            self.dbsession.query(Action.Action).one()
 
     def test_no_update(self):
         self.prestation = self.presta_data.set_selling_price(
@@ -49,7 +49,7 @@ class TestPrestationsBase(TestPrestationsData):
             prestation_id=self.prestation.id,
             selling_price=float(12),
             pop_action=True)
-        self.session.query(Action.Action).one()
+        self.dbsession.query(Action.Action).one()
 
     def test_wrong_selling_price(self):
         with self.assertRaises(AttributeError):
@@ -58,7 +58,7 @@ class TestPrestationsBase(TestPrestationsData):
                 selling_price=12,
                 pop_action=True)
         with self.assertRaises(NoResultFound):
-            self.session.query(Action.Action).one()
+            self.dbsession.query(Action.Action).one()
 
     def test_wrong_prestation(self):
         with self.assertRaises(AttributeError):
@@ -84,9 +84,9 @@ class TestPrestationsSalesmen(TestPrestationsData):
 
     def setUp(self):
         TestPrestationsData.setUp(self)
-        self.salesmen_data = SalesmenData(
-            package='warfinance.data.model',
-            session=self.session,
+        self.salesmen_data = SalesmanData(
+            package='mozfinance.data.model',
+            dbsession=self.dbsession,
             user=self.user)
         self.salesman = self.salesmen_data.create(
             firstname=u'Johny',
@@ -144,7 +144,7 @@ class TestPrestationsSalesmen(TestPrestationsData):
             pop_action=True)
         self.salesmen_data.remove(salesman=self.salesman)
         with self.assertRaises(NoResultFound):
-            self.session.query(PrestationSalesman.PrestationSalesman).one()
+            self.dbsession.query(PrestationSalesman.PrestationSalesman).one()
 
     def test_correct_delete_prestation(self):
         self.presta_data.add_salesman(
@@ -153,20 +153,20 @@ class TestPrestationsSalesmen(TestPrestationsData):
             pop_action=True)
 
         # Prestation create/remove not handle by warfinance.data.prestations
-        self.session.delete(self.prestation)
-        self.session.commit()
+        self.dbsession.delete(self.prestation)
+        self.dbsession.commit()
 
         with self.assertRaises(NoResultFound):
-            self.session.query(PrestationSalesman.PrestationSalesman).one()
+            self.dbsession.query(PrestationSalesman.PrestationSalesman).one()
 
 
 class TestFormulae(TestPrestationsData):
 
     def setUp(self):
         TestPrestationsData.setUp(self)
-        self.salesmen_data = SalesmenData(
-            package='warfinance.data.model',
-            session=self.session,
+        self.salesmen_data = SalesmanData(
+            package='mozfinance.data.model',
+            dbsession=self.dbsession,
             user=self.user)
         self.salesman = self.salesmen_data.create(
             firstname=u'Robert',
@@ -240,16 +240,16 @@ class TestFormulae(TestPrestationsData):
             prestation=self.prestation,
             formula='lol',
             pop_action=True)
-        self.session.query(Action.Action).one()
+        self.dbsession.query(Action.Action).one()
 
 
 class TestRatios(TestPrestationsData):
 
     def setUp(self):
         TestPrestationsData.setUp(self)
-        self.salesmen_data = SalesmenData(
-            package='warfinance.data.model',
-            session=self.session,
+        self.salesmen_data = SalesmanData(
+            package='mozfinance.data.model',
+            dbsession=self.dbsession,
             user=self.user)
         self.salesman = self.salesmen_data.create(
             firstname=u'Robert',
@@ -326,7 +326,7 @@ class TestRatios(TestPrestationsData):
             prestation=self.prestation,
             ratio=float(0.3),
             pop_action=True)
-        self.session.query(Action.Action).one()
+        self.dbsession.query(Action.Action).one()
 
 
 if __name__ == '__main__':

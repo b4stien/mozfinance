@@ -1,9 +1,11 @@
 from importlib import import_module
 
+from mozbase.util.database import db_method
+
 from . import DataRepository
 
 
-class PrestationCostsData(DataRepository):
+class PrestationCostData(DataRepository):
     """DataRepository object for costs."""
 
     def __init__(self, **kwargs):
@@ -19,10 +21,10 @@ class PrestationCostsData(DataRepository):
                 raise AttributeError('pcost provided is not a wb-PrestationCost')
 
             # Merging cost which may come from another session
-            pcost = self.session.merge(kwargs['pcost'])
+            pcost = self._dbsession.merge(kwargs['pcost'])
 
         elif 'pcost_id' in kwargs:
-            pcost = self.session.query(self.PrestationCost.PrestationCost)\
+            pcost = self._dbsession.query(self.PrestationCost.PrestationCost)\
                 .filter(self.PrestationCost.PrestationCost.id == kwargs['pcost_id'])\
                 .one()
 
@@ -35,9 +37,10 @@ class PrestationCostsData(DataRepository):
         if not message or not prestation:
             raise TypeError('message or prestation not provided')
 
-        self.actions_data.create(
+        self.action_data.create(
             message=message.format(prestation.id))
 
+    @db_method()
     def create(self, pop_action=False, **kwargs):
         """Create and insert a pcost in DB. Return this pcost.
 
@@ -46,12 +49,10 @@ class PrestationCostsData(DataRepository):
 
         """
         # Validate datas
-        pcost_schema = self.PrestationCost.PrestationCostSchema(kwargs)
+        self.PrestationCost.PrestationCostSchema(kwargs)
 
         pcost = self.PrestationCost.PrestationCost(**kwargs)
-        self.session.add(pcost)
-
-        self.session.commit()
+        self._dbsession.add(pcost)
 
         self._expire_prestation(prestation=pcost.prestation)
 
@@ -62,6 +63,7 @@ class PrestationCostsData(DataRepository):
 
         return pcost
 
+    @db_method()
     def update(self, pop_action=False, **kwargs):
         """Update a pcost. Return False if there is no update or the updated
         pcost.
@@ -96,8 +98,6 @@ class PrestationCostsData(DataRepository):
         if new_pcost_dict == pcost_dict:
             return False
 
-        self.session.commit()
-
         self._expire_prestation(prestation=pcost.prestation)
 
         if pop_action:
@@ -107,6 +107,7 @@ class PrestationCostsData(DataRepository):
 
         return pcost
 
+    @db_method()
     def remove(self, pop_action=False, **kwargs):
         """Remove a pcost.
 
@@ -120,8 +121,7 @@ class PrestationCostsData(DataRepository):
         """
         pcost = self._get_pcost(**kwargs)
         prestation = pcost.prestation
-        self.session.delete(pcost)
-        self.session.commit()
+        self._dbsession.delete(pcost)
 
         self._expire_prestation(prestation=prestation)
 

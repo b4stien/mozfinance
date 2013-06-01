@@ -1,15 +1,18 @@
 from importlib import import_module
 
+from mozbase.util.database import db_method
+
 from . import DataRepository
 
 
-class SalesmenData(DataRepository):
+class SalesmanData(DataRepository):
     """DataRepository object for salesmen."""
 
     def __init__(self, **kwargs):
         DataRepository.__init__(self, **kwargs)
         self.Salesman = import_module('.Salesman', package=self.package)
 
+    @db_method()
     def create(self, pop_action=False, **kwargs):
         """Create and insert a salesman in DB. Return this salesman.
 
@@ -17,12 +20,10 @@ class SalesmenData(DataRepository):
         see warfinance.data.model.Salesman.SalesmanSchema
 
         """
-        salesman_schema = self.Salesman.SalesmanSchema(kwargs)
+        self.Salesman.SalesmanSchema(kwargs)
 
         salesman = self.Salesman.Salesman(**kwargs)
-        self.session.add(salesman)
-
-        self.session.commit()
+        self._dbsession.add(salesman)
 
         # Needed because of month.salesmen_com which is indexed using
         # salesman.id.
@@ -30,10 +31,11 @@ class SalesmenData(DataRepository):
 
         if pop_action:
             msg = self.Salesman.ACT_SALESMAN_CREATE
-            self.actions_data.create(message=msg)
+            self.action_data.create(message=msg)
 
         return salesman
 
+    @db_method()
     def update(self, pop_action=False, **kwargs):
         """Update a salesman. Return False if there is no update or the updated
         salesman.
@@ -68,14 +70,13 @@ class SalesmenData(DataRepository):
         if new_salesman_dict == salesman_dict:
             return False
 
-        self.session.commit()
-
         if pop_action:
             msg = self.Salesman.ACT_SALESMAN_UPDATE
-            self.actions_data.create(message=msg)
+            self.action_data.create(message=msg)
 
         return salesman
 
+    @db_method()
     def set_commissions_formulae(self, pop_action=False, **kwargs):
         """Set the commission formulae of a salesman. Return False if there is
         no update or the updated salesman.
@@ -99,14 +100,13 @@ class SalesmenData(DataRepository):
 
         salesman.commissions_formulae = kwargs['commissions_formulae']
 
-        self.session.commit()
-
         if pop_action:
             msg = self.Salesman.ACT_SALESMAN_UPDATE
-            self.actions_data.create(message=msg)
+            self.action_data.create(message=msg)
 
         return salesman
 
+    @db_method()
     def remove(self, pop_action=False, **kwargs):
         """Remove a salesman.
 
@@ -123,9 +123,8 @@ class SalesmenData(DataRepository):
         for prestation in salesman.prestations:
             self._expire_prestation(prestation=prestation)
 
-        self.session.delete(salesman)
-        self.session.commit()
+        self._dbsession.delete(salesman)
 
         if pop_action:
             msg = self.Salesman.ACT_SALESMAN_REMOVE
-            self.actions_data.create(message=msg)
+            self.action_data.create(message=msg)

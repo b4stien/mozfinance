@@ -1,16 +1,19 @@
 from importlib import import_module
 import datetime
 
+from mozbase.util.database import db_method
+
 from . import DataRepository
 
 
-class MonthsData(DataRepository):
+class MonthData(DataRepository):
     """DataRepository object for costs."""
 
     def __init__(self, **kwargs):
         DataRepository.__init__(self, **kwargs)
         self.Month = import_module('.Month', package=self.package)
 
+    @db_method()
     def create(self, **kwargs):
         """Create and insert a month in DB. Return this month.
 
@@ -18,15 +21,14 @@ class MonthsData(DataRepository):
         see warfinance.datamodel.Month.MonthSchema
 
         """
-        cost_schema = self.Month.MonthSchema(kwargs)  # Validate datas
+        self.Month.MonthSchema(kwargs)  # Validate datas
 
         month = self.Month.Month(**kwargs)
-        self.session.add(month)
-
-        self.session.commit()
+        self._dbsession.add(month)
 
         return month
 
+    @db_method()
     def update(self, pop_action=False, **kwargs):
         """Update a month. Return False if there is no update or the updated
         month.
@@ -62,15 +64,13 @@ class MonthsData(DataRepository):
         if new_month_dict == month_dict:
             return False
 
-        self.session.commit()
-
         self._expire_month(month=month)
 
         if pop_action:
             datetime_date = datetime.datetime.combine(
                 month.date, datetime.time())
             date_name = datetime_date.strftime('%B %Y').decode('utf8')
-            self.actions_data.create(
+            self.action_data.create(
                 message=self.Month.ACT_MONTH_UPDATE.format(date_name))
 
         return month

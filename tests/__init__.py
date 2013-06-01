@@ -5,35 +5,35 @@ import datetime
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-import warbase.model
-from warbase.model import *
-from warbase.data.users import UsersData
+import mozbase.model
+from mozbase.model import *
+from mozbase.data.user import UserData
 
-from warfinance.data.model import *
+from mozfinance.data.model import *
 
 
 class TestData(unittest.TestCase):
 
     def setUp(self):
         self.engine = create_engine('sqlite:///:memory:', echo=False)
-        warbase.model.Base.metadata.create_all(self.engine)
+        mozbase.model.Base.metadata.create_all(self.engine)
 
         Session = sessionmaker(bind=self.engine)
-        self.session = Session()
+        self.dbsession = Session()
 
-        self.users_data = UsersData(session=self.session)
-        self.user = self.users_data.create(
+        self.user_data = UserData(dbsession=self.dbsession)
+        self.user = self.user_data.create(
             login='bastien', mail='bastien@test')
 
         now = datetime.datetime.now().date()
         self.prestation = Prestation.Prestation(date=now)
-        self.session.add(self.prestation)
-        self.session.flush()
+        self.dbsession.add(self.prestation)
+        self.dbsession.flush()
 
     def tearDown(self):
-        self.session.close()
-        warbase.model.Base.metadata.drop_all(self.engine)
-        del self.session
-        del self.users_data
+        self.dbsession.close()
+        mozbase.model.Base.metadata.drop_all(self.engine)
+        del self.dbsession
+        del self.user_data
         del self.user
         del self.prestation
