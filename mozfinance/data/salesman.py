@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from importlib import import_module
 
 from mozbase.util.database import db_method
@@ -10,7 +11,7 @@ class SalesmanData(DataRepository):
 
     def __init__(self, **kwargs):
         DataRepository.__init__(self, **kwargs)
-        self.Salesman = import_module('.Salesman', package=self.package)
+        self.Salesman = import_module('.Salesman', package=self._package)
 
     @db_method()
     def create(self, pop_action=False, **kwargs):
@@ -27,7 +28,7 @@ class SalesmanData(DataRepository):
 
         # Needed because of month.salesmen_com which is indexed using
         # salesman.id.
-        self._expire_all_months()
+        self._expire.all_months()
 
         if pop_action:
             msg = self.Salesman.ACT_SALESMAN_CREATE
@@ -51,7 +52,7 @@ class SalesmanData(DataRepository):
         ** see warfinance.data.Salesman.SalesmanSchema for expected types
 
         """
-        salesman = self._get_salesman(**kwargs)
+        salesman = self._get.salesman(**kwargs)
 
         salesman_dict = {k: getattr(salesman, k) for k in salesman.create_dict
                          if getattr(salesman, k) is not None}
@@ -93,7 +94,7 @@ class SalesmanData(DataRepository):
         if not 'commissions_formulae' in kwargs:
             raise TypeError('commissions_formulae missing')
 
-        salesman = self._get_salesman(**kwargs)
+        salesman = self._get.salesman(**kwargs)
 
         if kwargs['commissions_formulae'] == salesman.commissions_formulae:
             return False
@@ -118,10 +119,10 @@ class SalesmanData(DataRepository):
         * at least one is required
 
         """
-        salesman = self._get_salesman(**kwargs)
+        salesman = self._get.salesman(**kwargs)
 
         for prestation in salesman.prestations:
-            self._expire_prestation(prestation=prestation)
+            self._expire.prestation(prestation=prestation)
 
         self._dbsession.delete(salesman)
 

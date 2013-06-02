@@ -1,14 +1,41 @@
+# -*- coding: utf-8 -*-
+from importlib import import_module
 import datetime
 
 from sqlalchemy.orm.exc import NoResultFound
 
-from . import AbcBusinessWorker
+from mozbase.util.cache import Cache
+from mozbase.data import RawDataRepository
+
+from mozfinance.data.subworkers.get import GetWorker
 import mozfinance
 
 
-class ComputeWorker(AbcBusinessWorker):
-    """BusinessWorker for computation. All recipes to compute values are stored
+class ComputeWorker(RawDataRepository):
+    """Worker for computation. All recipes to compute values are stored
     here."""
+
+    def __init__(self, dbsession=None, package=None, cache=None, **kwargs):
+        RawDataRepository.__init__(self, dbsession)
+
+        if not package:
+            raise TypeError('package not provided')
+
+        self._package = package
+
+        if not cache:
+            self._cache = Cache()
+        else:
+            self._cache = cache
+
+        self._get = GetWorker(dbsession=dbsession, package=package)
+
+        self._attributes_dict = mozfinance._ATTRIBUTES_DICT
+
+        self.Prestation = import_module('.Prestation', package=self._package)
+        self.PrestationSalesman = import_module('.PrestationSalesman', package=self._package)
+        self.Month = import_module('.Month', package=self._package)
+        self.Salesman = import_module('.Salesman', package=self._package)
 
     def _get_or_compute(self, key, **kwargs):
         """Return a value (a real value and not a ComputedValue).
@@ -52,7 +79,7 @@ class ComputeWorker(AbcBusinessWorker):
         * at least one is required
 
         """
-        presta = self._get_prestation(**kwargs)
+        presta = self._get.prestation(**kwargs)
 
         presta_cost = float(0)
         for cost in presta.costs:
@@ -75,7 +102,7 @@ class ComputeWorker(AbcBusinessWorker):
         * at least one is required
 
         """
-        presta = self._get_prestation(**kwargs)
+        presta = self._get.prestation(**kwargs)
 
         presta_cost = self._get_or_compute(
             'prestation:{}:cost'.format(presta.id),
@@ -104,9 +131,9 @@ class ComputeWorker(AbcBusinessWorker):
         * at least one is required
 
         """
-        month = self._get_month(**kwargs)
+        month = self._get.month(**kwargs)
 
-        prestations = self._get_month_prestations(month=month)
+        prestations = self._get.month_prestations(month=month)
 
         month_revenue = float(0)
         for presta in prestations:
@@ -126,7 +153,7 @@ class ComputeWorker(AbcBusinessWorker):
         same as mozfinance.business.compute.ComputeWorker.month_revenue
 
         """
-        month = self._get_month(**kwargs)
+        month = self._get.month(**kwargs)
 
         month_revenue = self._get_or_compute(
             'month:{}:revenue'.format(month.id),
@@ -149,7 +176,7 @@ class ComputeWorker(AbcBusinessWorker):
         same as mozfinance.business.compute.ComputeWorker.month_revenue
 
         """
-        month = self._get_month(**kwargs)
+        month = self._get.month(**kwargs)
 
         month_gross_margin = self._get_or_compute(
             'month:{}:gross_margin'.format(month.id),
@@ -174,7 +201,7 @@ class ComputeWorker(AbcBusinessWorker):
         same as mozfinance.business.compute.ComputeWorker.month_revenue
 
         """
-        month = self._get_month(**kwargs)
+        month = self._get.month(**kwargs)
 
         month_gross_margin = self._get_or_compute(
             'month:{}:gross_margin'.format(month.id),
@@ -203,9 +230,9 @@ class ComputeWorker(AbcBusinessWorker):
         same as mozfinance.business.compute.ComputeWorker.month_revenue
 
         """
-        month = self._get_month(**kwargs)
+        month = self._get.month(**kwargs)
 
-        prestations = self._get_month_prestations(month=month)
+        prestations = self._get.month_prestations(month=month)
 
         month_cost = float(0)
         for presta in prestations:
@@ -226,7 +253,7 @@ class ComputeWorker(AbcBusinessWorker):
         date -- Date of the first day of the year
         year_id -- Fake id, year as an int"""
 
-        year = self._get_year(**kwargs)
+        year = self._get.year(**kwargs)
 
         now_date = datetime.datetime.now().date()
 
@@ -244,7 +271,7 @@ class ComputeWorker(AbcBusinessWorker):
 
             # If the month is not found, we continue
             try:
-                m = self._get_month(date=month_date)
+                m = self._get.month(date=month_date)
             except NoResultFound:
                 continue
 
@@ -266,7 +293,7 @@ class ComputeWorker(AbcBusinessWorker):
         date -- Date of the first day of the year
         year_id -- Fake id, year as an int"""
 
-        year = self._get_year(**kwargs)
+        year = self._get.year(**kwargs)
 
         now_date = datetime.datetime.now().date()
 
@@ -284,7 +311,7 @@ class ComputeWorker(AbcBusinessWorker):
 
             # If the month is not found, we continue
             try:
-                m = self._get_month(date=month_date)
+                m = self._get.month(date=month_date)
             except NoResultFound:
                 continue
 
@@ -306,7 +333,7 @@ class ComputeWorker(AbcBusinessWorker):
         date -- Date of the first day of the year
         year_id -- Fake id, year as an int"""
 
-        year = self._get_year(**kwargs)
+        year = self._get.year(**kwargs)
 
         now_date = datetime.datetime.now().date()
 
@@ -324,7 +351,7 @@ class ComputeWorker(AbcBusinessWorker):
 
             # If the month is not found, we continue
             try:
-                m = self._get_month(date=month_date)
+                m = self._get.month(date=month_date)
             except NoResultFound:
                 continue
 
@@ -350,8 +377,8 @@ class ComputeWorker(AbcBusinessWorker):
         * at least one is required
 
         """
-        p = self._get_prestation(**kwargs)
-        m = self._get_month(date=p.month_date())
+        p = self._get.prestation(**kwargs)
+        m = self._get.month(date=p.month_date())
         com_params = {
             'm_ca': self._get_or_compute('month:{}:revenue'.format(m.id), instance=m),
             'm_mb': self._get_or_compute('month:{}:gross_margin'.format(m.id), instance=m),
@@ -368,7 +395,7 @@ class ComputeWorker(AbcBusinessWorker):
         return com_params
 
     def _get_month_commission_params(self, **kwargs):
-        m = self._get_month(**kwargs)
+        m = self._get.month(**kwargs)
         com_params = {
             'm_ca': self._get_or_compute('month:{}:revenue'.format(m.id), instance=m),
             'm_mb': self._get_or_compute('month:{}:gross_margin'.format(m.id), instance=m),
@@ -393,7 +420,7 @@ class ComputeWorker(AbcBusinessWorker):
         * at least one is required
 
         """
-        presta = self._get_prestation(**kwargs)
+        presta = self._get.prestation(**kwargs)
         salesmen_dict = {}
 
         for presta_sm in presta.prestation_salesmen:
@@ -448,7 +475,7 @@ class ComputeWorker(AbcBusinessWorker):
         * at least one is required
 
         """
-        month = self._get_month(**kwargs)
+        month = self._get.month(**kwargs)
         salesmen_dict = {}
 
         Salesman = self.Salesman.Salesman
@@ -485,7 +512,7 @@ class ComputeWorker(AbcBusinessWorker):
             # Computing bonuses
             com_params = self._get_month_commission_params(month=month)
             if com_params:
-                for bonus in mozfinance.COMMISSIONS_BONUS:
+                for bonus in mozfinance.COMMISSIONS_BONUSES:
                     salesmen_dict[salesman.id]['total_bonuses'] += bonus(**com_params)
 
             # Rounding bonuses sum

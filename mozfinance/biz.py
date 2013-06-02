@@ -1,14 +1,22 @@
-"""This module provides a useful wrapper for all business objects in 
-warfinance.business
+# -*- coding: utf-8 -*-
+"""This module provides a useful wrapper for all data objects in
+mozfinance.
 
 """
-from business import get, compute, data
+import locale
+try:
+    locale.setlocale(locale.LC_ALL, 'fr_FR.utf8')
+except locale.Error:
+    locale.setlocale(locale.LC_ALL, 'fr_FR')
+
+from data import month, prestation, salesman, year
 
 
 class BusinessWorker():
-    """warfinance entry point. Provides all API."""
+    """Business object for mozfinance. Provides all API."""
 
     def __init__(self, **kwargs):
-    	self.get = get.GetWorker(**kwargs)
-    	self.data = data.DataWorker(**kwargs)
-    	self._compute = compute.ComputeWorker(**kwargs)
+        self.month = month.MonthData(**kwargs)
+        self.year = year.YearData(**kwargs)
+        self.prestation = prestation.PrestationData(**kwargs)
+        self.salesman = salesman.SalesmanData(**kwargs)

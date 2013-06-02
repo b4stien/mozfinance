@@ -1,7 +1,9 @@
+# -*- coding: utf-8 -*-
 from importlib import import_module
 
 from mozbase.util.database import db_method
 
+from mozfinance.data import prestation_cost
 from . import DataRepository
 
 
@@ -10,33 +12,27 @@ class PrestationData(DataRepository):
 
     def __init__(self, **kwargs):
         DataRepository.__init__(self, **kwargs)
-        self.Prestation = import_module('.Prestation', package=self.package)
-        self.PrestationSalesman = import_module('.PrestationSalesman', package=self.package)
+        self.Prestation = import_module('.Prestation', package=self._package)
+        self.PrestationSalesman = import_module('.PrestationSalesman', package=self._package)
 
-    def _get_prestation_salesman(self, **kwargs):
-        """Get and return a PrestationSalesman object Will raise an exception if
-        no result is found.
+        self.cost = prestation_cost.PrestationCostData(**kwargs)
+
+    def get(self, compute=False, **kwargs):
+        """Return a presta with additional attributes.
 
         Keyword arguments:
-        prestation_id -- id of the prestation (*)
-        prestation -- prestation (*)
-        salesman_id -- salesman (**)
-        salesman -- id of the salesman (**)
+        prestation -- see mozfinance.data.DataRepository._get_prestation (*)
+        prestation_id -- see mozfinance.data.DataRepository._get_prestation (*)
+        compute -- (bool) Wether to compute missing attributes or not.
 
         * at least one is required
-        ** at least one is required
 
         """
-        presta = self._get_prestation(**kwargs)
-        salesman = self._get_salesman(**kwargs)
+        presta = self._get.prestation(**kwargs)
 
-        PrestaSm = self.PrestationSalesman.PrestationSalesman
-        presta_sm = self._dbsession.query(PrestaSm)\
-            .filter(PrestaSm.salesman == salesman)\
-            .filter(PrestaSm.prestation == presta)\
-            .one()
+        presta = self._add_attributes('prestation', presta, compute)
 
-        return presta_sm
+        return presta
 
     @db_method()
     def set_selling_price(self, pop_action=False, **kwargs):
@@ -53,7 +49,7 @@ class PrestationData(DataRepository):
         ** see warfinance.data.model.Prestation.PrestationSchema for expected types
 
         """
-        presta = self._get_prestation(**kwargs)
+        presta = self._get.prestation(**kwargs)
 
         if not 'selling_price' in kwargs:
             raise TypeError('selling_price missing')
@@ -66,7 +62,7 @@ class PrestationData(DataRepository):
 
         presta.selling_price = kwargs['selling_price']
 
-        self._expire_prestation(prestation=presta)
+        self._expire.prestation(prestation=presta)
 
         if pop_action:
             msg = self.Prestation.ACT_PRESTATION_SET_SELLING_PRICE
@@ -90,8 +86,8 @@ class PrestationData(DataRepository):
         ** at least one is required
 
         """
-        presta = self._get_prestation(**kwargs)
-        salesman = self._get_salesman(**kwargs)
+        presta = self._get.prestation(**kwargs)
+        salesman = self._get.salesman(**kwargs)
 
         if salesman in presta.salesmen:
             return False
@@ -103,7 +99,7 @@ class PrestationData(DataRepository):
 
         self._dbsession.add(presta_sm)
 
-        self._expire_prestation_salesman(prestation=presta)
+        self._expire.prestation_salesman(prestation=presta)
 
         if pop_action:
             msg = self.Prestation.ACT_PRESTATION_ADD_SALESMAN
@@ -127,18 +123,18 @@ class PrestationData(DataRepository):
         ** at least one is required
 
         """
-        presta = self._get_prestation(**kwargs)
-        salesman = self._get_salesman(**kwargs)
+        presta = self._get.prestation(**kwargs)
+        salesman = self._get.salesman(**kwargs)
 
         if not salesman in presta.salesmen:
             return presta
 
         # We have to get the correct PrestationSalesman object.
-        presta_sm = self._get_prestation_salesman(**kwargs)
+        presta_sm = self._get.prestation_salesman(**kwargs)
 
         self._dbsession.delete(presta_sm)
 
-        self._expire_prestation_salesman(prestation=presta)
+        self._expire.prestation_salesman(prestation=presta)
 
         if pop_action:
             msg = self.Prestation.ACT_PRESTATION_REMOVE_SALESMAN
@@ -163,7 +159,7 @@ class PrestationData(DataRepository):
         ** at least one is required
 
         """
-        presta = self._get_prestation(**kwargs)
+        presta = self._get.prestation(**kwargs)
 
         if not 'ratio' in kwargs:
             raise TypeError('ratio missing')
@@ -171,7 +167,7 @@ class PrestationData(DataRepository):
         if not isinstance(kwargs['ratio'], float) and not kwargs['ratio'] is None:
             raise AttributeError('ratio isn\'t a float and isn\'t None')
 
-        presta_sm = self._get_prestation_salesman(**kwargs)
+        presta_sm = self._get.prestation_salesman(**kwargs)
 
         if presta_sm.ratio == kwargs['ratio']:
             return False
@@ -179,7 +175,7 @@ class PrestationData(DataRepository):
         presta_sm.ratio = kwargs['ratio']
         self._dbsession.add(presta_sm)
 
-        self._expire_prestation_salesman(prestation=presta)
+        self._expire.prestation_salesman(prestation=presta)
 
         if pop_action:
             msg = self.Prestation.ACT_PRESTATION_SET_CUSTOM_RATIOS
@@ -206,8 +202,8 @@ class PrestationData(DataRepository):
         ** at least one is required
 
         """
-        presta = self._get_prestation(**kwargs)
-        salesman = self._get_salesman(**kwargs)
+        presta = self._get.prestation(**kwargs)
+        salesman = self._get.salesman(**kwargs)
 
         if not 'formula' in kwargs:
             raise TypeError('formula missing')
@@ -215,7 +211,7 @@ class PrestationData(DataRepository):
         if not isinstance(kwargs['formula'], str) and not kwargs['formula'] is None:
             raise AttributeError('formula isn\'t a string and isn\'t None')
 
-        presta_sm = self._get_prestation_salesman(**kwargs)
+        presta_sm = self._get.prestation_salesman(**kwargs)
 
         if presta_sm.formula == kwargs['formula']:
             return False
@@ -226,6 +222,8 @@ class PrestationData(DataRepository):
             presta_sm.formula = kwargs['formula']
 
         self._dbsession.add(presta_sm)
+
+        self._expire.prestation_salesman(prestation=presta)
 
         if pop_action:
             msg = self.Prestation.ACT_PRESTATION_SET_CUSTOM_COM_FORMULAE

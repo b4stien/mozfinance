@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 def formula_checker(formula):
     """Check if a formula is valid.
 
@@ -22,12 +23,12 @@ def formula_checker(formula):
         return False
 
     try:
-        bla = eval(formula)
+        raw_result = eval(formula)
     except (SyntaxError, NameError):
         return False
 
     try:
-        float(bla)
+        float(raw_result)
     except TypeError:
         return False
 

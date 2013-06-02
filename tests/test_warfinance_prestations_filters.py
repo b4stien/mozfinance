@@ -49,7 +49,7 @@ class TestPrestationsFilter(unittest.TestCase):
         now_date = now.date()
         month_date = datetime.date(year=now.year, month=now.month, day=1)
 
-        self.biz.data.month.create(
+        self.biz.month.create(
             date=month_date,
             cost=float(2000))
 
@@ -69,9 +69,6 @@ class TestPrestationsFilter(unittest.TestCase):
         self.dbsession.add(presta_two)
         self.dbsession.commit()
 
-        month = self.biz.get.month(date=month_date, compute=True)
+        month = self.biz.month.get(date=month_date, compute=True)
 
         self.assertEqual(month.gross_margin, float(4000))
-
-    def test_complete_filter(self):
-        pass

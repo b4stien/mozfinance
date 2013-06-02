@@ -1,17 +1,9 @@
  # -*- coding: utf-8 -*-
 import unittest
 
-from mozfinance.data import ModelPackageChecker as PackageChecker
 from mozfinance.data import DataRepository
 
 from . import TestData
-
-
-class TestModelBase(unittest.TestCase):
-
-    def test_action(self):
-        package_checker = PackageChecker(package='mozfinance.data.model')
-        self.assertTrue(package_checker.run())
 
 
 class TestWarfdataInit(TestData):

@@ -103,7 +103,7 @@ class TestPrestationsSalesmen(TestPrestationsData):
             prestation=self.prestation,
             salesman=self.salesman,
             pop_action=True)
-        presta_sm = self.presta_data._get_prestation_salesman(
+        presta_sm = self.presta_data._get.prestation_salesman(
             salesman=self.salesman,
             prestation=self.prestation)
         self.assertEqual(presta_sm.formula, 'bla')
@@ -186,7 +186,7 @@ class TestFormulae(TestPrestationsData):
             salesman=self.salesman,
             prestation=self.prestation,
             formula='lol')
-        presta_sm = self.presta_data._get_prestation_salesman(
+        presta_sm = self.presta_data._get.prestation_salesman(
             salesman=self.salesman,
             prestation=self.prestation)
         self.assertEqual(presta_sm.formula, 'lol')
@@ -211,7 +211,7 @@ class TestFormulae(TestPrestationsData):
 
     def test_backup_default_formula(self):
         # Default formula
-        presta_sm = self.presta_data._get_prestation_salesman(
+        presta_sm = self.presta_data._get.prestation_salesman(
             salesman=self.salesman,
             prestation=self.prestation)
         self.assertEqual(presta_sm.formula, 'bla')
@@ -220,7 +220,7 @@ class TestFormulae(TestPrestationsData):
             salesman=self.salesman,
             prestation=self.prestation,
             formula='lol')
-        presta_sm = self.presta_data._get_prestation_salesman(
+        presta_sm = self.presta_data._get.prestation_salesman(
             salesman=self.salesman,
             prestation=self.prestation)
         self.assertEqual(presta_sm.formula, 'lol')
@@ -229,7 +229,7 @@ class TestFormulae(TestPrestationsData):
             salesman=self.salesman,
             prestation=self.prestation,
             formula=None)
-        presta_sm = self.presta_data._get_prestation_salesman(
+        presta_sm = self.presta_data._get.prestation_salesman(
             salesman=self.salesman,
             prestation=self.prestation)
         self.assertEqual(presta_sm.formula, 'bla')
@@ -269,7 +269,7 @@ class TestRatios(TestPrestationsData):
             salesman=self.salesman,
             prestation=self.prestation,
             ratio=float(0.3))
-        presta_sm = self.presta_data._get_prestation_salesman(
+        presta_sm = self.presta_data._get.prestation_salesman(
             salesman=self.salesman,
             prestation=self.prestation)
         self.assertEqual(presta_sm.ratio, float(0.3))
@@ -283,7 +283,7 @@ class TestRatios(TestPrestationsData):
             salesman=self.salesman,
             prestation=self.prestation,
             ratio=float(0.8))
-        presta_sm = self.presta_data._get_prestation_salesman(
+        presta_sm = self.presta_data._get.prestation_salesman(
             salesman=self.salesman,
             prestation=self.prestation)
         self.assertEqual(presta_sm.ratio, float(0.8))
@@ -297,7 +297,7 @@ class TestRatios(TestPrestationsData):
             salesman=self.salesman,
             prestation=self.prestation,
             ratio=None)
-        presta_sm = self.presta_data._get_prestation_salesman(
+        presta_sm = self.presta_data._get.prestation_salesman(
             salesman=self.salesman,
             prestation=self.prestation)
         self.assertTrue(presta_sm.ratio is None)

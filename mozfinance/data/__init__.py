@@ -1,294 +1,99 @@
-"""This package holds the integrity layer of warfinance.
-
-It requires a valid model package (which is provided to DataRepository). It
-also provides a class to check wether the provided model package fits the
-requirements or not.
-
-"""
-from importlib import import_module
-import datetime
-
-import locale
-try:
-    locale.setlocale(locale.LC_ALL, 'fr_FR.utf8')
-except locale.Error:
-    locale.setlocale(locale.LC_ALL, 'fr_FR')
-
-from sqlalchemy.orm.exc import NoResultFound
-
+# -*- coding: utf-8 -*-
+"""Package for all object API."""
 from mozbase.data import AuthenticatedDataRepository
 from mozbase.data.action import ActionData
 from mozbase.util.cache import Cache
 
+from mozfinance.data.subworkers.get import GetWorker
+from mozfinance.data.subworkers.expire import ExpireWorker
+from mozfinance.data.subworkers.compute import ComputeWorker
 import mozfinance
 
 
 class DataRepository(AuthenticatedDataRepository):
     """ABC for data repository objects.
 
-    Provide a base with a fully functionnal SQLA-Session.
+    Provide (mainly):
+        - ActionData object
+        - Cache interaction
+        - Get worker
+        - Expire worker
+        - Compute worker
+
+    But also:
+        - user (in self._user)
+        - package (in self._package)
 
     """
 
-    def __init__(self, **kwargs):
-        """Init a DataRepository object, ABC for other Data objects.
+    def __init__(self, dbsession=None, package=None, cache=None, **kwargs):
+        """Init a DataRepository object.
 
-        Keyword arguments (all required):
-        package -- package holding the models
-        dbsession -- SQLA-Session
-        user -- user using the DataRepository
+        Arguments:
+            dbsession -- SQLA-Session
+            package -- package holding the models
+            cache -- cache interface
+
+        Keyword arguments:
+            user -- user using the DataRepository
 
         """
-        AuthenticatedDataRepository.__init__(self, **kwargs)
+        AuthenticatedDataRepository.__init__(self, dbsession, **kwargs)
 
-        if not 'package' in kwargs:
+        if not package:
             raise TypeError('package not provided')
 
-        import_module(kwargs['package'])
+        self._package = package
 
-        self.package = kwargs['package']
-
-        self.action_data = ActionData(**kwargs)
-
-        if 'cache' in kwargs:
-            self._cache = kwargs['cache']
-        else:
+        if not cache:
             self._cache = Cache()
-
-    def _get_salesman(self, **kwargs):
-        """Return a salesman given a salesman (other SQLA-Session) or
-        a salesman_id."""
-        Salesman = import_module('.Salesman', package=self.package)
-        if 'salesman' in kwargs:
-            if not isinstance(kwargs['salesman'], Salesman.Salesman):
-                raise AttributeError('salesman provided is not a wb-Salesman')
-
-            # Merging salesman which may come from another session
-            return self._dbsession.merge(kwargs['salesman'])
-
-        elif 'salesman_id' in kwargs:
-            return self._dbsession.query(Salesman.Salesman)\
-                .filter(Salesman.Salesman.id == kwargs['salesman_id'])\
-                .one()
-
         else:
-            raise TypeError('Salesman informations not provided')
+            self._cache = cache
 
-    def _get_month(self, **kwargs):
-        """Return a month given a month (other SQLA-Session), a month_id or a
-        date.
+        self.action_data = ActionData(dbsession=dbsession, **kwargs)
+
+        self._attributes_dict = mozfinance._ATTRIBUTES_DICT
+
+        self._get = GetWorker(dbsession=dbsession, package=package)
+        self._expire = ExpireWorker(
+            dbsession=dbsession,
+            package=package,
+            cache=self._cache)
+        self._compute = ComputeWorker(
+            dbsession=dbsession,
+            package=package,
+            cache=self._cache)
+
+    def _add_attributes(self, instance_type, instance, compute):
+        """Return an augmented version of the given instance.
+
+        Arguments:
+            instance_type -- name of the given instance
+            instance -- instance to augmente
+            compute -- (bool) wether to compute missing datas or not
 
         """
-        Month = import_module('.Month', package=self.package)
-        if 'month' in kwargs:
-            if not isinstance(kwargs['month'], Month.Month):
-                raise AttributeError('month provided is not a wb-Month')
 
-            # Merging month which may come from another session
-            month = self._dbsession.merge(kwargs['month'])
+        # dict of all the possible additional attributes
+        attr_dict = self._attributes_dict[instance_type]
 
-        elif 'month_id' in kwargs:
-            month = self._dbsession.query(Month.Month)\
-                .filter(Month.Month.id == kwargs['month_id'])\
-                .one()
+        for key in attr_dict:
 
-        elif 'date' in kwargs:
-            if not isinstance(kwargs['date'], datetime.date):
-                raise AttributeError('date provided is not a datetime.date')
+            comp_value = self._cache.get(
+                key='{}:{}:{}'.format(instance_type, instance.id, key))
 
-            month = self._dbsession.query(Month.Month)\
-                .filter(Month.Month.date == kwargs['date'])\
-                .one()
+            # The value of the additional attribute is in cache.
+            if comp_value is not None:
+                setattr(instance, key, comp_value)
 
-        else:
-            raise TypeError(
-                'Month informations (month, month_id or date) not provided')
+            # The value is not in cache but "compute" is True
+            elif compute:
+                kwargs = {instance_type: instance}
+                comp_value = getattr(self._compute, attr_dict[key])(**kwargs)
+                setattr(instance, key, comp_value)
 
-        return month
+            # The value cannot be set
+            else:
+                setattr(instance, key, None)
 
-    def _get_year(self, **kwargs):
-        """Return a year (ad-hoc object) given a date or a year number."""
-
-        class Year():
-            pass
-
-        if 'year' in kwargs:
-            # Does not work with ad-hoc objects
-            # if not isinstance(kwargs['year'], Year):
-            #     raise AttributeError('year provided is not an ad-hoc Year')
-            year = kwargs['year']
-
-        elif 'date' in kwargs:
-            if not isinstance(kwargs['date'], datetime.date):
-                raise AttributeError('year provided is not a datetime.date')
-            if not kwargs['date'].month == 1 or not kwargs['date'].day == 1:
-                raise AttributeError('date provided is not correct')
-            year = Year()
-            setattr(year, 'id', kwargs['date'].year)
-            setattr(year, 'date', kwargs['date'])
-
-        elif 'year_id' in kwargs:
-            if not isinstance(kwargs['year_id'], int):
-                raise AttributeError('year_id provided is not an int')
-            year_date = datetime.date(
-                year=kwargs['year_id'],
-                month=1,
-                day=1)
-            year = Year()
-            setattr(year, 'id', year_date.year)
-            setattr(year, 'date', year_date)
-
-        else:
-            raise TypeError('year informations not provided')
-
-        return year
-
-    def _get_prestation(self, **kwargs):
-        """Return a prestation given a prestation (other SQLA-Session) or a
-        prestation_id."""
-        Prestation = import_module('.Prestation', package=self.package)
-        if 'prestation' in kwargs:
-            if not isinstance(kwargs['prestation'],
-                              Prestation.Prestation):
-                raise AttributeError(
-                    'prestation provided is not a wb-Prestation')
-
-            # Merging prestation which may come from another session
-            return self._dbsession.merge(kwargs['prestation'])
-
-        elif 'prestation_id' in kwargs:
-            presta_id = kwargs['prestation_id']
-            prestation_query = self._dbsession.query(Prestation.Prestation)\
-                .filter(Prestation.Prestation.id == presta_id)
-
-            # Restrictions on the prestations that we will consider
-            for query_filter in mozfinance.PRESTATIONS_FILTERS:
-                prestation_query = prestation_query.filter(query_filter)
-
-            return prestation_query.one()
-
-        else:
-            raise TypeError(
-                'Prestation informations (prestation or prestation_id) not provided')
-
-    def _get_month_prestations(self, **kwargs):
-        """Return the list of the prestations ot the given month."""
-        month = self._get_month(**kwargs)
-
-        Prestation = import_module('.Prestation', package=self.package)
-        prestations_query = self._dbsession.query(Prestation.Prestation)\
-            .filter(Prestation.Prestation.date >= month.date)\
-            .filter(Prestation.Prestation.date < month.next_month())
-
-        for query_filter in mozfinance.PRESTATIONS_FILTERS:
-            prestations_query = prestations_query.filter(query_filter)
-
-        prestations = prestations_query.all()
-
-        return prestations
-
-    def _expire_prestation(self, **kwargs):
-        presta = self._get_prestation(**kwargs)
-        self._cache.expire(key='prestation:{}:'.format(presta.id))
-        self._expire_month(date=presta.month_date())
-
-    def _expire_month(self, **kwargs):
-        try:
-            month = self._get_month(**kwargs)
-        except NoResultFound:
-            return
-
-        # To expire commissions
-        Prestation = import_module('.Prestation', package=self.package)
-        prestas = self._dbsession.query(Prestation.Prestation)\
-            .filter(Prestation.Prestation.date >= month.date)\
-            .filter(Prestation.Prestation.date < month.next_month())\
-            .all()
-        for presta in prestas:
-            self._expire_prestation_salesman(prestation=presta)
-
-        self._cache.expire(key='month:{}:'.format(month.id))
-
-        self._expire_year(year_id=month.date.year)
-
-    def _expire_all_months(self):
-        Month = import_module('.Month', package=self.package)
-        months = self._dbsession.query(Month.Month).all()
-
-        for month in months:
-            self._expire_month(month=month)
-
-    def _expire_year(self, **kwargs):
-        year = self._get_year(**kwargs)
-        self._cache.expire(key='year:{}:'.format(year.id))
-
-    def _expire_prestation_salesman(self, **kwargs):
-        presta = self._get_prestation(**kwargs)
-        self._cache.expire(key='prestation:{}:salesmen_com'.format(presta.id))
-        self._expire_month_salesman(date=presta.month_date())
-
-    def _expire_month_salesman(self, **kwargs):
-        try:
-            month = self._get_month(**kwargs)
-        except NoResultFound:
-            return
-        self._cache.expire(key='month:{}:salesmen_com'.format(month.id))
-
-
-class ModelPackageChecker():
-    """Check if provided model package fits the requirements."""
-
-    def __init__(self, **kwargs):
-        """Register the model package."""
-        if not 'package' in kwargs:
-            raise TypeError('package not provided')
-
-        import_module(kwargs['package'])
-
-        self.package = kwargs['package']
-
-    def _test_prestation_cost(self):
-        """Test the PrestationCost object."""
-        PrestationCost = import_module('.PrestationCost', package=self.package)
-        dir_list = dir(PrestationCost.PrestationCost)
-        required_list = ['amount', 'reason', 'prestation', 'prestation_id']
-        for item in required_list:
-            if not item in dir_list:
-                raise TypeError('PrestationCost\'s {} field missing'.format(item))
-
-    def _test_month(self):
-        """Test the Month object."""
-        Month = import_module('.Month', package=self.package)
-        dir_list = dir(Month.Month)
-        required_list = ['date', 'cost']
-        for item in required_list:
-            if not item in dir_list:
-                raise TypeError('Month\'s {} field missing'.format(item))
-
-    def _test_prestation(self):
-        """Test the Prestation object."""
-        Prestation = import_module('.Prestation', package=self.package)
-        dir_list = dir(Prestation.Prestation)
-        required_list = ['date', 'client', 'category', 'sector',
-                         'selling_price']
-        for item in required_list:
-            if not item in dir_list:
-                raise TypeError('Prestation\'s {} field missing'.format(item))
-
-    def _test_salesman(self):
-        """Test the Salesman object."""
-        Salesman = import_module('.Salesman', package=self.package)
-        dir_list = dir(Salesman.Salesman)
-        required_list = ['firstname', 'lastname', 'commissions_formulae',
-                         'prestations']
-        for item in required_list:
-            if not item in dir_list:
-                raise TypeError('Salesman\'s {} field missing'.format(item))
-
-    def run(self):
-        """Run the test."""
-        self._test_prestation_cost()
-        self._test_month()
-        self._test_prestation()
-        self._test_salesman()
-        return True
+        return instance

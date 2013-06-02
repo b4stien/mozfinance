@@ -70,7 +70,7 @@ class TestUpdateCost(TestCostsData):
             reason=u'With action',
             prestation=self.prestation)
         cost = self.pcost_data.update(
-            pcost=cost,
+            p_cost=cost,
             amount=float(12))
         self.assertEqual(cost.amount, float(12))
 
@@ -79,7 +79,7 @@ class TestUpdateCost(TestCostsData):
             reason=u'With action',
             prestation=self.prestation)
         cost = self.pcost_data.update(
-            pcost_id=cost.id,
+            p_cost_id=cost.id,
             amount=float(12))
         self.assertEqual(cost.amount, float(12))
 
@@ -90,14 +90,14 @@ class TestUpdateCost(TestCostsData):
             amount=float(12),
             prestation=self.prestation)
         self.assertTrue(not self.pcost_data.update(
-            pcost=cost,
+            p_cost=cost,
             reason=reason,
             amount=float(12)))
         self.assertTrue(not self.pcost_data.update(
-            pcost=cost,
+            p_cost=cost,
             amount=float(12)))
         self.assertTrue(not self.pcost_data.update(
-            pcost=cost,
+            p_cost=cost,
             reason=reason))
 
     def test_wrong_update(self):
@@ -107,7 +107,7 @@ class TestUpdateCost(TestCostsData):
             pop_action=False)
         with self.assertRaises(MultipleInvalid):
             self.pcost_data.update(
-                pcost=cost,
+                p_cost=cost,
                 amount=13,
                 pop_action=True)
         with self.assertRaises(NoResultFound):
@@ -116,7 +116,7 @@ class TestUpdateCost(TestCostsData):
     def test_wrong_cost_on_update(self):
         with self.assertRaises(AttributeError):
             self.pcost_data.update(
-                pcost='cost',
+                p_cost='cost',
                 amount=13.0,
                 pop_action=True)
 
@@ -134,7 +134,7 @@ class TestRemoveCost(TestCostsData):
             reason=u'With action',
             prestation=self.prestation)
         cost = self.pcost_data.remove(
-            pcost=cost)
+            p_cost=cost)
         with self.assertRaises(NoResultFound):
             self.dbsession.query(PrestationCost.PrestationCost).one()
 

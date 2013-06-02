@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from importlib import import_module
 
 from mozbase.util.database import db_method
@@ -10,28 +11,7 @@ class PrestationCostData(DataRepository):
 
     def __init__(self, **kwargs):
         DataRepository.__init__(self, **kwargs)
-        self.PrestationCost = import_module('.PrestationCost', package=self.package)
-
-    def _get_pcost(self, **kwargs):
-        """Return a pcost (PrestationCost) given a pcost (other SQLA-Session) or
-        a pcost_id.
-        """
-        if 'pcost' in kwargs:
-            if not isinstance(kwargs['pcost'], self.PrestationCost.PrestationCost):
-                raise AttributeError('pcost provided is not a wb-PrestationCost')
-
-            # Merging cost which may come from another session
-            pcost = self._dbsession.merge(kwargs['pcost'])
-
-        elif 'pcost_id' in kwargs:
-            pcost = self._dbsession.query(self.PrestationCost.PrestationCost)\
-                .filter(self.PrestationCost.PrestationCost.id == kwargs['pcost_id'])\
-                .one()
-
-        else:
-            raise TypeError('PrestationCost informations (pcost or pcost_id) not provided')
-
-        return pcost
+        self.PrestationCost = import_module('.PrestationCost', package=self._package)
 
     def _pop_action(self, message=None, prestation=None):
         if not message or not prestation:
@@ -54,7 +34,7 @@ class PrestationCostData(DataRepository):
         pcost = self.PrestationCost.PrestationCost(**kwargs)
         self._dbsession.add(pcost)
 
-        self._expire_prestation(prestation=pcost.prestation)
+        self._expire.prestation(prestation=pcost.prestation)
 
         if pop_action:
             self._pop_action(
@@ -70,8 +50,8 @@ class PrestationCostData(DataRepository):
 
         Keyword arguments:
         pop_action -- wether to pop an action or not
-        pcost_id -- id of the pcost to update (*)
-        pcost -- pcost to update (*)
+        p_cost_id -- id of the pcost to update (*)
+        p_cost -- pcost to update (*)
         amount -- new amount of the pcost (**)
         reason -- new reason of the pcost (**)
 
@@ -79,7 +59,7 @@ class PrestationCostData(DataRepository):
         ** see warfinance.data.model.PrestationCost.PrestationCostSchema
 
         """
-        pcost = self._get_pcost(**kwargs)
+        pcost = self._get.p_cost(**kwargs)
 
         pcost_dict = {k: getattr(pcost, k) for k in pcost.create_dict
                       if getattr(pcost, k) is not None}
@@ -98,7 +78,7 @@ class PrestationCostData(DataRepository):
         if new_pcost_dict == pcost_dict:
             return False
 
-        self._expire_prestation(prestation=pcost.prestation)
+        self._expire.prestation(prestation=pcost.prestation)
 
         if pop_action:
             self._pop_action(
@@ -113,17 +93,17 @@ class PrestationCostData(DataRepository):
 
         Keyword arguments:
         pop_action -- wether to pop an action or not
-        pcost_id -- id of the pcost to remove (*)
-        pcost -- pcost to remove (*)
+        p_cost_id -- id of the pcost to remove (*)
+        p_cost -- pcost to remove (*)
 
         * at least one is required
 
         """
-        pcost = self._get_pcost(**kwargs)
+        pcost = self._get.p_cost(**kwargs)
         prestation = pcost.prestation
         self._dbsession.delete(pcost)
 
-        self._expire_prestation(prestation=prestation)
+        self._expire.prestation(prestation=prestation)
 
         if pop_action:
             self._pop_action(
