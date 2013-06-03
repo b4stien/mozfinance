@@ -1,1 +1,1 @@
--e git+ssh://git@github.com/b4stien/mozbase.git@v0.2.2#egg=mozbase
+-e git+ssh://git@github.com/b4stien/mozbase.git@0.2#egg=mozbase

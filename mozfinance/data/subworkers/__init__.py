@@ -1,2 +1,2 @@
 # -*- coding: utf-8 -*-
-"""Package for Subworkers"""
+"""Package for Subworkers."""

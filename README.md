@@ -1,6 +1,5 @@
 TODO:
 
-* Update model checker
 * Add test to check expirations with different cache systems
 * Manage Salesman removal
 * Create a fonction to monkey patch other business objects
