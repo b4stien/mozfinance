@@ -3,6 +3,7 @@ from datetime import date
 
 from sqlalchemy import Column, Integer, Date, Unicode, Float
 from sqlalchemy.ext.associationproxy import association_proxy
+from sqlalchemy.orm import relationship
 from voluptuous import Schema, Required, All, Length
 
 from . import Base
@@ -43,6 +44,8 @@ class Prestation(Base):
     category = Column(Integer, index=True, default=PRESTATION_CATEGORY_NONE)
     sector = Column(Integer, index=True, default=PRESTATION_SECTOR_NONE)
 
+    costs = relationship('PrestationCost')
+
     create_dict = set(['date', 'client', 'category', 'sector'])  # For update purpose
     update_dict = set(['date', 'client', 'category', 'sector'])
 
@@ -52,6 +55,17 @@ class Prestation(Base):
             month=self.date.month,
             day=1)
         return month_date
+
+    @property
+    def cost(self):
+        total_cost = float(0)
+        for cost in self.costs:
+            total_cost += cost.amount
+        return total_cost
+
+    @property
+    def margin(self):
+        return self.selling_price - self.cost
 
 
 PrestationSchema = Schema({

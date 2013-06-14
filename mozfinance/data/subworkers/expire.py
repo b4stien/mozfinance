@@ -28,11 +28,7 @@ class ExpireWorker(RawDataRepository):
             return
 
         # To expire commissions
-        Prestation = import_module('.Prestation', package=self._package)
-        prestas = self._dbsession.query(Prestation.Prestation)\
-            .filter(Prestation.Prestation.date >= month.date)\
-            .filter(Prestation.Prestation.date < month.next_month())\
-            .all()
+        prestas = month.prestations.all()
         for presta in prestas:
             self.prestation_salesman(prestation=presta)
 

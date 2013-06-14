@@ -129,10 +129,7 @@ class GetWorker(MozbaseGetWorker):
         """Return the list of the prestations ot the given month."""
         month = self.month(month_id, month, date)
 
-        Prestation = import_module('.Prestation', package=self._package)
-        prestations_query = self._dbsession.query(Prestation.Prestation)\
-            .filter(Prestation.Prestation.date >= month.date)\
-            .filter(Prestation.Prestation.date < month.next_month())
+        prestations_query = month.prestations
 
         for query_filter in mozfinance.PRESTATIONS_FILTERS:
             prestations_query = prestations_query.filter(query_filter)

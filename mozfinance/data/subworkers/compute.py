@@ -69,57 +69,6 @@ class ComputeWorker(RawDataRepository):
 
         return getattr(self, method)(**method_kwargs)
 
-    def prestation_cost(self, **kwargs):
-        """Compute and return the sum of all the costs of a prestation.
-
-        Keyword arguments:
-        prestation -- SQLA-Prestation (*)
-        prestation_id -- id of the prestation (*)
-
-        * at least one is required
-
-        """
-        presta = self._get.prestation(**kwargs)
-
-        presta_cost = float(0)
-        for cost in presta.costs:
-            presta_cost += cost.amount
-
-        # Storing value in DB
-        self._cache.set(
-            key='prestation:{}:cost'.format(presta.id),
-            value=presta_cost)
-
-        return presta_cost
-
-    def prestation_margin(self, **kwargs):
-        """Compute and return the margin of a prestation.
-
-        Keyword arguments:
-        prestation -- SQLA-Prestation (*)
-        prestation_id -- id of the prestation (*)
-
-        * at least one is required
-
-        """
-        presta = self._get.prestation(**kwargs)
-
-        presta_cost = self._get_or_compute(
-            'prestation:{}:cost'.format(presta.id),
-            instance=presta)
-
-        if presta.selling_price:
-            presta_margin = presta.selling_price - presta_cost
-        else:
-            presta_margin = float(0)
-
-        # Storing value in DB
-        self._cache.set(
-            key='prestation:{}:margin'.format(presta.id),
-            value=presta_margin)
-
-        return presta_margin
-
     def month_revenue(self, **kwargs):
         """Compute and return the revenue of a month.
 
@@ -236,9 +185,7 @@ class ComputeWorker(RawDataRepository):
 
         month_cost = float(0)
         for presta in prestations:
-            month_cost += self._get_or_compute(
-                'prestation:{}:cost'.format(presta.id),
-                instance=presta)
+            month_cost += presta.cost
 
         self._cache.set(
             key='month:{}:total_cost'.format(month.id),
@@ -385,8 +332,8 @@ class ComputeWorker(RawDataRepository):
             'm_bc': self._get_or_compute('month:{}:commission_base'.format(m.id), instance=m),
             'm_tc': self._get_or_compute('month:{}:total_cost'.format(m.id), instance=m),
             'm_ff': m.cost,
-            'p_c': self._get_or_compute('prestation:{}:cost'.format(p.id), instance=p),
-            'p_m': self._get_or_compute('prestation:{}:margin'.format(p.id), instance=p),
+            'p_c': p.cost,
+            'p_m': p.margin,
             'p_pv': p.selling_price,
         }
         for param in com_params:
@@ -492,11 +439,10 @@ class ComputeWorker(RawDataRepository):
             salesmen_dict[salesman.id]['commission'] = float(0)
 
             # Computing prestations
-            prestations = self._dbsession.query(Prestation)\
+            prestations_query = month.prestations
+            prestations = prestations_query\
                 .join(Prestation.prestation_salesmen)\
                 .filter(PrestationSalesman.salesman_id == salesman.id)\
-                .filter(Prestation.date >= month.date)\
-                .filter(Prestation.date < month.next_month())\
                 .all()
 
             for presta in prestations:

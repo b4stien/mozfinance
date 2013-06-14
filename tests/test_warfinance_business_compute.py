@@ -91,7 +91,7 @@ class TestBusinessWithDatas(TestData):
         self.assertEqual(month.total_cost, float(4))
         self.assertEqual(month.gross_margin, float(24))
         self.assertEqual(month.net_margin, float(21))
-        self.assertEqual(len(month.prestations), 2)
+        self.assertEqual(len(month.prestations.all()), 2)
         self.assertEqual(presta.cost, float(4))
 
     def test_compute_year_net_margin(self):

@@ -60,17 +60,17 @@ class MonthData(DataRepository):
 
         month = self._add_attributes('month', month, compute)
 
-        Prestation = import_module('.Prestation', package=self._package)
-        prestas_query = self._dbsession.query(Prestation.Prestation)\
-            .filter(Prestation.Prestation.date >= month.date)\
-            .filter(Prestation.Prestation.date < month.next_month())
+        # Prestation = import_module('.Prestation', package=self._package)
+        # prestas_query = self._dbsession.query(Prestation.Prestation)\
+        #     .filter(Prestation.Prestation.date >= month.date)\
+        #     .filter(Prestation.Prestation.date < month.next_month())
 
-        # Restrictions on the prestations that we will consider
-        for query_filter in mozfinance.PRESTATIONS_FILTERS:
-            prestas_query = prestas_query.filter(query_filter)
+        # # Restrictions on the prestations that we will consider
+        # for query_filter in mozfinance.PRESTATIONS_FILTERS:
+        #     prestas_query = prestas_query.filter(query_filter)
 
-        prestas = prestas_query.order_by(Prestation.Prestation.date).all()
-        setattr(month, 'prestations', prestas)
+        # prestas = prestas_query.order_by(Prestation.Prestation.date).all()
+        # setattr(month, 'prestations', prestas)
 
         return month
 

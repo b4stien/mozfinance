@@ -35,8 +35,6 @@ _ATTRIBUTES_DICT = {
         'salesmen_com': 'month_salesmen_com'
     },
     'prestation': {
-        'cost': 'prestation_cost',
-        'margin': 'prestation_margin',
         'salesmen_com': 'prestation_salesmen_com'
     },
     'year': {

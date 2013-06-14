@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
 from datetime import date, timedelta
 
-from sqlalchemy import Column, Integer, Date, Float
+from sqlalchemy import Column, Integer, Date, Float, and_, extract
+from sqlalchemy.orm import relationship, foreign, remote
 from voluptuous import Schema, Required, All, Invalid
 
 from . import Base
+import Prestation
 
 
 class Month(Base):
@@ -18,6 +20,23 @@ class Month(Base):
     salaries = Column(Float)
     commissions_refined = Column(Float)
 
+    _primaryjoin = and_(
+        remote(
+            extract('year', Prestation.Prestation.date)
+        ) == foreign(
+            extract('year', date)
+        ), remote(
+            extract('month', Prestation.Prestation.date)
+        ) == foreign(
+            extract('month', date)))
+    prestations = relationship(
+        'Prestation',
+        primaryjoin=_primaryjoin,
+        viewonly=True,
+        uselist=True,
+        lazy='dynamic')
+
+    @property
     def next_month(self):
         """Return the date of the first day of the following month"""
         one_month = timedelta(days=31)
@@ -26,6 +45,7 @@ class Month(Base):
                     month=in_next_month.month,
                     day=1)
 
+    @property
     def prev_month(self):
         """Return the date of the first day of the precedent month"""
         one_day = timedelta(days=1)
