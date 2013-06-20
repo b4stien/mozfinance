@@ -9,16 +9,15 @@ from mozfinance.data.subworkers.get import GetWorker
 
 class ExpireWorker(RawDataRepository):
 
-    def __init__(self, dbsession=None, package=None, cache=None, **kwargs):
+    def __init__(self, dbsession=None, package=None, **kwargs):
         RawDataRepository.__init__(self, dbsession)
-        self._cache = cache
         self._package = package
         self._get = GetWorker(dbsession=dbsession, package=package)
 
 
     def prestation(self, prestation_id=None, prestation=None, **kwargs):
         presta = self._get.prestation(prestation_id, prestation)
-        self._cache.expire(key='prestation:{}:'.format(presta.id))
+        self._dbsession.cache.delete(key='prestation:{}:'.format(presta.id))
         self.month(date=presta.month_date())
 
     def month(self, month_id=None, month=None, date=None, **kwargs):
@@ -32,7 +31,7 @@ class ExpireWorker(RawDataRepository):
         for presta in prestas:
             self.prestation_salesman(prestation=presta)
 
-        self._cache.expire(key='month:{}:'.format(month.id))
+        self._dbsession.cache.delete(key='month:{}:'.format(month.id))
 
         self.year(year_id=month.date.year)
 
@@ -45,11 +44,11 @@ class ExpireWorker(RawDataRepository):
 
     def year(self, year_id=None, year=None, date=None, **kwargs):
         year = self._get.year(year_id, year, date)
-        self._cache.expire(key='year:{}:'.format(year.id))
+        self._dbsession.cache.delete(key='year:{}:'.format(year.id))
 
     def prestation_salesman(self, prestation_id=None, prestation=None, **kwargs):
         presta = self._get.prestation(prestation_id, prestation)
-        self._cache.expire(key='prestation:{}:salesmen_com'.format(presta.id))
+        self._dbsession.cache.delete(key='prestation:{}:salesmen_com'.format(presta.id))
         self.month_salesman(date=presta.month_date())
 
     def month_salesman(self, month_id=None, month=None, date=None, **kwargs):
@@ -57,4 +56,4 @@ class ExpireWorker(RawDataRepository):
             month = self._get.month(month_id, month, date)
         except NoResultFound:
             return
-        self._cache.expire(key='month:{}:salesmen_com'.format(month.id))
+        self._dbsession.cache.delete(key='month:{}:salesmen_com'.format(month.id))

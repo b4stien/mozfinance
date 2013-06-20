@@ -28,8 +28,8 @@ class TestWarfdataInit(TestData):
                 user=self.user
             )
 
-    def test_wrong_session(self):
-        with self.assertRaises(AttributeError):
+    def test_session_wo_cache(self):
+        with self.assertRaises(TypeError):
             DataRepository(
                 package='mozfinance.data.model',
                 dbsession='not session',

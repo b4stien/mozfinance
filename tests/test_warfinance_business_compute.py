@@ -1,9 +1,6 @@
 # -*- coding: utf-8 -*-
 import datetime
 
-from mozbase.util.cache import Cache
-from mozbase.util.cache_systems.database_cache import DatabaseCache
-
 from mozfinance.data.model.Prestation import Prestation
 from mozfinance.data.model.PrestationCost import PrestationCost
 from mozfinance.data.subworkers.compute import ComputeWorker
@@ -16,19 +13,15 @@ class TestBusinessCompute(TestData):
 
     def setUp(self):
         TestData.setUp(self)
-        cache = Cache()
-        cache.append_cache(DatabaseCache(dbsession=self.dbsession))
         self.biz = BusinessWorker(
             package='mozfinance.data.model',
             dbsession=self.dbsession,
-            user=self.user,
-            cache=cache)
+            user=self.user)
 
         self._compute = ComputeWorker(
             package='mozfinance.data.model',
             dbsession=self.dbsession,
-            user=self.user,
-            cache=cache)
+            user=self.user)
 
     def tearDown(self):
         TestData.tearDown(self)
@@ -52,21 +45,17 @@ class TestBusinessWithDatas(TestData):
 
     def setUp(self):
         TestData.setUp(self)
-        cache = Cache()
-        cache.append_cache(DatabaseCache(dbsession=self.dbsession))
         self.biz = BusinessWorker(
             package='mozfinance.data.model',
             dbsession=self.dbsession,
-            user=self.user,
-            cache=cache)
+            user=self.user)
         self.dbsession.delete(self.prestation)
         self.dbsession.flush()
 
         self._compute = ComputeWorker(
             package='mozfinance.data.model',
             dbsession=self.dbsession,
-            user=self.user,
-            cache=cache)
+            user=self.user)
 
     def tearDown(self):
         TestData.tearDown(self)

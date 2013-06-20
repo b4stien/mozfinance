@@ -1,9 +1,6 @@
  # -*- coding: utf-8 -*-
 import datetime
 
-from mozbase.util.cache import Cache
-from mozbase.util.cache_systems.database_cache import DatabaseCache
-
 from mozfinance.data.model.Month import Month
 from mozfinance.data.month import MonthData
 from mozfinance.biz import BusinessWorker
@@ -15,13 +12,10 @@ class TestBusiness(TestData):
 
     def setUp(self):
         TestData.setUp(self)
-        cache = Cache()
-        cache.append_cache(DatabaseCache(dbsession=self.dbsession))
         self.biz = BusinessWorker(
             package='mozfinance.data.model',
             dbsession=self.dbsession,
-            user=self.user,
-            cache=cache)
+            user=self.user)
         self.month_data = MonthData(
             package='mozfinance.data.model',
             dbsession=self.dbsession,
@@ -59,7 +53,7 @@ class TestBusinessBase(TestBusiness):
         self.month_data.create(date=month_date)
         self.biz.month.get(date=month_date, compute=True)
 
-        other_test = self.biz.month._cache.get(key='month:1:revenue')
+        other_test = self.biz.month._dbsession.cache.get(key='month:1:revenue')
         self.assertEqual(other_test, float(0))
 
         other_month = self.biz.month.get(date=month_date)

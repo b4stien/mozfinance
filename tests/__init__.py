@@ -4,6 +4,7 @@ import datetime
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+from dogpile.cache import make_region
 
 import mozbase.model
 from mozbase.model import *
@@ -20,6 +21,9 @@ class TestData(unittest.TestCase):
 
         Session = sessionmaker(bind=self.engine)
         self.dbsession = Session()
+
+        cache_region = make_region().configure('dogpile.cache.memory')
+        setattr(self.dbsession, 'cache', cache_region)
 
         self.user_data = UserData(dbsession=self.dbsession)
         self.user = self.user_data.create(

@@ -3,7 +3,7 @@ from datetime import date
 
 from sqlalchemy import Column, Integer, Date, Unicode, Float
 from sqlalchemy.ext.associationproxy import association_proxy
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, object_session
 from voluptuous import Schema, Required, All, Length
 
 from . import Base
@@ -30,6 +30,23 @@ PRESTATION_SECTORS = {
     PRESTATION_SECTOR_ADVERTISEUR: u'Annonceurs'
 }
 
+def cached_property(key_template):
+
+    def decorator(func):
+
+        def wrapped(self, *args, **kwargs):
+
+            cache = object_session(self).cache
+            print cache
+
+            if key_template == '1':
+                return 12
+
+            return func(self, *args, **kwargs)
+
+        return property(wrapped)
+
+    return decorator
 
 class Prestation(Base):
     __tablename__ = "prestations"
@@ -56,6 +73,7 @@ class Prestation(Base):
             day=1)
         return month_date
 
+    #@cached_property('prestation:{prestation.id}:cost')
     @property
     def cost(self):
         total_cost = float(0)
@@ -63,6 +81,7 @@ class Prestation(Base):
             total_cost += cost.amount
         return total_cost
 
+    #@cached_property('prestation:{prestation.id}:margin')
     @property
     def margin(self):
         return self.selling_price - self.cost

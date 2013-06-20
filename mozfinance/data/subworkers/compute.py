@@ -3,8 +3,8 @@ from importlib import import_module
 import datetime
 
 from sqlalchemy.orm.exc import NoResultFound
+from dogpile.cache.api import NoValue
 
-from mozbase.util.cache import Cache
 from mozbase.data import RawDataRepository
 
 from mozfinance.data.subworkers.get import GetWorker
@@ -15,18 +15,13 @@ class ComputeWorker(RawDataRepository):
     """Worker for computation. All recipes to compute values are stored
     here."""
 
-    def __init__(self, dbsession=None, package=None, cache=None, **kwargs):
+    def __init__(self, dbsession=None, package=None, **kwargs):
         RawDataRepository.__init__(self, dbsession)
 
         if not package:
             raise TypeError('package not provided')
 
         self._package = package
-
-        if not cache:
-            self._cache = Cache()
-        else:
-            self._cache = cache
 
         self._get = GetWorker(dbsession=dbsession, package=package)
 
@@ -50,9 +45,9 @@ class ComputeWorker(RawDataRepository):
 
         """
         # The "get" part of "get_or_compute"
-        comp_value = self._cache.get(key=key)
+        comp_value = self._dbsession.cache.get(key=key)
 
-        if comp_value:
+        if not isinstance(comp_value, NoValue):
             return comp_value
 
         # And the "compute" part
@@ -89,7 +84,7 @@ class ComputeWorker(RawDataRepository):
             if presta.selling_price is not None:
                 month_revenue += presta.selling_price
 
-        self._cache.set(
+        self._dbsession.cache.set(
             key='month:{}:revenue'.format(month.id),
             value=month_revenue)
 
@@ -112,7 +107,7 @@ class ComputeWorker(RawDataRepository):
             instance=month)
 
         month_gross_margin = month_revenue - month_cost
-        self._cache.set(
+        self._dbsession.cache.set(
             key='month:{}:gross_margin'.format(month.id),
             value=month_gross_margin)
 
@@ -137,7 +132,7 @@ class ComputeWorker(RawDataRepository):
         if month.salaries:
             month_commission_base -= month.salaries
 
-        self._cache.set(
+        self._dbsession.cache.set(
             key='month:{}:commission_base'.format(month.id),
             value=month_commission_base)
 
@@ -166,7 +161,7 @@ class ComputeWorker(RawDataRepository):
         if month.commissions_refined:
             month_net_margin -= month.commissions_refined
 
-        self._cache.set(
+        self._dbsession.cache.set(
             key='month:{}:net_margin'.format(month.id),
             value=month_net_margin)
 
@@ -187,7 +182,7 @@ class ComputeWorker(RawDataRepository):
         for presta in prestations:
             month_cost += presta.cost
 
-        self._cache.set(
+        self._dbsession.cache.set(
             key='month:{}:total_cost'.format(month.id),
             value=month_cost)
 
@@ -227,7 +222,7 @@ class ComputeWorker(RawDataRepository):
 
             revenue += month_revenue
 
-        self._cache.set(
+        self._dbsession.cache.set(
             key='year:{}:revenue'.format(year.id),
             value=revenue)
 
@@ -267,7 +262,7 @@ class ComputeWorker(RawDataRepository):
 
             gross_margin += month_gross_margin
 
-        self._cache.set(
+        self._dbsession.cache.set(
             key='year:{}:gross_margin'.format(year.id),
             value=gross_margin)
 
@@ -307,7 +302,7 @@ class ComputeWorker(RawDataRepository):
 
             net_margin += month_net_margin
 
-        self._cache.set(
+        self._dbsession.cache.set(
             key='year:{}:net_margin'.format(year.id),
             value=net_margin)
 
@@ -402,7 +397,7 @@ class ComputeWorker(RawDataRepository):
             salesman_dict['commission'] = commission
             salesmen_dict[presta_sm.salesman.id] = salesman_dict
 
-        self._cache.set(
+        self._dbsession.cache.set(
             key='prestation:{}:salesmen_com'.format(presta.id),
             value=salesmen_dict)
 
@@ -468,7 +463,7 @@ class ComputeWorker(RawDataRepository):
             salesmen_dict[salesman.id]['commission'] += salesmen_dict[salesman.id]['total_prestations']
             salesmen_dict[salesman.id]['commission'] += salesmen_dict[salesman.id]['total_bonuses']
 
-        self._cache.set(
+        self._dbsession.cache.set(
             key='month:{}:salesmen_com'.format(month.id),
             value=salesmen_dict)
 

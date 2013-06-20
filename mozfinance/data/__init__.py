@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 """Package for all object API."""
+from dogpile.cache.api import NoValue
+
 from mozbase.data import AuthenticatedDataRepository
 from mozbase.data.action import ActionData
-from mozbase.util.cache import Cache
 
 from mozfinance.data.subworkers.get import GetWorker
 from mozfinance.data.subworkers.expire import ExpireWorker
@@ -45,11 +46,6 @@ class DataRepository(AuthenticatedDataRepository):
 
         self._package = package
 
-        if not cache:
-            self._cache = Cache()
-        else:
-            self._cache = cache
-
         self.action_data = ActionData(dbsession=dbsession, **kwargs)
 
         self._attributes_dict = mozfinance._ATTRIBUTES_DICT
@@ -57,12 +53,10 @@ class DataRepository(AuthenticatedDataRepository):
         self._get = GetWorker(dbsession=dbsession, package=package)
         self._expire = ExpireWorker(
             dbsession=dbsession,
-            package=package,
-            cache=self._cache)
+            package=package)
         self._compute = ComputeWorker(
             dbsession=dbsession,
-            package=package,
-            cache=self._cache)
+            package=package)
 
     def _add_attributes(self, instance_type, instance, compute):
         """Return an augmented version of the given instance.
@@ -79,11 +73,11 @@ class DataRepository(AuthenticatedDataRepository):
 
         for key in attr_dict:
 
-            comp_value = self._cache.get(
+            comp_value = self._dbsession.cache.get(
                 key='{}:{}:{}'.format(instance_type, instance.id, key))
 
             # The value of the additional attribute is in cache.
-            if comp_value is not None:
+            if not isinstance(comp_value, NoValue):
                 setattr(instance, key, comp_value)
 
             # The value is not in cache but "compute" is True

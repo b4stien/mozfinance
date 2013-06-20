@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from datetime import date, timedelta
+import datetime
 
 from sqlalchemy import Column, Integer, Date, Float, and_, extract
 from sqlalchemy.orm import relationship, foreign, remote
@@ -39,18 +39,18 @@ class Month(Base):
     @property
     def next_month(self):
         """Return the date of the first day of the following month"""
-        one_month = timedelta(days=31)
+        one_month = datetime.timedelta(days=31)
         in_next_month = self.date + one_month
-        return date(year=in_next_month.year,
+        return datetime.date(year=in_next_month.year,
                     month=in_next_month.month,
                     day=1)
 
     @property
     def prev_month(self):
         """Return the date of the first day of the precedent month"""
-        one_day = timedelta(days=1)
+        one_day = datetime.timedelta(days=1)
         in_prev_month = self.date - one_day
-        return date(year=in_prev_month.year,
+        return datetime.date(year=in_prev_month.year,
                     month=in_prev_month.month,
                     day=1)
 
@@ -68,7 +68,7 @@ def MonthDate(msg=None):
     return f
 
 MonthSchema = Schema({
-    Required('date'): All(date, MonthDate()),
+    Required('date'): All(datetime.date, MonthDate()),
     'cost': float,
     'taxes': float,
     'salaries': float,
