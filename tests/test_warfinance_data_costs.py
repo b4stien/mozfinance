@@ -4,7 +4,7 @@ from voluptuous import MultipleInvalid
 
 from mozbase.model import *
 
-from mozfinance.data.prestation_cost import PrestationCostData
+from mozfinance.data.cost import CostPrestationData
 from mozfinance.data.model import *
 from . import TestData
 
@@ -13,7 +13,7 @@ class TestCostsData(TestData):
 
     def setUp(self):
         TestData.setUp(self)
-        self.pcost_data = PrestationCostData(
+        self.pcost_data = CostPrestationData(
             package='mozfinance.data.model',
             dbsession=self.dbsession,
             user=self.user)
@@ -29,27 +29,18 @@ class TestCreateCost(TestCostsData):
         reason = u'Achat de traôneau'
         cost = self.pcost_data.create(
             reason=reason,
-            prestation=self.prestation,
-            pop_action=False)
-        self.assertTrue(isinstance(cost, PrestationCost.PrestationCost))
+            prestation=self.prestation)
+        self.assertTrue(isinstance(cost, CostPrestation.CostPrestation))
         self.assertEqual(reason, cost.reason)
         self.assertEqual(cost.prestation, self.prestation)
         with self.assertRaises(NoResultFound):
             self.dbsession.query(Action.Action).one()
 
-    def test_create_with_action(self):
-        self.pcost_data.create(
-            reason=u'With action',
-            prestation=self.prestation,
-            pop_action=True)
-        self.dbsession.query(Action.Action).one()
-
     def test_wrong_reason(self):
         with self.assertRaises(MultipleInvalid):
             self.pcost_data.create(
                 reason='Not unicode',
-                prestation=self.prestation,
-                pop_action=True)
+                prestation=self.prestation)
         with self.assertRaises(NoResultFound):
             self.dbsession.query(Action.Action).one()
 
@@ -57,8 +48,7 @@ class TestCreateCost(TestCostsData):
         with self.assertRaises(MultipleInvalid):
             self.pcost_data.create(
                 amount=12,
-                prestation=self.prestation,
-                pop_action=True)
+                prestation=self.prestation)
         with self.assertRaises(NoResultFound):
             self.dbsession.query(Action.Action).one()
 
@@ -70,7 +60,7 @@ class TestUpdateCost(TestCostsData):
             reason=u'With action',
             prestation=self.prestation)
         cost = self.pcost_data.update(
-            p_cost=cost,
+            cost=cost,
             amount=float(12))
         self.assertEqual(cost.amount, float(12))
 
@@ -79,7 +69,7 @@ class TestUpdateCost(TestCostsData):
             reason=u'With action',
             prestation=self.prestation)
         cost = self.pcost_data.update(
-            p_cost_id=cost.id,
+            cost_id=cost.id,
             amount=float(12))
         self.assertEqual(cost.amount, float(12))
 
@@ -90,41 +80,35 @@ class TestUpdateCost(TestCostsData):
             amount=float(12),
             prestation=self.prestation)
         self.assertTrue(not self.pcost_data.update(
-            p_cost=cost,
+            cost=cost,
             reason=reason,
             amount=float(12)))
         self.assertTrue(not self.pcost_data.update(
-            p_cost=cost,
+            cost=cost,
             amount=float(12)))
         self.assertTrue(not self.pcost_data.update(
-            p_cost=cost,
+            cost=cost,
             reason=reason))
 
     def test_wrong_update(self):
         cost = self.pcost_data.create(
             reason=u'With action',
-            prestation=self.prestation,
-            pop_action=False)
+            prestation=self.prestation)
         with self.assertRaises(MultipleInvalid):
             self.pcost_data.update(
-                p_cost=cost,
-                amount=13,
-                pop_action=True)
-        with self.assertRaises(NoResultFound):
-            self.dbsession.query(Action.Action).one()
+                cost=cost,
+                amount=13)
 
     def test_wrong_cost_on_update(self):
         with self.assertRaises(AttributeError):
             self.pcost_data.update(
-                p_cost='cost',
-                amount=13.0,
-                pop_action=True)
+                cost='cost',
+                amount=13.0)
 
     def test_no_cost_on_update(self):
         with self.assertRaises(TypeError):
             self.pcost_data.update(
-                amount=13.0,
-                pop_action=True)
+                amount=13.0)
 
 
 class TestRemoveCost(TestCostsData):
@@ -134,9 +118,9 @@ class TestRemoveCost(TestCostsData):
             reason=u'With action',
             prestation=self.prestation)
         cost = self.pcost_data.remove(
-            p_cost=cost)
+            cost=cost)
         with self.assertRaises(NoResultFound):
-            self.dbsession.query(PrestationCost.PrestationCost).one()
+            self.dbsession.query(CostPrestation.CostPrestation).one()
 
 
 if __name__ == '__main__':

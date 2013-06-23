@@ -13,33 +13,3 @@
 #     COMMISSIONS_BONUSES.append(bonus_net_margin)
 
 COMMISSIONS_BONUSES = []
-
-# Array of filters that will be applied to all prestation queries.
-# Useful if mozfinance must consider only certain prestations.
-#
-# Example usage:
-#     PRESTATIONS_FILTERS.append(Prestation.status == 'Done')
-
-PRESTATIONS_FILTERS = []
-
-
-# Internal dictonary for additional variables on objects.
-
-_ATTRIBUTES_DICT = {
-    'month': {
-        'revenue': 'month_revenue',
-        'gross_margin': 'month_gross_margin',
-        'commission_base': 'month_commission_base',
-        'net_margin': 'month_net_margin',
-        'total_cost': 'month_total_cost',
-        'salesmen_com': 'month_salesmen_com'
-    },
-    'prestation': {
-        'salesmen_com': 'prestation_salesmen_com'
-    },
-    'year': {
-        'revenue': 'year_revenue',
-        'gross_margin': 'year_gross_margin',
-        'net_margin': 'year_net_margin'
-    }
-}

@@ -32,8 +32,6 @@ class TestPrestationsBase(TestPrestationsData):
             prestation=self.prestation,
             selling_price=float(12))
         self.assertEqual(self.prestation.selling_price, float(12))
-        with self.assertRaises(NoResultFound):
-            self.dbsession.query(Action.Action).one()
 
     def test_no_update(self):
         self.prestation = self.presta_data.set_selling_price(
@@ -44,19 +42,11 @@ class TestPrestationsBase(TestPrestationsData):
             selling_price=float(12))
         self.assertTrue(not self.prestation)
 
-    def test_correct_update_with_action(self):
-        self.prestation = self.presta_data.set_selling_price(
-            prestation_id=self.prestation.id,
-            selling_price=float(12),
-            pop_action=True)
-        self.dbsession.query(Action.Action).one()
-
     def test_wrong_selling_price(self):
         with self.assertRaises(AttributeError):
             self.prestation = self.presta_data.set_selling_price(
                 prestation_id=self.prestation.id,
-                selling_price=12,
-                pop_action=True)
+                selling_price=12)
         with self.assertRaises(NoResultFound):
             self.dbsession.query(Action.Action).one()
 
@@ -64,20 +54,17 @@ class TestPrestationsBase(TestPrestationsData):
         with self.assertRaises(AttributeError):
             self.prestation = self.presta_data.set_selling_price(
                 prestation='self.prestation.id',
-                selling_price=12,
-                pop_action=True)
+                selling_price=12)
 
     def test_wrong_info(self):
         with self.assertRaises(TypeError):
             self.prestation = self.presta_data.set_selling_price(
-                selling_price=12,
-                pop_action=True)
+                selling_price=12)
 
     def test_no_selling_price(self):
         with self.assertRaises(TypeError):
             self.prestation = self.presta_data.set_selling_price(
-                prestation_id=self.prestation.id,
-                pop_action=True)
+                prestation_id=self.prestation.id)
 
 
 class TestPrestationsSalesmen(TestPrestationsData):
@@ -101,8 +88,7 @@ class TestPrestationsSalesmen(TestPrestationsData):
     def test_correct_add_salesman(self):
         self.presta_data.add_salesman(
             prestation=self.prestation,
-            salesman=self.salesman,
-            pop_action=True)
+            salesman=self.salesman)
         presta_sm = self.presta_data._get.prestation_salesman(
             salesman=self.salesman,
             prestation=self.prestation)
@@ -111,53 +97,46 @@ class TestPrestationsSalesmen(TestPrestationsData):
     def test_readd_salesman(self):
         self.presta_data.add_salesman(
             prestation=self.prestation,
-            salesman=self.salesman,
-            pop_action=True)
+            salesman=self.salesman)
         a_bool = self.presta_data.add_salesman(
             prestation=self.prestation,
-            salesman=self.salesman,
-            pop_action=True)
+            salesman=self.salesman)
         self.assertTrue(not a_bool)
 
     def test_correct_remove_salesman(self):
         self.presta_data.add_salesman(
             prestation=self.prestation,
-            salesman=self.salesman,
-            pop_action=True)
+            salesman=self.salesman)
         self.presta_data.remove_salesman(
             prestation=self.prestation,
-            salesman=self.salesman,
-            pop_action=True)
+            salesman=self.salesman)
         self.assertEqual([], self.prestation.salesmen)
 
     def test_remove_non_salesman(self):
         presta = self.presta_data.remove_salesman(
             prestation=self.prestation,
-            salesman=self.salesman,
-            pop_action=True)
+            salesman=self.salesman)
         self.assertEqual(presta, self.prestation)
 
     def test_correct_delete_salesman(self):
         self.presta_data.add_salesman(
             prestation=self.prestation,
-            salesman=self.salesman,
-            pop_action=True)
+            salesman=self.salesman)
         self.salesmen_data.remove(salesman=self.salesman)
         with self.assertRaises(NoResultFound):
-            self.dbsession.query(PrestationSalesman.PrestationSalesman).one()
+            self.dbsession.query(AssPrestationSalesman.PrestationSalesman).one()
 
     def test_correct_delete_prestation(self):
         self.presta_data.add_salesman(
             prestation=self.prestation,
-            salesman=self.salesman,
-            pop_action=True)
+            salesman=self.salesman)
 
         # Prestation create/remove not handle by warfinance.data.prestations
         self.dbsession.delete(self.prestation)
         self.dbsession.commit()
 
         with self.assertRaises(NoResultFound):
-            self.dbsession.query(PrestationSalesman.PrestationSalesman).one()
+            self.dbsession.query(AssPrestationSalesman.PrestationSalesman).one()
 
 
 class TestFormulae(TestPrestationsData):
@@ -233,14 +212,6 @@ class TestFormulae(TestPrestationsData):
             salesman=self.salesman,
             prestation=self.prestation)
         self.assertEqual(presta_sm.formula, 'bla')
-
-    def test_pop_action_set_salesman_formula(self):
-        self.presta_data.set_salesman_formula(
-            salesman=self.salesman,
-            prestation=self.prestation,
-            formula='lol',
-            pop_action=True)
-        self.dbsession.query(Action.Action).one()
 
 
 class TestRatios(TestPrestationsData):
@@ -319,14 +290,6 @@ class TestRatios(TestPrestationsData):
             prestation=self.prestation,
             ratio=float(0.3))
         self.assertTrue(not a_bool)
-
-    def test_pop_action_set_salesman_ratio(self):
-        self.presta_data.set_salesman_ratio(
-            salesman=self.salesman,
-            prestation=self.prestation,
-            ratio=float(0.3),
-            pop_action=True)
-        self.dbsession.query(Action.Action).one()
 
 
 if __name__ == '__main__':

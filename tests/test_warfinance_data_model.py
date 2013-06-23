@@ -5,14 +5,14 @@ from sqlalchemy import create_engine
 
 import mozbase.model
 
-from mozfinance.data.model import PrestationCost, Month, Prestation, Salesman
+from mozfinance.data.model import CostPrestation, Month, Prestation, Salesman
 from . import TestData
 
 
 class TestModelBase(TestData):
 
     def test_prestation_cost(self):
-        PrestationCost.PrestationCost()
+        CostPrestation.CostPrestation()
         self.assertTrue(True)
 
     def test_month(self):

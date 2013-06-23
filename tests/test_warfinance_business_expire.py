@@ -21,9 +21,8 @@ class TestBusinessExpire(TestData):
         del self.biz
 
     def test_prestation_expire(self):
-        now = datetime.datetime.now()
-        now_date = now.date()
-        presta = Prestation(date=now_date)
+        a_date = datetime.date(year=2012, month=5, day=27)
+        presta = Prestation(date=a_date)
         self.dbsession.add(presta)
         self.dbsession.commit()
         presta = self.biz.prestation.set_selling_price(

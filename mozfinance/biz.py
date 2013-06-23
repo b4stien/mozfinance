@@ -3,12 +3,6 @@
 mozfinance.
 
 """
-import locale
-try:
-    locale.setlocale(locale.LC_ALL, 'fr_FR.utf8')
-except locale.Error:
-    locale.setlocale(locale.LC_ALL, 'fr_FR')
-
 from data import month, prestation, salesman, year
 
 

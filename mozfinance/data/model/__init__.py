@@ -8,4 +8,4 @@ attribute/method of each SQLA-Class is mandatory.
 """
 from mozbase.model import Base
 
-__all__ = ['Month', 'Prestation', 'Salesman', 'PrestationCost', 'PrestationSalesman']
+__all__ = ['Month', 'Prestation', 'Salesman', 'Cost', 'CostPrestation', 'CostMonth', 'AssPrestationSalesman']

@@ -34,9 +34,9 @@ class TestBusinessBase(TestBusiness):
         month_date = datetime.date(year=now.year, month=now.month, day=1)
         self.month_data.create(date=month_date)
         month = self.biz.month.get(date=month_date)
-        self.assertEqual(month.revenue, None)
-        self.assertEqual(month.total_cost, None)
-        self.assertEqual(month.gross_margin, None)
+        self.assertEqual(month.revenue, float(0))
+        self.assertEqual(month.total_prestation_cost, float(0))
+        self.assertEqual(month.gross_margin, float(0))
 
     def test_get_computed_values(self):
         now = datetime.datetime.now()
@@ -44,28 +44,22 @@ class TestBusinessBase(TestBusiness):
         self.month_data.create(date=month_date)
         month = self.biz.month.get(date=month_date, compute=True)
         self.assertEqual(month.revenue, 0)
-        self.assertEqual(month.total_cost, 0)
+        self.assertEqual(month.total_prestation_cost, 0)
         self.assertEqual(month.gross_margin, 0)
 
     def test_get_stored_computed_values(self):
-        now = datetime.datetime.now()
-        month_date = datetime.date(year=now.year, month=now.month, day=1)
-        self.month_data.create(date=month_date)
-        self.biz.month.get(date=month_date, compute=True)
+        month_date = datetime.date(year=2012, month=5, day=1)
+        month = self.biz.month.get(date=month_date)
+        self.assertEqual(month.revenue, float(0))
 
-        other_test = self.biz.month._dbsession.cache.get(key='month:1:revenue')
+        other_test = self.biz.month._dbsession.cache.get(
+            key='month:{}:revenue'.format(month.id))
         self.assertEqual(other_test, float(0))
 
         other_month = self.biz.month.get(date=month_date)
         self.assertEqual(other_month.revenue, 0)
-        self.assertEqual(other_month.total_cost, 0)
+        self.assertEqual(other_month.total_prestation_cost, 0)
         self.assertEqual(other_month.gross_margin, 0)
-
-    def test_get_month_with_create(self):
-        now = datetime.datetime.now()
-        month_date = datetime.date(year=now.year, month=now.month, day=1)
-        month = self.biz.month.get(date=month_date, create=True)
-        self.assertTrue(isinstance(month, Month))
 
     def test_get_month_with_raw_date(self):
         now = datetime.datetime.now()

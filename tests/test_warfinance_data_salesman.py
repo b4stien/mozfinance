@@ -52,13 +52,6 @@ class TestSalesmenBase(TestSalesmenData):
         self.assertEqual(salesman.firstname, u'Hubërt')
         self.assertEqual(salesman.lastname, u'Jean Claude Douze')
 
-    def test_correct_create_with_action(self):
-        self.salesmen_data.create(
-            firstname=u'Hubërt',
-            lastname=u'Jean Claude Douze',
-            pop_action=True)
-        self.dbsession.query(Action.Action).one()
-
     def test_wrong_create(self):
         with self.assertRaises(MultipleInvalid):
             self.salesmen_data.create(
@@ -73,16 +66,6 @@ class TestSalesmenBase(TestSalesmenData):
             salesman=salesman,
             lastname=u'Jean-Louis')
         self.assertEqual(salesman.lastname, u'Jean-Louis')
-
-    def test_correct_update_with_action(self):
-        salesman = self.salesmen_data.create(
-            firstname=u'Hubërt',
-            lastname=u'Jean Claude Douze')
-        salesman = self.salesmen_data.update(
-            salesman=salesman,
-            lastname=u'Jean-Louis',
-            pop_action=True)
-        self.dbsession.query(Action.Action).one()
 
     def test_no_update(self):
         salesman = self.salesmen_data.create(
@@ -101,15 +84,6 @@ class TestSalesmenBase(TestSalesmenData):
             salesman=salesman)
         with self.assertRaises(NoResultFound):
             self.dbsession.query(Salesman.Salesman).one()
-
-    def test_remove_with_action(self):
-        salesman = self.salesmen_data.create(
-            firstname=u'Hubërt',
-            lastname=u'Jean Claude Douze')
-        salesman = self.salesmen_data.remove(
-            salesman=salesman,
-            pop_action=True)
-        self.dbsession.query(Action.Action).one()
 
     def test_set_commissions_formulae(self):
         salesman = self.salesmen_data.create(

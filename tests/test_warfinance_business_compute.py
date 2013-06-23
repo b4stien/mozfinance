@@ -2,8 +2,7 @@
 import datetime
 
 from mozfinance.data.model.Prestation import Prestation
-from mozfinance.data.model.PrestationCost import PrestationCost
-from mozfinance.data.subworkers.compute import ComputeWorker
+from mozfinance.data.model.CostPrestation import CostPrestation
 from mozfinance.biz import BusinessWorker
 
 from . import TestData
@@ -14,11 +13,6 @@ class TestBusinessCompute(TestData):
     def setUp(self):
         TestData.setUp(self)
         self.biz = BusinessWorker(
-            package='mozfinance.data.model',
-            dbsession=self.dbsession,
-            user=self.user)
-
-        self._compute = ComputeWorker(
             package='mozfinance.data.model',
             dbsession=self.dbsession,
             user=self.user)
@@ -52,11 +46,6 @@ class TestBusinessWithDatas(TestData):
         self.dbsession.delete(self.prestation)
         self.dbsession.flush()
 
-        self._compute = ComputeWorker(
-            package='mozfinance.data.model',
-            dbsession=self.dbsession,
-            user=self.user)
-
     def tearDown(self):
         TestData.tearDown(self)
         del self.biz
@@ -71,17 +60,17 @@ class TestBusinessWithDatas(TestData):
         self.dbsession.add(presta1)
         self.dbsession.add(presta2)
         self.dbsession.flush()
-        cost1 = PrestationCost(prestation=presta1, amount=float(4))
+        cost1 = CostPrestation(prestation=presta1, amount=float(4))
         self.dbsession.add(cost1)
         self.dbsession.flush()
         month = self.biz.month.get(date=self.month_date, compute=True)
         presta = self.biz.prestation.get(prestation=presta1, compute=True)
         self.assertEqual(month.revenue, float(28))
-        self.assertEqual(month.total_cost, float(4))
+        self.assertEqual(month.total_prestation_cost, float(4))
         self.assertEqual(month.gross_margin, float(24))
         self.assertEqual(month.net_margin, float(21))
         self.assertEqual(len(month.prestations.all()), 2)
-        self.assertEqual(presta.cost, float(4))
+        self.assertEqual(presta.total_cost, float(4))
 
     def test_compute_year_net_margin(self):
         month_date = datetime.date(year=2013, month=1, day=1)
@@ -108,9 +97,9 @@ class TestBusinessWithDatas(TestData):
         self.dbsession.add(another_presta)
         self.dbsession.commit()
 
-        year_net_margin = self._compute.year_net_margin(date=month_date)
+        year = self.biz.year.get(date=month_date)
 
-        self.assertEqual(year_net_margin, float(4000))
+        self.assertEqual(year.net_margin, float(4000))
 
         year = self.biz.year.get(date=another_month_date)
 

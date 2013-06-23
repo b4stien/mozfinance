@@ -2,8 +2,6 @@
 import datetime
 
 from mozfinance.data.model.Prestation import Prestation
-from mozfinance.data.subworkers.compute import ComputeWorker
-from mozfinance.biz import BusinessWorker
 import mozfinance
 
 from . import TestData
@@ -23,16 +21,6 @@ class TestBusinessCompute(TestData):
         if not a_bonus in mozfinance.COMMISSIONS_BONUSES:
             mozfinance.COMMISSIONS_BONUSES.append(a_bonus)
 
-        self.biz = BusinessWorker(
-            package='mozfinance.data.model',
-            dbsession=self.dbsession,
-            user=self.user)
-
-        self._compute = ComputeWorker(
-            package='mozfinance.data.model',
-            dbsession=self.dbsession,
-            user=self.user)
-
     def tearDown(self):
         TestData.tearDown(self)
         mozfinance.COMMISSIONS_BONUSES = []
@@ -43,7 +31,7 @@ class TestBusinessCompute(TestData):
         now_date = now.date()
         month_date = datetime.date(year=now.year, month=now.month, day=1)
 
-        self.biz.month.create(
+        month = self.biz.month.create(
             date=month_date,
             cost=float(2000))
 
@@ -71,25 +59,19 @@ class TestBusinessCompute(TestData):
             amount=float(100),
             reason=u'Auto Cost 1')
 
-        salesmen_dict = self._compute.prestation_salesmen_com(
-            prestation=presta,
-            compute=True)
-
-        month_salesman_dict = self._compute.month_salesmen_com(
-            date=month_date,
-            compute=True)
-
         commission_ideal = round(float(3900)*float(1900)/float(3900)*float(0.06), 1)
 
-        self.assertEqual(salesmen_dict[salesman.id]['formula'], '{p_m}*{m_bc}/{m_mb}*0.06')
-        self.assertEqual(salesmen_dict[salesman.id]['commission'], commission_ideal)
-        self.assertEqual(month_salesman_dict[salesman.id]['total_prestations'], commission_ideal)
+        sm = presta.prestation_salesmen[0]
+
+        self.assertEqual(sm.formula, '{p_m}*{m_bc}/{m_mb}*0.06')
+        self.assertEqual(sm.commission, commission_ideal)
+        self.assertEqual(month.month_salesmen[0].commission_prestations, commission_ideal)
 
     def test_get_complexe_commission(self):
         month_date = datetime.date(year=2013, month=1, day=1)
         another_month_date = datetime.date(year=2013, month=2, day=1)
 
-        self.biz.month.create(
+        month = self.biz.month.create(
             date=month_date,
             cost=float(2000))
         self.biz.month.create(
@@ -150,46 +132,33 @@ class TestBusinessCompute(TestData):
             amount=float(100),
             reason=u'Auto Cost 1 P3')
 
-        p_salesmen_dict = self._compute.prestation_salesmen_com(
-            prestation=presta,
-            compute=True)
-        ap_salesmen_dict = self._compute.prestation_salesmen_com(
-            prestation=another_presta,
-            compute=True)
+        commission_ideal_p = float(24700)*float(47600)/float(49600)*float(0.06)
+        commission_ideal_ap = float(24900)*float(47600)/float(49600)*float(0.06)
 
-        month_salesman_dict = self._compute.month_salesmen_com(
-            date=month_date,
-            compute=True)
-
-        commission_ideal_p = round(float(24700)*float(47600)/float(49600)*float(0.06), 1)
-        commission_ideal_ap = round(float(24900)*float(47600)/float(49600)*float(0.06), 1)
-
-        self.assertEqual(p_salesmen_dict[salesman.id]['commission'], commission_ideal_p)
-        self.assertEqual(ap_salesmen_dict[salesman.id]['commission'], commission_ideal_ap)
-        self.assertEqual(month_salesman_dict[salesman.id]['total_prestations'], commission_ideal_p+commission_ideal_ap)
-        self.assertEqual(month_salesman_dict[salesman.id]['total_bonuses'], float(476))
+        self.assertEqual(presta.prestation_salesmen[0].commission, commission_ideal_p)
+        self.assertEqual(another_presta.prestation_salesmen[0].commission, commission_ideal_ap)
+        self.assertEqual(month.month_salesmen[0].commission_prestations, commission_ideal_p+commission_ideal_ap)
+        self.assertEqual(month.month_salesmen[0].commission_bonuses, float(476))
 
     def test_get_complexe_commission_two_salesmen(self):
-        now = datetime.datetime.now()
-        now_date = now.date()
-        month_date = datetime.date(year=now.year, month=now.month, day=1)
-        another_month_date = datetime.date(year=now.year-1, month=now.month, day=1)
+        month_date = datetime.date(year=2012, month=1, day=1)
+        another_month_date = datetime.date(year=2012, month=2, day=1)
 
-        self.biz.month.create(
+        month = self.biz.month.update(
             date=month_date,
             cost=float(2000))
-        self.biz.month.create(
+        self.biz.month.update(
             date=another_month_date,
             cost=float(2000))
 
         presta = Prestation(
-            date=now_date,
+            date=month_date,
             selling_price=float(25000),
             category=0,
             sector=0)
         self.dbsession.add(presta)
         another_presta = Prestation(
-            date=now_date,
+            date=month_date,
             selling_price=float(25000),
             category=0,
             sector=0)
@@ -245,22 +214,12 @@ class TestBusinessCompute(TestData):
             amount=float(100),
             reason=u'Auto Cost 1 P3')
 
-        p_salesmen_dict = self._compute.prestation_salesmen_com(
-            prestation=presta,
-            compute=True)
-        ap_salesmen_dict = self._compute.prestation_salesmen_com(
-            prestation=another_presta,
-            compute=True)
+        commission_ideal_p = float(24700)*float(47600)/float(49600)*float(0.06)*0.5
+        commission_ideal_ap = float(24900)*float(47600)/float(49600)*float(0.06)
 
-        month_salesman_dict = self._compute.month_salesmen_com(
-            date=month_date,
-            compute=True)
+        self.assertEqual(presta.prestation_salesmen[0].commission, commission_ideal_p)
+        self.assertEqual(another_presta.prestation_salesmen[0].commission, commission_ideal_ap)
 
-        commission_ideal_p = round(float(24700)*float(47600)/float(49600)*float(0.06)*0.5, 1)
-        commission_ideal_ap = round(float(24900)*float(47600)/float(49600)*float(0.06), 1)
-
-        self.assertEqual(p_salesmen_dict[salesman.id]['commission'], commission_ideal_p)
-        self.assertEqual(ap_salesmen_dict[salesman.id]['commission'], commission_ideal_ap)
-        self.assertEqual(month_salesman_dict[salesman.id]['total_prestations'], commission_ideal_p+commission_ideal_ap)
-        self.assertEqual(month_salesman_dict[salesman.id]['total_bonuses'], float(476))
-        self.assertEqual(month_salesman_dict[salesman.id]['commission'], round(float(476)+commission_ideal_p+commission_ideal_ap, 1))
+        self.assertEqual(month.month_salesmen[0].commission_prestations, commission_ideal_p+commission_ideal_ap)
+        self.assertEqual(month.month_salesmen[0].commission_bonuses, float(476))
+        self.assertEqual(month.month_salesmen[0].commission_total, float(476)+commission_ideal_p+commission_ideal_ap)

@@ -27,7 +27,3 @@ SalesmanSchema = Schema({
     Required('firstname'): All(unicode, Length(min=3, max=30)),
     Required('lastname'): All(unicode, Length(min=3, max=30))
 })
-
-ACT_SALESMAN_CREATE = u'Ajout d\'un commercial'
-ACT_SALESMAN_UPDATE = u'Modification d\'un commercial'
-ACT_SALESMAN_REMOVE = u'Suppression d\'un commercial'

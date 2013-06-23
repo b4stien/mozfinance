@@ -11,7 +11,6 @@ class YearData(DataRepository):
 
         Keyword arguments:
         date -- any datetime.date of the month (required)
-        compute -- (bool) Wether to compute missing attributes or not.
 
         """
         if 'date' in kwargs:
@@ -19,7 +18,5 @@ class YearData(DataRepository):
                 raise AttributeError('date provided is not a datetime.date')
 
         year = self._get.year(year_id=kwargs['date'].year)
-
-        year = self._add_attributes('year', year, compute)
 
         return year

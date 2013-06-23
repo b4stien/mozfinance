@@ -9,8 +9,10 @@ from dogpile.cache import make_region
 import mozbase.model
 from mozbase.model import *
 from mozbase.data.user import UserData
+from mozbase.util.database import transaction
 
 from mozfinance.data.model import *
+from mozfinance.biz import BusinessWorker
 
 
 class TestData(unittest.TestCase):
@@ -29,10 +31,22 @@ class TestData(unittest.TestCase):
         self.user = self.user_data.create(
             login='bastien', mail='bastien@test')
 
-        now = datetime.datetime.now().date()
-        self.prestation = Prestation.Prestation(date=now)
+        a_date = datetime.date(year=2012, month=5, day=26)
+        self.prestation = Prestation.Prestation(date=a_date)
         self.dbsession.add(self.prestation)
         self.dbsession.flush()
+
+        self.biz = BusinessWorker(
+            package='mozfinance.data.model',
+            dbsession=self.dbsession,
+            user=self.user)
+
+        with transaction(self.dbsession):
+            for i in range(12):
+                da_date = datetime.date(year=2012, month=i+1, day=1)
+                self.biz.month.create(date=da_date)
+
+
 
     def tearDown(self):
         self.dbsession.close()

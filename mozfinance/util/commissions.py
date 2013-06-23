@@ -1,21 +1,37 @@
 # -*- coding: utf-8 -*-
-def formula_checker(formula):
-    """Check if a formula is valid.
+"""List of commissions' variables and helpers for commissions
+computation.
 
-    The complete list of available variables is in warfinance.business.compute,
-    in the _get_prestation_commission_params method's body.
+"""
 
-    """
-    kwargs = {
-        'm_ca': float(1),
-        'm_mb': float(1),
-        'm_bc': float(1),
-        'm_tc': float(1),
-        'm_ff': float(1),
-        'p_c': float(1),
-        'p_m': float(1),
-        'p_pv': float(1)
+
+_COMMISSIONS_VARIABLES = {
+    'month': {
+        'm_ca': {'attr': 'revenue', 'text': u'Chiffre d\'affaire du mois'},
+        'm_mb': {'attr': 'gross_margin', 'text': u'Marge brute du mois'},
+        'm_bc': {'attr': 'commission_base', 'text': u'Base de commission du mois'},
+    },
+    'prestation': {
+        'p_tc': {'attr': 'total_cost', 'text': u'Total des coûts de la prestation'},
+        'p_m': {'attr': 'margin', 'text': u'Marge de la prestation'},
+        'p_pv': {'attr': 'selling_price', 'text': u'Prix de vente de la prestation'},
     }
+}
+
+
+def formula_checker(formula):
+    """Return True if a formula is valid, and False otherwise."""
+    keys = list()
+
+    for key in _COMMISSIONS_VARIABLES['prestation']:
+        keys.append(key)
+
+    for key in _COMMISSIONS_VARIABLES['month']:
+        keys.append(key)
+
+    kwargs = {}
+    for key in keys:
+        kwargs[key] = float(1)
 
     try:
         formula = str(formula).format(**kwargs)
