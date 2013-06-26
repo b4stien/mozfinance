@@ -46,8 +46,6 @@ class TestData(unittest.TestCase):
                 da_date = datetime.date(year=2012, month=i+1, day=1)
                 self.biz.month.create(date=da_date)
 
-
-
     def tearDown(self):
         self.dbsession.close()
         mozbase.model.Base.metadata.drop_all(self.engine)

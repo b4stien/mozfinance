@@ -40,7 +40,7 @@ class Prestation(Base):
     id = Column(Integer, primary_key=True)
 
     date = Column(Date, index=True)
-    client = Column(Unicode(length=30))
+    client = Column(Unicode(length=60))
     selling_price = Column(Float)
 
     salesmen = association_proxy('prestation_salesmen', 'salesman')
