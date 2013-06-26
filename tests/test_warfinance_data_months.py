@@ -1,10 +1,7 @@
  # -*- coding: utf-8 -*-
 from datetime import date
 
-from sqlalchemy.orm.exc import NoResultFound
 from voluptuous import MultipleInvalid
-
-from mozbase.model import *
 
 from mozfinance.data.month import MonthData
 from mozfinance.data.model import *
@@ -33,8 +30,6 @@ class TestCreateMonth(TestMonthsData):
             date=month_date)
         self.assertTrue(isinstance(month, Month.Month))
         self.assertEqual(month.date, month_date)
-        with self.assertRaises(NoResultFound):
-            self.dbsession.query(Action.Action).one()
 
     def test_wrong_date(self):
         with self.assertRaises(MultipleInvalid):

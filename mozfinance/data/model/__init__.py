@@ -6,6 +6,10 @@ It could be use as a source to create custom working SQLA-Classes. Every
 attribute/method of each SQLA-Class is mandatory.
 
 """
-from mozbase.model import Base
+from sqlalchemy.ext.declarative import declarative_base
 
-__all__ = ['Month', 'Prestation', 'Salesman', 'Cost', 'CostPrestation', 'CostMonth', 'AssPrestationSalesman']
+
+__all__ = ['User', 'Month', 'Prestation', 'Salesman', 'Cost', 'CostPrestation', 'CostMonth', 'AssPrestationSalesman']
+
+
+Base = declarative_base()

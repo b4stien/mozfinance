@@ -1,9 +1,5 @@
  # -*- coding: utf-8 -*-
-import datetime
-
 from sqlalchemy.orm.exc import NoResultFound
-
-from mozbase.model import *
 
 from mozfinance.data.prestation import PrestationData
 from mozfinance.data.salesman import SalesmanData
@@ -47,8 +43,6 @@ class TestPrestationsBase(TestPrestationsData):
             self.prestation = self.presta_data.set_selling_price(
                 prestation_id=self.prestation.id,
                 selling_price=12)
-        with self.assertRaises(NoResultFound):
-            self.dbsession.query(Action.Action).one()
 
     def test_wrong_prestation(self):
         with self.assertRaises(AttributeError):

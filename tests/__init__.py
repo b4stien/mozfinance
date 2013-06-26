@@ -6,11 +6,9 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from dogpile.cache import make_region
 
-import mozbase.model
-from mozbase.model import *
-from mozbase.data.user import UserData
 from mozbase.util.database import transaction
 
+import mozfinance.data.model
 from mozfinance.data.model import *
 from mozfinance.biz import BusinessWorker
 
@@ -19,7 +17,7 @@ class TestData(unittest.TestCase):
 
     def setUp(self):
         self.engine = create_engine('sqlite:///:memory:', echo=False)
-        mozbase.model.Base.metadata.create_all(self.engine)
+        mozfinance.data.model.Base.metadata.create_all(self.engine)
 
         Session = sessionmaker(bind=self.engine)
         self.dbsession = Session()
@@ -27,9 +25,10 @@ class TestData(unittest.TestCase):
         cache_region = make_region().configure('dogpile.cache.memory')
         setattr(self.dbsession, 'cache', cache_region)
 
-        self.user_data = UserData(dbsession=self.dbsession)
-        self.user = self.user_data.create(
-            login='bastien', mail='bastien@test')
+        self.user = User.User(login='bastien', mail='bastien@test')
+        self.dbsession.add(self.user)
+        self.dbsession.flush()
+
 
         a_date = datetime.date(year=2012, month=5, day=26)
         self.prestation = Prestation.Prestation(date=a_date)
@@ -48,8 +47,7 @@ class TestData(unittest.TestCase):
 
     def tearDown(self):
         self.dbsession.close()
-        mozbase.model.Base.metadata.drop_all(self.engine)
+        mozfinance.data.model.Base.metadata.drop_all(self.engine)
         del self.dbsession
-        del self.user_data
         del self.user
         del self.prestation

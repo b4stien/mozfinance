@@ -2,8 +2,6 @@
 from sqlalchemy.orm.exc import NoResultFound
 from voluptuous import MultipleInvalid
 
-from mozbase.model import *
-
 from mozfinance.data.cost import CostPrestationData
 from mozfinance.data.model import *
 from . import TestData
@@ -33,24 +31,18 @@ class TestCreateCost(TestCostsData):
         self.assertTrue(isinstance(cost, CostPrestation.CostPrestation))
         self.assertEqual(reason, cost.reason)
         self.assertEqual(cost.prestation, self.prestation)
-        with self.assertRaises(NoResultFound):
-            self.dbsession.query(Action.Action).one()
 
     def test_wrong_reason(self):
         with self.assertRaises(MultipleInvalid):
             self.pcost_data.create(
                 reason='Not unicode',
                 prestation=self.prestation)
-        with self.assertRaises(NoResultFound):
-            self.dbsession.query(Action.Action).one()
 
     def test_wrong_amount(self):
         with self.assertRaises(MultipleInvalid):
             self.pcost_data.create(
                 amount=12,
                 prestation=self.prestation)
-        with self.assertRaises(NoResultFound):
-            self.dbsession.query(Action.Action).one()
 
 
 class TestUpdateCost(TestCostsData):

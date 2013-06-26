@@ -2,14 +2,30 @@
 from importlib import import_module
 import datetime
 
-from mozbase.data import GetWorker as MozbaseGetWorker
+from mozbase.data import RawDataRepository
 
 
-class GetWorker(MozbaseGetWorker):
+class GetWorker(RawDataRepository):
 
     def __init__(self, dbsession=None, package=None, **kwargs):
-        MozbaseGetWorker.__init__(self, dbsession)
+        RawDataRepository.__init__(self, dbsession)
         self._package = package
+
+    def user(self, user_id=None, user=None, **kwargs):
+        User = import_module('.User', package=self._package)
+        if user:
+            if not isinstance(user, User.User):
+                raise AttributeError('user provided is not a correct User')
+
+            return user
+
+        elif user_id:
+            return self._dbsession.query(User.User)\
+                .filter(User.User.id == user_id)\
+                .one()
+
+        else:
+            raise TypeError('User informations not provided')
 
     def salesman(self, salesman_id=None, salesman=None, **kwargs):
         """Return a salesman given a salesman or a salesman_id."""

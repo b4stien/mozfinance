@@ -2,8 +2,6 @@
 from sqlalchemy.orm.exc import NoResultFound
 from voluptuous import MultipleInvalid
 
-from mozbase.model import *
-
 from mozfinance.data.salesman import SalesmanData
 from mozfinance.data.model import *
 from . import TestData

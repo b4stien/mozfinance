@@ -37,6 +37,7 @@ class TestWarfdataInit(TestData):
             )
 
     def test_datarepo_init_user_id(self):
+        print self.user.id
         DataRepository(
             package='mozfinance.data.model',
             dbsession=self.dbsession,

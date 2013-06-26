@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 """Package for all object API."""
-from mozbase.data import AuthenticatedDataRepository
+from mozbase.data import RawDataRepository
 
 from mozfinance.data.subworkers.get import GetWorker
 from mozfinance.data.subworkers.expire import ExpireWorker
 
 
-class DataRepository(AuthenticatedDataRepository):
+class DataRepository(RawDataRepository):
     """ABC for data repository objects.
 
     Provide (mainly):
@@ -28,9 +28,10 @@ class DataRepository(AuthenticatedDataRepository):
 
         Keyword arguments:
             user -- user using the DataRepository
+            user_id -- id of the user
 
         """
-        AuthenticatedDataRepository.__init__(self, dbsession, **kwargs)
+        RawDataRepository.__init__(self, dbsession)
 
         if not package:
             raise TypeError('package not provided')
@@ -39,3 +40,5 @@ class DataRepository(AuthenticatedDataRepository):
 
         self._get = GetWorker(dbsession=dbsession, package=package)
         self._expire = ExpireWorker(dbsession=dbsession, package=package)
+
+        self._user = self._get.user(**kwargs)

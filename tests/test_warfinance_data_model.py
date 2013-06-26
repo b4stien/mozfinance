@@ -1,10 +1,6 @@
  # -*- coding: utf-8 -*-
 import unittest
 
-from sqlalchemy import create_engine
-
-import mozbase.model
-
 from mozfinance.data.model import CostPrestation, Month, Prestation, Salesman
 from . import TestData
 
