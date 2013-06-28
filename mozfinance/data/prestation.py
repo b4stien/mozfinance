@@ -10,6 +10,9 @@ from . import DataRepository
 class PrestationData(DataRepository):
     """DataRepository object for prestations."""
 
+    _patch_exports = ['set_selling_price', 'add_salesman', 'remove_salesman',
+                      'set_salesman_ratio', 'set_salesman_formula']
+
     def __init__(self, **kwargs):
         DataRepository.__init__(self, **kwargs)
         self.Prestation = import_module('.Prestation', package=self._package)
@@ -18,11 +21,11 @@ class PrestationData(DataRepository):
         self.cost = cost.CostPrestationData(**kwargs)
 
     def get(self, prestation_id=None, prestation=None, **kwargs):
-        """Return a presta with additional attributes.
+        """Return a prestation.
 
-        Keyword arguments:
-            prestation -- see mozfinance.data.DataRepository._get_prestation (*)
-            prestation_id -- see mozfinance.data.DataRepository._get_prestation (*)
+        Arguments:
+            prestation -- explicit (*)
+            prestation_id -- id of the prestation (*)
 
         * at least one is required
 
