@@ -11,7 +11,7 @@ class PrestationData(DataRepository):
     """DataRepository object for prestations."""
 
     _patch_exports = ['set_selling_price', 'add_salesman', 'remove_salesman',
-                      'set_salesman_ratio', 'set_salesman_formula']
+                      'set_salesman_ratio', 'set_salesman_formula', 'cost']
 
     def __init__(self, **kwargs):
         DataRepository.__init__(self, **kwargs)
