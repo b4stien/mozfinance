@@ -30,12 +30,12 @@ class MonthData(DataRepository):
             if not isinstance(date, datetime.date):
                 raise AttributeError('date provided is not a datetime.date')
 
-            _date = datetime.date(
+            date = datetime.date(
                 year=date.year,
                 month=date.month,
                 day=1)
 
-        month = self._get.month(month_id, month, _date)
+        month = self._get.month(month_id, month, date)
 
         return month
 

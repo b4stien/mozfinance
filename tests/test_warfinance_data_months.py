@@ -31,6 +31,9 @@ class TestCreateMonth(TestMonthsData):
         self.assertTrue(isinstance(month, Month.Month))
         self.assertEqual(month.date, month_date)
 
+        other_month = self.month_data.get(month.id)
+        self.assertEqual(other_month, month)
+
     def test_wrong_date(self):
         with self.assertRaises(MultipleInvalid):
             self.month_data.create(
