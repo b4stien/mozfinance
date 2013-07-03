@@ -19,7 +19,7 @@ class DataRepository(RawDataRepository):
 
     """
 
-    def __init__(self, dbsession=None, package=None, **kwargs):
+    def __init__(self, dbsession=None, package=None):
         """Init a DataRepository object.
 
         Arguments:
@@ -40,5 +40,3 @@ class DataRepository(RawDataRepository):
 
         self._get = GetWorker(dbsession=dbsession, package=package)
         self._expire = ExpireWorker(dbsession=dbsession, package=package)
-
-        self._user = self._get.user(**kwargs)

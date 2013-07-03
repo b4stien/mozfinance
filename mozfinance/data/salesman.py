@@ -9,8 +9,8 @@ from . import DataRepository
 class SalesmanData(DataRepository):
     """DataRepository object for salesmen."""
 
-    def __init__(self, **kwargs):
-        DataRepository.__init__(self, **kwargs)
+    def __init__(self, dbsession=None, package=None):
+        DataRepository.__init__(self, dbsession, package)
         self.Salesman = import_module('.Salesman', package=self._package)
 
     @db_method

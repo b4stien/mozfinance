@@ -25,10 +25,6 @@ class TestData(unittest.TestCase):
         cache_region = make_region().configure('dogpile.cache.memory')
         setattr(self.dbsession, 'cache', cache_region)
 
-        self.user = User.User(login='bastien', mail='bastien@test')
-        self.dbsession.add(self.user)
-        self.dbsession.flush()
-
 
         a_date = datetime.date(year=2012, month=5, day=26)
         self.prestation = Prestation.Prestation(date=a_date)
@@ -37,8 +33,7 @@ class TestData(unittest.TestCase):
 
         self.biz = BusinessWorker(
             package='mozfinance.data.model',
-            dbsession=self.dbsession,
-            user=self.user)
+            dbsession=self.dbsession)
 
         with transaction(self.dbsession):
             for i in range(12):
@@ -49,5 +44,4 @@ class TestData(unittest.TestCase):
         self.dbsession.close()
         mozfinance.data.model.Base.metadata.drop_all(self.engine)
         del self.dbsession
-        del self.user
         del self.prestation

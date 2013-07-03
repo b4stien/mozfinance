@@ -14,8 +14,7 @@ class TestMonthsData(TestData):
         TestData.setUp(self)
         self.month_data = MonthData(
             package='mozfinance.data.model',
-            dbsession=self.dbsession,
-            user=self.user)
+            dbsession=self.dbsession)
 
     def tearDown(self):
         TestData.tearDown(self)
@@ -42,71 +41,17 @@ class TestCreateMonth(TestMonthsData):
             self.month_data.create(
                 date=date(year=2008, month=10, day=14))
 
-    def test_complete_create(self):
-        month_date = date(year=2011, month=1, day=1)
-        month = self.month_data.create(
-            date=month_date,
-            cost=float(27000))
-        self.assertEqual(month.date, month_date)
-        self.assertEqual(month.cost, float(27000))
-
 
 class TestUpdateMonth(TestMonthsData):
 
-    def test_correct_update(self):
+    def test_basique(self):
         month_date = date(year=2012, month=12, day=1)
         month = self.month_data.get(
             date=month_date)
         self.assertEqual(month.date, month_date)
-        month = self.month_data.update(
-            month=month,
-            cost=float(27000))
-        self.assertEqual(month.date, month_date)
-        self.assertEqual(month.cost, float(27000))
-
-    def test_update_with_date(self):
-        month_date = date(year=2012, month=12, day=1)
-        month = self.month_data.get(
-            date=month_date)
-        month = self.month_data.update(
-            date=month_date,
-            cost=float(27000))
-        self.assertEqual(month.cost, float(27000))
-
-    def test_update_with_month_id(self):
-        month_date = date(year=2012, month=12, day=1)
-        month = self.month_data.get(
-            date=month_date)
-        month = self.month_data.update(
-            month_id=month.id,
-            cost=float(27000))
-        self.assertEqual(month.cost, float(27000))
-
-    def test_correct_noupdate(self):
-        month_date = date(year=2012, month=12, day=1)
-        month = self.month_data.update(
-            date=month_date,
-            cost=float(27000))
-        month = self.month_data.update(
-            month=month,
-            cost=float(27000))
-        self.assertTrue(not month)
-
-    def test_wrong_month(self):
-        with self.assertRaises(AttributeError):
+        with self.assertRaises(NotImplementedError):
             self.month_data.update(
-                month='month',
-                cost=float(27000))
-
-    def test_wrong_date(self):
-        with self.assertRaises(AttributeError):
-            self.month_data.update(
-                date='month',
-                cost=float(27000))
-
-    def test_wrong_info(self):
-        with self.assertRaises(TypeError):
-            self.month_data.update(
+                month=month,
                 cost=float(27000))
 
 

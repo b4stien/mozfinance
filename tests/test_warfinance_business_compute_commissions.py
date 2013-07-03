@@ -24,16 +24,16 @@ class TestBusinessCompute(TestData):
     def tearDown(self):
         TestData.tearDown(self)
         mozfinance.COMMISSIONS_BONUSES = []
-        del self.biz
 
     def test_get_simple_commission(self):
         now = datetime.datetime.now()
         now_date = now.date()
         month_date = datetime.date(year=now.year, month=now.month, day=1)
 
-        month = self.biz.month.create(
-            date=month_date,
-            cost=float(2000))
+        month = self.biz.month.create(date=month_date)
+        self.biz.month.cost.create(month=month, amount=float(2000), reason=u'Noa')
+
+        print month.total_month_cost
 
         presta = Prestation(
             date=now_date,
@@ -71,12 +71,11 @@ class TestBusinessCompute(TestData):
         month_date = datetime.date(year=2013, month=1, day=1)
         another_month_date = datetime.date(year=2013, month=2, day=1)
 
-        month = self.biz.month.create(
-            date=month_date,
-            cost=float(2000))
-        self.biz.month.create(
-            date=another_month_date,
-            cost=float(2000))
+        month = self.biz.month.create(date=month_date)
+        self.biz.month.create(date=another_month_date)
+
+        self.biz.month.cost.create(month=month, amount=float(2000), reason=u'NoReson')
+        self.biz.month.cost.create(month_date=another_month_date, amount=float(2000), reason=u'NoReson')
 
         presta = Prestation(
             date=month_date,
@@ -144,12 +143,14 @@ class TestBusinessCompute(TestData):
         month_date = datetime.date(year=2012, month=1, day=1)
         another_month_date = datetime.date(year=2012, month=2, day=1)
 
-        month = self.biz.month.update(
-            date=month_date,
-            cost=float(2000))
-        self.biz.month.update(
-            date=another_month_date,
-            cost=float(2000))
+        self.biz.month.cost.create(
+            month_date=month_date,
+            amount=float(2000),
+            reason=u'NoReason')
+        self.biz.month.cost.create(
+            month_date=another_month_date,
+            amount=float(2000),
+            reason=u'NoReason')
 
         presta = Prestation(
             date=month_date,
@@ -219,6 +220,8 @@ class TestBusinessCompute(TestData):
 
         self.assertEqual(presta.prestation_salesmen[0].commission, commission_ideal_p)
         self.assertEqual(another_presta.prestation_salesmen[0].commission, commission_ideal_ap)
+
+        month = self.biz.month.get(date=month_date)
 
         self.assertEqual(month.month_salesmen[0].commission_prestations, commission_ideal_p+commission_ideal_ap)
         self.assertEqual(month.month_salesmen[0].commission_bonuses, float(476))

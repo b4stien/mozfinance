@@ -13,8 +13,7 @@ class TestPrestationsData(TestData):
         TestData.setUp(self)
         self.presta_data = PrestationData(
             package='mozfinance.data.model',
-            dbsession=self.dbsession,
-            user=self.user)
+            dbsession=self.dbsession)
 
     def tearDown(self):
         TestData.tearDown(self)
@@ -67,8 +66,7 @@ class TestPrestationsSalesmen(TestPrestationsData):
         TestPrestationsData.setUp(self)
         self.salesmen_data = SalesmanData(
             package='mozfinance.data.model',
-            dbsession=self.dbsession,
-            user=self.user)
+            dbsession=self.dbsession)
         self.salesman = self.salesmen_data.create(
             firstname=u'Johny',
             lastname=u'Doe')
@@ -139,8 +137,7 @@ class TestFormulae(TestPrestationsData):
         TestPrestationsData.setUp(self)
         self.salesmen_data = SalesmanData(
             package='mozfinance.data.model',
-            dbsession=self.dbsession,
-            user=self.user)
+            dbsession=self.dbsession)
         self.salesman = self.salesmen_data.create(
             firstname=u'Robert',
             lastname=u'Louis')
@@ -214,8 +211,7 @@ class TestRatios(TestPrestationsData):
         TestPrestationsData.setUp(self)
         self.salesmen_data = SalesmanData(
             package='mozfinance.data.model',
-            dbsession=self.dbsession,
-            user=self.user)
+            dbsession=self.dbsession)
         self.salesman = self.salesmen_data.create(
             firstname=u'Robert',
             lastname=u'Louis')

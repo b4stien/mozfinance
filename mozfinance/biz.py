@@ -13,16 +13,10 @@ class BusinessWorker(RawDataRepository):
 
     _patch_exports = ['month', 'year', 'prestation', 'salesman']
 
-    def __init__(self, dbsession=None, user_id=None, user=None, package=None):
+    def __init__(self, dbsession=None, package=None):
         RawDataRepository.__init__(self, dbsession)
 
-        kwargs = dict(
-            dbsession=dbsession,
-            user_id=user_id,
-            user=user,
-            package=package)
-
-        self.month = month.MonthData(**kwargs)
-        self.year = year.YearData(**kwargs)
-        self.prestation = prestation.PrestationData(**kwargs)
-        self.salesman = salesman.SalesmanData(**kwargs)
+        self.month = month.MonthData(dbsession, package)
+        self.year = year.YearData(dbsession, package)
+        self.prestation = prestation.PrestationData(dbsession, package)
+        self.salesman = salesman.SalesmanData(dbsession, package)

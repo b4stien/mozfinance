@@ -13,12 +13,12 @@ class PrestationData(DataRepository):
     _patch_exports = ['set_selling_price', 'add_salesman', 'remove_salesman',
                       'set_salesman_ratio', 'set_salesman_formula', 'cost']
 
-    def __init__(self, **kwargs):
-        DataRepository.__init__(self, **kwargs)
+    def __init__(self, dbsession=None, package=None):
+        DataRepository.__init__(self, dbsession, package)
         self.Prestation = import_module('.Prestation', package=self._package)
         self.PrestationSalesman = import_module('.AssPrestationSalesman', package=self._package)
 
-        self.cost = cost.CostPrestationData(**kwargs)
+        self.cost = cost.CostPrestationData(dbsession, package)
 
     def get(self, prestation_id=None, prestation=None, **kwargs):
         """Return a prestation.

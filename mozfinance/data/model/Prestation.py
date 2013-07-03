@@ -9,7 +9,6 @@ from voluptuous import Schema, Required, All, Length
 from mozbase.util.cache import cached_property
 
 from . import Base
-import Month
 from mozfinance.util.commissions import _COMMISSIONS_VARIABLES
 
 
@@ -64,14 +63,6 @@ class Prestation(Base):
             month=self.date.month,
             day=1)
         return month_date
-
-    @property
-    def month(self):
-        """Return the prestation's month."""
-        month = object_session(self).query(Month.Month)\
-            .filter(Month.Month.date == self.month_date)\
-            .one()
-        return month
 
     @cached_property('prestation:{instance.id}:total_cost')
     def total_cost(self):

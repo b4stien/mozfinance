@@ -10,6 +10,8 @@ _COMMISSIONS_VARIABLES = {
         'm_ca': {'attr': 'revenue', 'text': u'Chiffre d\'affaire du mois'},
         'm_mb': {'attr': 'gross_margin', 'text': u'Marge brute du mois'},
         'm_bc': {'attr': 'commission_base', 'text': u'Base de commission du mois'},
+        'm_tcm': {'attr': 'total_month_cost', 'text': u'Total des coûts associés au mois'},
+        'm_tcp': {'attr': 'total_prestation_cost', 'text': u'Total des coûts associés aux prestations du mois'},
     },
     'prestation': {
         'p_tc': {'attr': 'total_cost', 'text': u'Total des coûts de la prestation'},

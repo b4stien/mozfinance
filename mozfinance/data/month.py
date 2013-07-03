@@ -4,17 +4,20 @@ import datetime
 
 from mozbase.util.database import db_method
 
+from mozfinance.data import cost
 from . import DataRepository
 
 
 class MonthData(DataRepository):
     """DataRepository object for months."""
 
-    def __init__(self, **kwargs):
-        DataRepository.__init__(self, **kwargs)
+    def __init__(self, dbsession=None, package=None):
+        DataRepository.__init__(self, dbsession, package)
         self._Month = import_module('.Month', package=self._package)
 
-    def get(self, month_id=None, month=None, date=None, **kwargs):
+        self.cost = cost.CostMonthData(dbsession, package)
+
+    def get(self, month_id=None, month=None, date=None):
         """Return a month.
 
         Arguments:
@@ -40,58 +43,24 @@ class MonthData(DataRepository):
         return month
 
     @db_method
-    def create(self, **kwargs):
+    def create(self, date=None):
         """Create and insert a month in DB. Return this month.
 
-        Keyword arguments:
-            see mozfinance.data.model.Month.MonthSchema
+        Arguments:
+            date -- the datetime.date of the first day of the month we
+                    want to create
 
         """
-        self._Month.MonthSchema(kwargs)  # Validate datas
+        self._Month.MonthDateSchema(date)  # Validate datas
 
-        month = self._Month.Month(**kwargs)
+        month = self._Month.Month(date=date)
         self._dbsession.add(month)
 
         return month
 
-    @db_method
-    def update(self, month_id=None, month=None, date=None, **kwargs):
-        """Update a month. Return False if there is no update or the
-        updated month.
-
-        Arguments:
-            month_id -- id of the month to update (*)
-            month -- month to update (*)
-            date -- date of the month to update (*)
-
-        * at least one is required
-
-        Keyword arguments:
-            see mozfinance.datamodel.Month.MonthSchema
-
-        """
-        _month = self._get.month(month_id, month, date)
-
-        month_dict = {k: getattr(_month, k) for k in _month.create_dict
-                      if getattr(_month, k) is not None}
-        new_month_dict = month_dict.copy()
-
-        item_to_update = [item for item in _month.update_dict if item in kwargs]
-
-        for item in item_to_update:
-            new_month_dict[item] = kwargs[item]
-
-        self._Month.MonthSchema(new_month_dict)
-
-        for item in item_to_update:
-            setattr(_month, item, kwargs[item])
-
-        if new_month_dict == month_dict:
-            return False
-
-        self._expire.month(month=_month)
-
-        return _month
+    def update(self, *args, **kwargs):
+        """There is not point in updating a month."""
+        raise NotImplementedError
 
     def remove(self, *args, **kwargs):
         """There is no point in removing a month from DB."""

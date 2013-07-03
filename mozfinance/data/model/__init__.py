@@ -9,7 +9,7 @@ attribute/method of each SQLA-Class is mandatory.
 from sqlalchemy.ext.declarative import declarative_base
 
 
-__all__ = ['User', 'Month', 'Prestation', 'Salesman', 'Cost', 'CostPrestation', 'CostMonth', 'AssPrestationSalesman']
+__all__ = ['User', 'Prestation', 'Month', 'Salesman', 'Cost', 'CostPrestation', 'CostMonth', 'AssPrestationSalesman']
 
 
 Base = declarative_base()

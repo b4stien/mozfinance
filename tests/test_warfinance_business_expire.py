@@ -1,7 +1,6 @@
  # -*- coding: utf-8 -*-
 import datetime
 
-from mozfinance.biz import BusinessWorker
 from mozfinance.data.model.Prestation import Prestation
 
 from . import TestData
@@ -11,14 +10,9 @@ class TestBusinessExpire(TestData):
 
     def setUp(self):
         TestData.setUp(self)
-        self.biz = BusinessWorker(
-            package='mozfinance.data.model',
-            dbsession=self.dbsession,
-            user=self.user)
 
     def tearDown(self):
         TestData.tearDown(self)
-        del self.biz
 
     def test_prestation_expire(self):
         a_date = datetime.date(year=2012, month=5, day=27)

@@ -1,15 +1,14 @@
 # -*- coding: utf-8 -*-
 import datetime
 
-from sqlalchemy import Column, Integer, Date, Float, and_, extract
-from sqlalchemy.orm import relationship, foreign, remote
+from sqlalchemy import Column, Integer, Date, and_, extract
+from sqlalchemy.orm import relationship, foreign, remote, backref
 from voluptuous import Schema, Required, All, Invalid
 
 from mozbase.util.cache import cached_property
 
 from . import Base
 import Prestation
-from FakeAssMonthSalesman import MonthSalesman
 from mozfinance.util.commissions import _COMMISSIONS_VARIABLES
 
 
@@ -19,10 +18,7 @@ class Month(Base):
 
     date = Column(Date, index=True)  # First day of the month
 
-    cost = Column(Float)
-    taxes = Column(Float)
-    salaries = Column(Float)
-    commissions_refined = Column(Float)
+    costs = relationship('CostMonth', lazy='dynamic')
 
     _primaryjoin = and_(
         remote(
@@ -38,10 +34,8 @@ class Month(Base):
         primaryjoin=_primaryjoin,
         viewonly=True,
         uselist=True,
-        lazy='dynamic')
-
-    update_dict = set(['cost', 'salaries', 'taxes', 'commissions_refined'])  # For update purpose
-    create_dict = set(['date', 'cost', 'salaries', 'taxes', 'commissions_refined'])
+        lazy='dynamic',
+        backref=backref('month', uselist=False))
 
     _key_store_key_template = 'month:{instance.id}'
     _com_ksk_template = 'month:{instance.id}:commission_ks'
@@ -55,6 +49,18 @@ class Month(Base):
                 revenue += presta.selling_price
 
         return revenue
+
+    @cached_property('month:{instance.id}:total_mcost')
+    def total_month_cost(self):
+        """Compute and return the sum of all the costs (CostMonth)
+        associated with this month.
+
+        """
+        total_mcost = float(0)
+        for cost in self.costs.all():
+            total_mcost += cost.amount
+
+        return total_mcost
 
     @cached_property('month:{instance.id}:total_pcost')
     def total_prestation_cost(self):
@@ -75,23 +81,20 @@ class Month(Base):
 
     @cached_property('month:{instance.id}:net_margin')
     def net_margin(self):
-        """Compute and return the commission base."""
-        net_margin = self.gross_margin
-
-        if self.cost: net_margin -= self.cost
-        if self.taxes: net_margin -= self.taxes
-        if self.salaries: net_margin -= self.salaries
-        if self.commissions_refined: net_margin -= self.commissions_refined
-
-        return net_margin
+        """Compute and return the month's net margin."""
+        return self.gross_margin - self.total_month_cost
 
     @cached_property('month:{instance.id}:commission_base')
     def commission_base(self):
         """Compute and return the month's commission base."""
-        commission_base = self.gross_margin
+        import CostMonth
 
-        if self.cost: commission_base -= self.cost
-        if self.salaries: commission_base -= self.salaries
+        commission_base = self.gross_margin
+        costs_in_bc = self.costs\
+            .filter(CostMonth.CostMonth.no_commission_base == False)
+
+        for cost in costs_in_bc.all():
+            commission_base -= cost.amount
 
         return commission_base
 
@@ -115,6 +118,8 @@ class Month(Base):
         month.
 
         """
+        from FakeAssMonthSalesman import MonthSalesman
+
         salesmen = []
         for prestation in self.prestations:
             for presta_sm in prestation.prestation_salesmen:
@@ -137,10 +142,4 @@ def MonthDate(msg=None):
             return v
     return f
 
-MonthSchema = Schema({
-    Required('date'): All(datetime.date, MonthDate()),
-    'cost': float,
-    'taxes': float,
-    'salaries': float,
-    'commissions_refined': float
-})
+MonthDateSchema = Schema(All(datetime.date, MonthDate()))
