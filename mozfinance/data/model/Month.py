@@ -3,7 +3,7 @@ import datetime
 
 from sqlalchemy import Column, Integer, Date, and_, extract
 from sqlalchemy.orm import relationship, foreign, remote, backref
-from voluptuous import Schema, Required, All, Invalid
+from voluptuous import Schema, All, Invalid
 
 from mozbase.util.cache import cached_property
 
