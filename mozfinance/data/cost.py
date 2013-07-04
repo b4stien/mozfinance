@@ -120,26 +120,48 @@ class CostMonthData(CostData):
         self._CostClass = CostMonth.CostMonth
         self._CostSchema = CostMonth.CostMonthSchema
 
-    def create(self, month_id=None, month=None, month_date=None, **kwargs):
+    def create(self, month_id=None, month=None, month_date=None,
+               no_expire=False, **kwargs):
         month = self._get.month(month_id, month, month_date)
         kwargs['month'] = month
 
         cost = CostData.create(self, **kwargs)
-        self._expire.month(month=month)
+        if not no_expire:
+            self._expire.month(month=month)
 
         return cost
 
-    def update(self, cost_id=None, cost=None, **kwargs):
+    def update(self, cost_id=None, cost=None, no_expire=False, **kwargs):
         cost = self._get.cost(cost_id, cost)
         kwargs['cost'] = cost
 
         will_return = CostData.update(self, **kwargs)
-        self._expire.month(month=cost.month)
+        if not no_expire:
+            self._expire.month(month=cost.month)
 
         return will_return
 
-    def remove(self, cost_id=None, cost=None):
+    def remove(self, cost_id=None, cost=None, no_expire=False):
         cost = self._get.cost(cost_id, cost)
         month = cost.month
         CostData.remove(self, cost=cost)
+        if not no_expire:
+            self._expire.month(month=month)
+
+    def actions_batch(self, month_id=None, month=None, create=None,
+                      update=None, remove=None):
+        month = self._get.month(month_id, month)
+
+        if create:
+            for item in create:
+                self.create(no_expire=True, **create[item])
+
+        if update:
+            for item in update:
+                self.update(no_expire=True, **update[item])
+
+        if remove:
+            for item in remove:
+                self.remove(no_expire=True, **remove[item])
+
         self._expire.month(month=month)
