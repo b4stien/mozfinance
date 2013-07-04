@@ -2,7 +2,7 @@
 import datetime
 
 from sqlalchemy import Column, Integer, Date, and_, extract
-from sqlalchemy.orm import relationship, foreign, remote, backref
+from sqlalchemy.orm import relationship, foreign, remote, backref, object_session
 from voluptuous import Schema, All, Invalid
 
 from mozbase.util.cache import cached_property
@@ -119,12 +119,9 @@ class Month(Base):
 
         """
         from FakeAssMonthSalesman import MonthSalesman
+        from Salesman import Salesman
 
-        salesmen = []
-        for prestation in self.prestations:
-            for presta_sm in prestation.prestation_salesmen:
-                if not presta_sm.salesman in salesmen:
-                    salesmen.append(presta_sm.salesman)
+        salesmen = object_session(self).query(Salesman).all()
 
         month_salesmen = []
         for salesman in salesmen:

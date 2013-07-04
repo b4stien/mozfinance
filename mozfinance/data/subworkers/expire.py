@@ -33,13 +33,10 @@ class ExpireWorker(RawDataRepository):
         format_dict = dict()
         format_dict['instance'] = instance
 
-        # Determine which store will be expired.
         if ksk_tpl_name is None:
-            _ksk_tpl_name = '_key_store_key_template'
-        else:
-            _ksk_tpl_name = ksk_tpl_name
+            ksk_tpl_name = '_key_store_key_template'
 
-        key_store_key = getattr(instance, _ksk_tpl_name).format(**format_dict)
+        key_store_key = getattr(instance, ksk_tpl_name).format(**format_dict)
 
         key_store = self._dbsession.cache.get(key_store_key)
         if isinstance(key_store, NoValue):
@@ -64,7 +61,13 @@ class ExpireWorker(RawDataRepository):
 
         prestas = month.prestations.all()
         for presta in prestas:
-            self.prestation_salesmen(prestation=presta)
+            for presta_sm in presta.prestation_salesmen:
+                self._expire_instance(presta_sm)
+
+            self._expire_instance(presta, '_com_ksk_template')
+
+        self._expire_instance(month, '_com_ksk_template')
+        self.month_salesmen(month=month)
 
         self.year(year_id=month.date.year)
 
