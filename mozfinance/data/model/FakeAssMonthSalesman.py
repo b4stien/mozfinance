@@ -26,7 +26,7 @@ class MonthSalesman(object):
         for this salesman during this month.
 
         """
-        presta_sms = self.salesman.salesman_prestations\
+        presta_sms = self.salesman.salesman_prestations_query\
             .join(PrestationSalesman.prestation)\
             .filter(extract('year', Prestation.Prestation.date) == self.month.date.year)\
             .filter(extract('month', Prestation.Prestation.date) == self.month.date.month)\

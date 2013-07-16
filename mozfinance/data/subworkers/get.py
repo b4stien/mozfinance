@@ -153,7 +153,7 @@ class GetWorker(RawDataRepository):
 
         PrestationSalesman = import_module(
             '.AssPrestationSalesman', package=self._package)
-        presta_sm = presta.prestation_salesmen\
+        presta_sm = presta.prestation_salesmen_query\
             .filter(PrestationSalesman.PrestationSalesman.salesman == salesman)\
             .one()
 

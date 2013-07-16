@@ -6,10 +6,13 @@ A part of the dependency map is "written" here in methods. The rest of
 this map is directly into model's object, with the key_store mechanism.
 
 """
+from importlib import import_module
 
 from dogpile.cache.api import NoValue
+from sqlalchemy.orm import joinedload
 
 from mozbase.data import RawDataRepository
+
 from mozfinance.data.subworkers.get import GetWorker
 
 
@@ -59,8 +62,10 @@ class ExpireWorker(RawDataRepository):
         month = self._get.month(month_id, month, date)
         self._expire_instance(month)
 
-        prestas = month.prestations.all()
-        for presta in prestas:
+        #Prestation = import_module('.Prestation', package=self._package)
+        #month_prestations = self._dbsession.query(Prestation.Prestation).options(joinedload('prestation_salesmen_joined')).all()
+        month_prestations = month.prestations.options(joinedload('prestation_salesmen'))
+        for presta in month_prestations:
             for presta_sm in presta.prestation_salesmen:
                 self._expire_instance(presta_sm)
 

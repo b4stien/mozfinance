@@ -22,12 +22,19 @@ class PrestationSalesman(Base):
     formula = Column(String)
 
     # bidirectional attribute with "dynamic" loading.
+    prestation_query = relationship(
+        Prestation.Prestation,
+        backref=backref('prestation_salesmen_query', cascade='all, delete-orphan', lazy='dynamic'))
+    salesman_query = relationship(
+        Salesman.Salesman,
+        backref=backref('salesman_prestations_query', cascade='all, delete-orphan', lazy='dynamic'))
+
     prestation = relationship(
         Prestation.Prestation,
-        backref=backref("prestation_salesmen", cascade='all, delete-orphan', lazy='dynamic'))
+        backref=backref('prestation_salesmen', cascade='all, delete-orphan'))
     salesman = relationship(
         Salesman.Salesman,
-        backref=backref("salesman_prestations", cascade='all, delete-orphan', lazy='dynamic'))
+        backref=backref('salesman_prestations', cascade='all, delete-orphan'))
 
     _key_store_key_template = 'prestation:{instance.prestation_id}:salesman:{instance.salesman_id}'
 
@@ -54,6 +61,6 @@ class PrestationSalesman(Base):
         else:
             # If ratio is not defined, we attribute a default "equal"
             # ratio.
-            ratio = float(1) / float(self.prestation.prestation_salesmen.count())
+            ratio = float(1) / float(self.prestation.prestation_salesmen_query.count())
 
         return eval(self.formula.format(**com_params)) * ratio
