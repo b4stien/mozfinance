@@ -13,13 +13,13 @@ class PrestationData(DataRepository):
     _patch_exports = ['set_selling_price', 'add_salesman', 'remove_salesman',
                       'set_salesman_ratio', 'set_salesman_formula', 'cost']
 
-    def __init__(self, bo=None, package=None):
-        DataRepository.__init__(self, bo, package)
+    def __init__(self, bo=None):
+        DataRepository.__init__(self, bo)
         self.Prestation = import_module('.Prestation', package=self._package)
         self.PrestationSalesman = import_module('.AssPrestationSalesman', package=self._package)
 
-        self.cost = cost.CostPrestationData(self._bo, package)
-        self.salesman = PrestationSalesmanData(self._bo, package)
+        self.cost = cost.CostPrestationData(self._bo)
+        self.salesman = PrestationSalesmanData(self._bo)
 
     def _get(self, prestation_id=None, prestation=None):
         """Return a prestation.
@@ -89,10 +89,76 @@ class PrestationData(DataRepository):
         return presta
 
 
+class BillPrestationData(DataRepository):
+
+    def __init__(self, bo=None):
+        DataRepository.__init__(self, bo)
+        self.BillPrestation = import_module(
+            '.BillPrestation',
+            package=self._package)
+
+    def _get(self, bill_id=None, bill=None):
+        """Return a bill (BillPrestation).
+
+        Keyword arguments:
+            bill -- explicit (*)
+            bill_id -- id of the bill (*)
+
+        * at least one is required
+
+        """
+        if bill:
+            if not isinstance(bill, self.BillPrestation.BillPrestation):
+                raise AttributeError(
+                    'bill provided is not a wb-BillPrestation')
+
+            return bill
+
+        elif bill_id:
+            return self._dbsession.query(self.BillPrestation.BillPrestation)\
+                .filter(self.BillPrestation.BillPrestation.id == bill_id).one()
+
+        else:
+            raise TypeError('Bill informations (bill or bill_id) not provided')
+
+    def get(self, bill_id=None, bill=None, **kwargs):
+        """Return a bill (BillPrestation). Accept extra arguments."""
+        return self._get(bill_id, bill)
+
+    @db_method
+    def create(self, prestation_id=None, prestation=None, **kwargs):
+        """Create a bill, add it to a prestation and return this bill.
+
+        Keyword arguments:
+            prestation_id -- id of the prestation (*)
+            prestation -- prestation (*)
+            see mozfinance.data.BillPrestation.BillPrestationSchema
+
+        * at least one is required
+        ** at least one is required
+
+        """
+        presta = self._bo.prestation._get(prestation_id, prestation)
+        kwargs['prestation'] = presta
+
+        self.BillPrestation.SalesmanSchema(kwargs)
+
+        bill = self.BillPrestation.BillPrestationSchema(**kwargs)
+        self._dbsession.add(bill)
+
+        self._bo.prestation._expire(prestation=presta)
+
+        return bill
+
+    @db_method
+    def remove(self, bill_id=None, bill=None):
+        pass
+
+
 class PrestationSalesmanData(DataRepository):
 
-    def __init__(self, bo=None, package=None):
-        DataRepository.__init__(self, bo, package)
+    def __init__(self, bo=None):
+        DataRepository.__init__(self, bo)
         self.PrestationSalesman = import_module(
             '.AssPrestationSalesman',
             package=self._package)

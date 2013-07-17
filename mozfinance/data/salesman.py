@@ -9,8 +9,8 @@ from . import DataRepository
 class SalesmanData(DataRepository):
     """DataRepository object for salesmen."""
 
-    def __init__(self, dbsession=None, package=None):
-        DataRepository.__init__(self, dbsession, package)
+    def __init__(self, bo=None):
+        DataRepository.__init__(self, bo)
         self.Salesman = import_module('.Salesman', package=self._package)
 
     def _get(self, salesman_id=None, salesman=None):
@@ -38,11 +38,11 @@ class SalesmanData(DataRepository):
         return self._get(salesman_id, salesman)
 
     @db_method
-    def create(self, pop_action=False, **kwargs):
+    def create(self, **kwargs):
         """Create and insert a salesman in DB. Return this salesman.
 
         Keyword arguments:
-        see mozfinance.data.model.Salesman.SalesmanSchema
+            see mozfinance.data.model.Salesman.SalesmanSchema
 
         """
         self.Salesman.SalesmanSchema(kwargs)
@@ -58,11 +58,10 @@ class SalesmanData(DataRepository):
         salesman.
 
         Keyword arguments:
-        pop_action -- wether to pop an action or not
-        salesman_id -- id of the salesman to update (*)
-        salesman -- salesman to update (*)
-        firstname -- new firstname of the salesman (**)
-        lastname -- new lastname of the salesman (**)
+            salesman_id -- id of the salesman to update (*)
+            salesman -- salesman to update (*)
+            firstname -- new firstname of the salesman (**)
+            lastname -- new lastname of the salesman (**)
 
         * at least one is required
         ** see mozfinance.data.Salesman.SalesmanSchema for expected types
@@ -96,9 +95,9 @@ class SalesmanData(DataRepository):
         no update or the updated salesman.
 
         Keyword arguments:
-        salesman_id -- id of the salesman to update (*)
-        salesman -- salesman to update (*)
-        commissions_formulae -- dict to set
+            salesman_id -- id of the salesman to update (*)
+            salesman -- salesman to update (*)
+            commissions_formulae -- dict to set
 
         * at least one is required
 
@@ -120,8 +119,8 @@ class SalesmanData(DataRepository):
         """Remove a salesman.
 
         Keyword arguments:
-        salesman_id -- id of the salesman to remove (*)
-        salesman -- salesman to remove (*)
+            salesman_id -- id of the salesman to remove (*)
+            salesman -- salesman to remove (*)
 
         * at least one is required
 

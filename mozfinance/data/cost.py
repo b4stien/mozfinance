@@ -9,8 +9,8 @@ from . import DataRepository
 class CostData(DataRepository):
     """Abstract DataRepository object for costs."""
 
-    def __init__(self, bo=None, package=None):
-        DataRepository.__init__(self, bo, package)
+    def __init__(self, bo=None):
+        DataRepository.__init__(self, bo)
         self._CostClass = None
         self._CostSchema = None
 
@@ -101,8 +101,8 @@ class CostData(DataRepository):
 class CostPrestationData(CostData):
     """DataRepository object for prestation's costs."""
 
-    def __init__(self, bo=None, package=None):
-        CostData.__init__(self, bo, package)
+    def __init__(self, bo=None):
+        CostData.__init__(self, bo)
         CostPrestation = import_module('.CostPrestation', package=self._package)
         self._CostClass = CostPrestation.CostPrestation
         self._CostSchema = CostPrestation.CostPrestationSchema
@@ -135,8 +135,8 @@ class CostPrestationData(CostData):
 class CostMonthData(CostData):
     """DataRepository object for month's costs."""
 
-    def __init__(self, bo=None, package=None):
-        CostData.__init__(self, bo, package)
+    def __init__(self, bo=None):
+        CostData.__init__(self, bo)
         CostMonth = import_module('.CostMonth', package=self._package)
         self._CostClass = CostMonth.CostMonth
         self._CostSchema = CostMonth.CostMonthSchema

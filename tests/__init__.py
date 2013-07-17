@@ -10,7 +10,7 @@ from mozbase.util.database import transaction
 
 import mozfinance.data.model
 from mozfinance.data.model import *
-from mozfinance.biz import BusinessWorker
+from mozfinance.biz import BusinessObject
 
 
 class TestData(unittest.TestCase):
@@ -31,7 +31,7 @@ class TestData(unittest.TestCase):
         self.dbsession.add(self.prestation)
         self.dbsession.flush()
 
-        self.biz = BusinessWorker(
+        self.biz = BusinessObject(
             package='mozfinance.data.model',
             dbsession=self.dbsession)
 

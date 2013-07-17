@@ -11,11 +11,9 @@ class TestWarfdataInit(TestData):
     def test_correct_datarepo_init(self):
         class Bli():
             _dbsession = self.dbsession
+            _package = 'lol'
 
-        DataRepository(
-            package='mozfinance.data.model',
-            bo=Bli()
-        )
+        DataRepository(bo=Bli())
 
     def test_no_datarepo(self):
         with self.assertRaises(TypeError):

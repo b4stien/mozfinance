@@ -13,12 +13,12 @@ from . import DataRepository
 class MonthData(DataRepository):
     """DataRepository object for months."""
 
-    def __init__(self, bo=None, package=None):
-        DataRepository.__init__(self, bo, package)
+    def __init__(self, bo=None):
+        DataRepository.__init__(self, bo)
         self._Month = import_module('.Month', package=self._package)
 
-        self.cost = cost.CostMonthData(bo, package)
-        self.salesman = MonthSalesmanRepository(bo, package)
+        self.cost = cost.CostMonthData(bo)
+        self.salesman = MonthSalesmanRepository(bo)
 
     def _get(self, month_id=None, month=None, date=None):
         """Return a month given a month, a month_id or a date."""
