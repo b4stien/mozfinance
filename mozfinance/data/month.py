@@ -2,6 +2,8 @@
 from importlib import import_module
 import datetime
 
+from sqlalchemy.orm import joinedload
+
 from mozbase.util.database import db_method
 
 from mozfinance.data import cost
@@ -11,13 +13,39 @@ from . import DataRepository
 class MonthData(DataRepository):
     """DataRepository object for months."""
 
-    def __init__(self, dbsession=None, package=None):
-        DataRepository.__init__(self, dbsession, package)
+    def __init__(self, bo=None, package=None):
+        DataRepository.__init__(self, bo, package)
         self._Month = import_module('.Month', package=self._package)
 
-        self.cost = cost.CostMonthData(dbsession, package)
+        self.cost = cost.CostMonthData(bo, package)
+        self.salesman = MonthSalesmanRepository(bo, package)
 
-    def get(self, month_id=None, month=None, date=None):
+    def _get(self, month_id=None, month=None, date=None):
+        """Return a month given a month, a month_id or a date."""
+        if month:
+            if not isinstance(month, self._Month.Month):
+                raise AttributeError('month provided is not a wb-Month')
+
+            return month
+
+        elif month_id:
+            return self._dbsession.query(self._Month.Month)\
+                .filter(self._Month.Month.id == month_id)\
+                .one()
+
+        elif date:
+            if not isinstance(date, datetime.date):
+                raise AttributeError('date provided is not a datetime.date')
+
+            return self._dbsession.query(self._Month.Month)\
+                .filter(self._Month.Month.date == date)\
+                .one()
+
+        else:
+            raise TypeError(
+                'Month informations (month, month_id or date) not provided')
+
+    def get(self, month_id=None, month=None, date=None, **kwargs):
         """Return a month.
 
         Arguments:
@@ -28,7 +56,6 @@ class MonthData(DataRepository):
         * at least one is required
 
         """
-        # "cleanify" date provided.
         if date:
             if not isinstance(date, datetime.date):
                 raise AttributeError('date provided is not a datetime.date')
@@ -38,9 +65,27 @@ class MonthData(DataRepository):
                 month=date.month,
                 day=1)
 
-        month = self._get.month(month_id, month, date)
+        return self._get(month_id, month, date)
 
-        return month
+    def _expire(self, month_id=None, month=None, date=None):
+        """Expire the given month, its year and every
+        prestation-salesman association of this month.
+
+        """
+        month = self._get(month_id, month, date)
+        self._expire_instance(month)
+
+        month_prestations = month.prestations.options(joinedload('prestation_salesmen'))
+        for presta in month_prestations:
+            for presta_sm in presta.prestation_salesmen:
+                self._expire_instance(presta_sm)
+
+            self._expire_instance(presta, '_com_ksk_template')
+
+        self._expire_instance(month, '_com_ksk_template')
+        self.salesman._expire(month=month)
+
+        self._bo.year._expire(year_id=month.date.year)
 
     @db_method
     def create(self, date=None):
@@ -65,3 +110,13 @@ class MonthData(DataRepository):
     def remove(self, *args, **kwargs):
         """There is no point in removing a month from DB."""
         raise NotImplementedError
+
+
+class MonthSalesmanRepository(DataRepository):
+
+    def _expire(self, month_id=None, month=None, date=None):
+        """Expire every month-salesman association of the given month."""
+        month = self._bo.month._get(month_id, month, date)
+
+        for month_sm in month.month_salesmen:
+            self._expire_instance(month_sm)

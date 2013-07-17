@@ -16,7 +16,7 @@ class BusinessWorker(RawDataRepository):
     def __init__(self, dbsession=None, package=None):
         RawDataRepository.__init__(self, dbsession)
 
-        self.month = month.MonthData(dbsession, package)
-        self.year = year.YearData(dbsession, package)
-        self.prestation = prestation.PrestationData(dbsession, package)
-        self.salesman = salesman.SalesmanData(dbsession, package)
+        self.month = month.MonthData(self, package)
+        self.year = year.YearData(self, package)
+        self.prestation = prestation.PrestationData(self, package)
+        self.salesman = salesman.SalesmanData(self, package)

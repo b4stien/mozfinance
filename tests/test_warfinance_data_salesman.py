@@ -11,9 +11,7 @@ class TestSalesmenData(TestData):
 
     def setUp(self):
         TestData.setUp(self)
-        self.salesmen_data = SalesmanData(
-            package='mozfinance.data.model',
-            dbsession=self.dbsession)
+        self.salesmen_data = self.biz.salesman
 
     def tearDown(self):
         TestData.tearDown(self)

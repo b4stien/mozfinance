@@ -11,9 +11,7 @@ class TestCostsData(TestData):
 
     def setUp(self):
         TestData.setUp(self)
-        self.pcost_data = CostPrestationData(
-            package='mozfinance.data.model',
-            dbsession=self.dbsession)
+        self.pcost_data = self.biz.prestation.cost
 
     def tearDown(self):
         TestData.tearDown(self)

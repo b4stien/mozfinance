@@ -9,10 +9,31 @@ from . import DataRepository
 class CostData(DataRepository):
     """Abstract DataRepository object for costs."""
 
-    def __init__(self, dbsession=None, package=None):
-        DataRepository.__init__(self, dbsession, package)
+    def __init__(self, bo=None, package=None):
+        DataRepository.__init__(self, bo, package)
         self._CostClass = None
         self._CostSchema = None
+
+    def _get(self, cost_id=None, cost=None):
+        """Return a cost (Cost) given a cost or a cost_id."""
+
+        if cost:
+            if not isinstance(cost, self._CostClass):
+                raise AttributeError('cost provided is not a wb-Cost')
+
+            return cost
+
+        elif cost_id:
+            return self._dbsession.query(self._CostClass)\
+                .filter(self._CostClass.id == cost_id)\
+                .one()
+
+        else:
+            raise TypeError(
+                'CostPrestation informations (cost or cost_id) not provided')
+
+    def get(self, cost_id=None, cost=None, **kwargs):
+        return self._get(cost_id, cost)
 
     @db_method
     def create(self, **kwargs):
@@ -41,7 +62,7 @@ class CostData(DataRepository):
             reason -- new reason of the cost (**)
 
         """
-        cost = self._get.cost(cost_id, cost)
+        cost = self._get(cost_id, cost)
 
         cost_dict = {k: getattr(cost, k) for k in cost.create_dict
                       if getattr(cost, k) is not None}
@@ -73,84 +94,84 @@ class CostData(DataRepository):
         * at least one is required
 
         """
-        cost = self._get.cost(cost_id, cost)
+        cost = self._get(cost_id, cost)
         self._dbsession.delete(cost)
 
 
 class CostPrestationData(CostData):
     """DataRepository object for prestation's costs."""
 
-    def __init__(self, dbsession=None, package=None):
-        CostData.__init__(self, dbsession, package)
+    def __init__(self, bo=None, package=None):
+        CostData.__init__(self, bo, package)
         CostPrestation = import_module('.CostPrestation', package=self._package)
         self._CostClass = CostPrestation.CostPrestation
         self._CostSchema = CostPrestation.CostPrestationSchema
 
     def create(self, prestation_id=None, prestation=None, **kwargs):
-        presta = self._get.prestation(prestation_id, prestation)
+        presta = self._bo.prestation._get(prestation_id, prestation)
         kwargs['prestation'] = presta
 
         cost = CostData.create(self, **kwargs)
-        self._expire.prestation(prestation=presta)
+        self._bo.prestation._expire(prestation=presta)
 
         return cost
 
     def update(self, cost_id=None, cost=None, **kwargs):
-        cost = self._get.cost(cost_id, cost)
+        cost = self._get(cost_id, cost)
         kwargs['cost'] = cost
 
         will_return = CostData.update(self, **kwargs)
-        self._expire.prestation(prestation=cost.prestation)
+        self._bo.prestation._expire(prestation=cost.prestation)
 
         return will_return
 
     def remove(self, cost_id=None, cost=None):
-        cost = self._get.cost(cost_id, cost)
+        cost = self._get(cost_id, cost)
         prestation = cost.prestation
         CostData.remove(self, cost=cost)
-        self._expire.prestation(prestation=prestation)
+        self._bo.prestation._expire(prestation=prestation)
 
 
 class CostMonthData(CostData):
     """DataRepository object for month's costs."""
 
-    def __init__(self, dbsession=None, package=None):
-        CostData.__init__(self, dbsession, package)
+    def __init__(self, bo=None, package=None):
+        CostData.__init__(self, bo, package)
         CostMonth = import_module('.CostMonth', package=self._package)
         self._CostClass = CostMonth.CostMonth
         self._CostSchema = CostMonth.CostMonthSchema
 
     def create(self, month_id=None, month=None, month_date=None,
                expire=True, **kwargs):
-        month = self._get.month(month_id, month, month_date)
+        month = self._bo.month._get(month_id, month, month_date)
         kwargs['month'] = month
 
         cost = CostData.create(self, **kwargs)
         if not expire:
-            self._expire.month(month=month)
+            self._bo.month._expire(month=month)
 
         return cost
 
     def update(self, cost_id=None, cost=None, expire=True, **kwargs):
-        cost = self._get.cost(cost_id, cost)
+        cost = self._get(cost_id, cost)
         kwargs['cost'] = cost
 
         will_return = CostData.update(self, **kwargs)
         if not expire:
-            self._expire.month(month=cost.month)
+            self._bo.month._expire(month=cost.month)
 
         return will_return
 
     def remove(self, cost_id=None, cost=None, expire=True, **kwargs):
-        cost = self._get.cost(cost_id, cost)
+        cost = self._get(cost_id, cost)
         month = cost.month
         CostData.remove(self, cost=cost)
         if not expire:
-            self._expire.month(month=month)
+            self._bo.month._expire(month=month)
 
     def actions_batch(self, month_id=None, month=None, create=None,
                       update=None, remove=None):
-        month = self._get.month(month_id, month)
+        month = self._get(month_id, month)
 
         if create:
             for item in create:
@@ -165,4 +186,4 @@ class CostMonthData(CostData):
                 self.remove(expire=False, commit=False, **item)
 
         self._dbsession.commit()
-        self._expire.month(month=month)
+        self._bo.month._expire(month=month)

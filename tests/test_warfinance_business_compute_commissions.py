@@ -50,7 +50,7 @@ class TestBusinessCompute(TestData):
             salesman=salesman,
             commissions_formulae={0: {0: '{p_m}*{m_bc}/{m_mb}*0.06'}})
 
-        self.biz.prestation.add_salesman(
+        self.biz.prestation.salesman.add(
             prestation=presta,
             salesman=salesman)
 
@@ -104,13 +104,13 @@ class TestBusinessCompute(TestData):
             salesman=salesman,
             commissions_formulae={0: {0: '{p_m}*{m_bc}/{m_mb}*0.06'}})
 
-        self.biz.prestation.add_salesman(
+        self.biz.prestation.salesman.add(
             prestation=presta,
             salesman=salesman)
-        self.biz.prestation.add_salesman(
+        self.biz.prestation.salesman.add(
             prestation=another_presta,
             salesman=salesman)
-        self.biz.prestation.add_salesman(
+        self.biz.prestation.salesman.add(
             prestation=another_month_presta,
             salesman=salesman)
 
@@ -185,16 +185,16 @@ class TestBusinessCompute(TestData):
             salesman=a_salesman,
             commissions_formulae={0: {0: '{p_m}*{m_bc}/{m_mb}*0.06'}})
 
-        self.biz.prestation.add_salesman(
+        self.biz.prestation.salesman.add(
             prestation=presta,
             salesman=salesman)
-        self.biz.prestation.add_salesman(
+        self.biz.prestation.salesman.add(
             prestation=presta,
             salesman=a_salesman)
-        self.biz.prestation.add_salesman(
+        self.biz.prestation.salesman.add(
             prestation=another_presta,
             salesman=salesman)
-        self.biz.prestation.add_salesman(
+        self.biz.prestation.salesman.add(
             prestation=another_month_presta,
             salesman=salesman)
 

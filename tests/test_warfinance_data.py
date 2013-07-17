@@ -9,9 +9,12 @@ from . import TestData
 class TestWarfdataInit(TestData):
 
     def test_correct_datarepo_init(self):
+        class Bli():
+            _dbsession = self.dbsession
+
         DataRepository(
             package='mozfinance.data.model',
-            dbsession=self.dbsession
+            bo=Bli()
         )
 
     def test_no_datarepo(self):

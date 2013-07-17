@@ -12,9 +12,7 @@ class TestMonthsData(TestData):
 
     def setUp(self):
         TestData.setUp(self)
-        self.month_data = MonthData(
-            package='mozfinance.data.model',
-            dbsession=self.dbsession)
+        self.month_data = self.biz.month
 
     def tearDown(self):
         TestData.tearDown(self)
