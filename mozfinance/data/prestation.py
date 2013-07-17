@@ -47,9 +47,11 @@ class PrestationData(DataRepository):
                 'Prestation informations (prestation or prestation_id) not provided')
 
     def get(self, prestation_id=None, prestation=None, **kwargs):
+        """Return a prestation. Accept extra arguments."""
         return self._get(prestation_id, prestation)
 
     def _expire(self, prestation_id=None, prestation=None):
+        """Expire a prestation and everything behind in the dependencies."""
         presta = self._get(prestation_id, prestation)
         self._expire_instance(presta)
         self._bo.month._expire(month=presta.month)
@@ -121,6 +123,10 @@ class PrestationSalesmanData(DataRepository):
 
     def get(self, prestation_id=None, prestation=None,
             salesman_id=None, salesman=None, **kwargs):
+        """Return a PrestationSalesman association. Accept extra
+        arguments.
+
+        """
         return self._get(prestation_id, prestation, salesman_id, salesman)
 
     def _expire(self, prestation_id=None, prestation=None):

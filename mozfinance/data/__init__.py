@@ -6,42 +6,27 @@ from mozbase.data import InnerBoDataRepository
 
 
 class DataRepository(InnerBoDataRepository):
-    """ABC for data repository objects.
-
-    Provide (mainly):
-        - Get worker
-        - Expire worker
-
-    But also:
-        - user (in self._user)
-        - package (in self._package)
+    """ABC for data repository objects instanciated by a mozfinance
+    BusinessObject.
 
     """
 
-    def __init__(self, bo=None, package=None):
+    def __init__(self, bo=None):
         """Init a DataRepository object.
 
         Arguments:
-            dbsession -- SQLA-Session, with cache region in dbsession.cache
-            package -- package holding the models
-
-        Keyword arguments:
-            user -- user using the DataRepository
-            user_id -- id of the user
+            bo -- reference to the parent business object
 
         """
         InnerBoDataRepository.__init__(self, bo)
-
-        if not package:
-            raise TypeError('package not provided')
-
-        self._package = package
+        self._package = bo._package
 
     def _expire_instance(self, instance, ksk_tpl_name=None):
         """Expire every key related to an instance by deleting every key
         stored in its key_store.
 
         Argument:
+            instance -- instance that will be expired
             ksk_tpl_name -- default: _key_store_key_template
                             name of the attribute in which is saved the
                             template of the key store's key.

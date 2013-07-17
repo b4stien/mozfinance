@@ -35,10 +35,10 @@ class YearData(DataRepository):
             raise TypeError('year informations not provided')
 
     def get(self, date=None, **kwargs):
-        """Return a year (ad-hoc class) with additional attributes.
+        """Return a year (specific object). Accept extra arguments.
 
         Keyword arguments:
-        date -- any datetime.date of the month (required)
+            date -- any datetime.date of the month (required)
 
         """
         if date is None:

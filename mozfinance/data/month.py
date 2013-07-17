@@ -46,7 +46,7 @@ class MonthData(DataRepository):
                 'Month informations (month, month_id or date) not provided')
 
     def get(self, month_id=None, month=None, date=None, **kwargs):
-        """Return a month.
+        """Return a month. Can accept extra arguments.
 
         Arguments:
             month_id -- id of the required month (*)
@@ -68,8 +68,8 @@ class MonthData(DataRepository):
         return self._get(month_id, month, date)
 
     def _expire(self, month_id=None, month=None, date=None):
-        """Expire the given month, its year and every
-        prestation-salesman association of this month.
+        """Expire the given month, its year and every PrestationSalesman
+        association of this month.
 
         """
         month = self._get(month_id, month, date)
@@ -115,7 +115,7 @@ class MonthData(DataRepository):
 class MonthSalesmanRepository(DataRepository):
 
     def _expire(self, month_id=None, month=None, date=None):
-        """Expire every month-salesman association of the given month."""
+        """Expire every MonthSalesman association of the given month."""
         month = self._bo.month._get(month_id, month, date)
 
         for month_sm in month.month_salesmen:

@@ -15,8 +15,7 @@ class CostData(DataRepository):
         self._CostSchema = None
 
     def _get(self, cost_id=None, cost=None):
-        """Return a cost (Cost) given a cost or a cost_id."""
-
+        """Return a cost given a cost or a cost_id."""
         if cost:
             if not isinstance(cost, self._CostClass):
                 raise AttributeError('cost provided is not a wb-Cost')
@@ -33,6 +32,7 @@ class CostData(DataRepository):
                 'CostPrestation informations (cost or cost_id) not provided')
 
     def get(self, cost_id=None, cost=None, **kwargs):
+        """Return a cost. Can accept extra arguments."""
         return self._get(cost_id, cost)
 
     @db_method
@@ -171,7 +171,30 @@ class CostMonthData(CostData):
 
     def actions_batch(self, month_id=None, month=None, create=None,
                       update=None, remove=None):
-        month = self._get(month_id, month)
+        """Perform a batch of actions over given month's costs.
+
+        create/update/remove must be lists of dictonaries containing the
+        arguments that will be passed to create/update/remove methods.
+
+        Beware, only the given month will be expired. If some actions
+        are performed over other months (for instance because a cost of
+        another month has been given), these months won't be expired.
+
+        Eg: actions_batch(
+                month_id=2,
+                remove=[{'cost_id': 2}, {'cost_id': 3}])
+
+        Keyword Arguments:
+            month -- explicit (*)
+            month_id -- explicit (*)
+            create -- list of create actions
+            update -- list of update actions
+            remove -- list of remove actions
+
+        * at least one is required
+
+        """
+        month = self._bo.month._get(month_id, month)
 
         if create:
             for item in create:

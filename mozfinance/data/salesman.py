@@ -31,7 +31,10 @@ class SalesmanData(DataRepository):
             raise TypeError('Salesman informations not provided')
 
     def get(self, salesman_id=None, salesman=None, **kwargs):
-        """Return a salesman given a salesman or a salesman_id."""
+        """Return a salesman given a salesman or a salesman_id. Accept
+        extra arguments.
+
+        """
         return self._get(salesman_id, salesman)
 
     @db_method
