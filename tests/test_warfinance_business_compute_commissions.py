@@ -37,11 +37,12 @@ class TestBusinessCompute(TestData):
 
         presta = Prestation(
             date=now_date,
-            selling_price=float(4000),
             category=0,
             sector=0)
         self.dbsession.add(presta)
         self.dbsession.commit()
+
+        self.biz.prestation.bill.create(prestation=presta, ref=u'Bla', amount=float(4000))
 
         salesman = self.biz.salesman.create(
             firstname=u'Bas',
@@ -79,23 +80,24 @@ class TestBusinessCompute(TestData):
 
         presta = Prestation(
             date=month_date,
-            selling_price=float(25000),
             category=0,
             sector=0)
         self.dbsession.add(presta)
         another_presta = Prestation(
             date=month_date,
-            selling_price=float(25000),
             category=0,
             sector=0)
         self.dbsession.add(another_presta)
         another_month_presta = Prestation(
             date=another_month_date,
-            selling_price=float(25000),
             category=0,
             sector=0)
         self.dbsession.add(another_month_presta)
         self.dbsession.commit()
+
+        self.biz.prestation.bill.create(prestation=presta, ref=u'Bla', amount=float(25000))
+        self.biz.prestation.bill.create(prestation=another_presta, ref=u'Bla', amount=float(25000))
+        self.biz.prestation.bill.create(prestation=another_month_presta, ref=u'Bla', amount=float(25000))
 
         salesman = self.biz.salesman.create(
             firstname=u'Bas',
@@ -154,23 +156,24 @@ class TestBusinessCompute(TestData):
 
         presta = Prestation(
             date=month_date,
-            selling_price=float(25000),
             category=0,
             sector=0)
         self.dbsession.add(presta)
         another_presta = Prestation(
             date=month_date,
-            selling_price=float(25000),
             category=0,
             sector=0)
         self.dbsession.add(another_presta)
         another_month_presta = Prestation(
             date=another_month_date,
-            selling_price=float(25000),
             category=0,
             sector=0)
         self.dbsession.add(another_month_presta)
         self.dbsession.commit()
+
+        self.biz.prestation.bill.create(prestation=presta, ref=u'Bla', amount=float(25000))
+        self.biz.prestation.bill.create(prestation=another_presta, ref=u'Bla', amount=float(25000))
+        self.biz.prestation.bill.create(prestation=another_month_presta, ref=u'Bla', amount=float(25000))
 
         salesman = self.biz.salesman.create(
             firstname=u'Bas',

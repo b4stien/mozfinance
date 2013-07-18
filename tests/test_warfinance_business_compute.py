@@ -15,10 +15,14 @@ class TestBusinessCompute(TestData):
         self.month_date = datetime.date(year=now.year, month=now.month, day=1)
         self.biz.month.create(date=self.month_date)
         presta1 = Prestation(date=now_date)
-        presta2 = Prestation(date=now_date, selling_price=float(16))
+        presta2 = Prestation(date=now_date)
         self.dbsession.add(presta1)
         self.dbsession.add(presta2)
         self.dbsession.flush()
+        self.biz.prestation.bill.create(
+            prestation=presta2,
+            amount=float(16),
+            ref=u'Bla')
         month = self.biz.month.get(date=self.month_date)
         self.assertEqual(month.revenue, float(16))
 
@@ -39,11 +43,19 @@ class TestBusinessWithDatas(TestData):
         self.month_date = datetime.date(year=now.year, month=now.month, day=1)
         self.biz.month.create(date=self.month_date)
         self.biz.month.cost.create(month_date=self.month_date, amount=float(3), reason=u'NoReason')
-        presta1 = Prestation(date=now_date, selling_price=float(12))
-        presta2 = Prestation(date=now_date, selling_price=float(16))
+        presta1 = Prestation(date=now_date)
+        presta2 = Prestation(date=now_date)
         self.dbsession.add(presta1)
         self.dbsession.add(presta2)
         self.dbsession.flush()
+        self.biz.prestation.bill.create(
+            prestation=presta1,
+            amount=float(12),
+            ref=u'Bla')
+        self.biz.prestation.bill.create(
+            prestation=presta2,
+            amount=float(16),
+            ref=u'Bla')
         cost1 = CostPrestation(prestation=presta1, amount=float(4))
         self.dbsession.add(cost1)
         self.dbsession.flush()
@@ -67,17 +79,24 @@ class TestBusinessWithDatas(TestData):
 
         presta = Prestation(
             date=month_date,
-            selling_price=float(3000),
             category=0,
             sector=0)
         self.dbsession.add(presta)
         another_presta = Prestation(
             date=another_month_date,
-            selling_price=float(4000),
             category=0,
             sector=0)
         self.dbsession.add(another_presta)
         self.dbsession.commit()
+
+        self.biz.prestation.bill.create(
+            prestation=presta,
+            amount=float(3000),
+            ref=u'Bla')
+        self.biz.prestation.bill.create(
+            prestation=another_presta,
+            amount=float(4000),
+            ref=u'Bla')
 
         year = self.biz.year.get(date=month_date)
 

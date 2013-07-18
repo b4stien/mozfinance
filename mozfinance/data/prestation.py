@@ -20,6 +20,7 @@ class PrestationData(DataRepository):
 
         self.cost = cost.CostPrestationData(self._bo)
         self.salesman = PrestationSalesmanData(self._bo)
+        self.bill = BillPrestationData(self._bo)
 
     def _get(self, prestation_id=None, prestation=None):
         """Return a prestation.
@@ -55,38 +56,6 @@ class PrestationData(DataRepository):
         presta = self._get(prestation_id, prestation)
         self._expire_instance(presta)
         self._bo.month._expire(month=presta.month)
-
-    @db_method
-    def set_selling_price(self, prestation_id=None, prestation=None,
-            selling_price=None, **kwargs):
-        """Set the price of a prestation. Return False if there is no update or
-        the updated prestation otherwise.
-
-        Keyword arguments:
-            prestation_id -- id of the prestation to update (*)
-            prestation -- prestation to update (*)
-            selling_price -- new selling_price of the prestation (**)
-
-        * at least one is required
-        ** see mozfinance.data.model.Prestation.PrestationSchema for expected types
-
-        """
-        presta = self._get(prestation_id, prestation)
-
-        if not selling_price:
-            raise TypeError('selling_price missing')
-
-        if not isinstance(selling_price, float):
-            raise AttributeError('selling_price isn\'t a float')
-
-        if presta.selling_price == selling_price:
-            return False
-
-        presta.selling_price = selling_price
-
-        self._expire(prestation=presta)
-
-        return presta
 
 
 class BillPrestationData(DataRepository):
@@ -135,15 +104,14 @@ class BillPrestationData(DataRepository):
             see mozfinance.data.BillPrestation.BillPrestationSchema
 
         * at least one is required
-        ** at least one is required
 
         """
         presta = self._bo.prestation._get(prestation_id, prestation)
         kwargs['prestation'] = presta
 
-        self.BillPrestation.SalesmanSchema(kwargs)
+        self.BillPrestation.BillPrestationCreateSchema(kwargs)
 
-        bill = self.BillPrestation.BillPrestationSchema(**kwargs)
+        bill = self.BillPrestation.BillPrestation(**kwargs)
         self._dbsession.add(bill)
 
         self._bo.prestation._expire(prestation=presta)
@@ -151,8 +119,30 @@ class BillPrestationData(DataRepository):
         return bill
 
     @db_method
+    def update(self, bill_id=None, bill=None, **kwargs):
+        bill = self._get(bill_id, bill)
+        update = self._update(
+            instance=bill,
+            schema=self.BillPrestation.BillPrestationUpdateSchema,
+            **kwargs)
+        self._bo.prestation._expire(prestation=bill.prestation)
+        return update
+
+    @db_method
     def remove(self, bill_id=None, bill=None):
-        pass
+        """Remove a bill, expire its prestation.
+
+        Keyword arguments:
+            bill_id -- id of the bill (*)
+            bill -- bill (*)
+
+        * at least one is required
+
+        """
+        bill = self._get(bill_id, bill)
+
+        self._bo.prestation._expire(prestation=bill.prestation)
+        self._dbsession.delete(bill)
 
 
 class PrestationSalesmanData(DataRepository):

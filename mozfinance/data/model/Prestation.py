@@ -40,7 +40,6 @@ class Prestation(Base):
 
     date = Column(Date, index=True)
     client = Column(Unicode(length=60))
-    selling_price = Column(Float)
 
     salesmen = association_proxy('prestation_salesmen', 'salesman')
 
@@ -63,6 +62,14 @@ class Prestation(Base):
             month=self.date.month,
             day=1)
         return month_date
+
+    @cached_property('prestation:{instance.id}:selling_price')
+    def selling_price(self):
+        """Compute and return the prestation's selling_price."""
+        selling_price = float(0)
+        for bill in self.bills:
+            selling_price += bill.amount
+        return selling_price
 
     @cached_property('prestation:{instance.id}:total_cost')
     def total_cost(self):

@@ -17,46 +17,6 @@ class TestPrestationsData(TestData):
         del self.presta_data
 
 
-class TestPrestationsBase(TestPrestationsData):
-
-    def test_correct_update(self):
-        self.prestation = self.presta_data.set_selling_price(
-            prestation=self.prestation,
-            selling_price=float(12))
-        self.assertEqual(self.prestation.selling_price, float(12))
-
-    def test_no_update(self):
-        self.prestation = self.presta_data.set_selling_price(
-            prestation=self.prestation,
-            selling_price=float(12))
-        self.prestation = self.presta_data.set_selling_price(
-            prestation=self.prestation,
-            selling_price=float(12))
-        self.assertTrue(not self.prestation)
-
-    def test_wrong_selling_price(self):
-        with self.assertRaises(AttributeError):
-            self.prestation = self.presta_data.set_selling_price(
-                prestation_id=self.prestation.id,
-                selling_price=12)
-
-    def test_wrong_prestation(self):
-        with self.assertRaises(AttributeError):
-            self.prestation = self.presta_data.set_selling_price(
-                prestation='self.prestation.id',
-                selling_price=12)
-
-    def test_wrong_info(self):
-        with self.assertRaises(TypeError):
-            self.prestation = self.presta_data.set_selling_price(
-                selling_price=12)
-
-    def test_no_selling_price(self):
-        with self.assertRaises(TypeError):
-            self.prestation = self.presta_data.set_selling_price(
-                prestation_id=self.prestation.id)
-
-
 class TestPrestationsSalesmen(TestPrestationsData):
 
     def setUp(self):

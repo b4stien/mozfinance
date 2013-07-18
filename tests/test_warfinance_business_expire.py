@@ -19,13 +19,12 @@ class TestBusinessExpire(TestData):
         presta = Prestation(date=a_date)
         self.dbsession.add(presta)
         self.dbsession.commit()
-        presta = self.biz.prestation.set_selling_price(
+        bill = self.biz.prestation.bill.create(
             prestation=presta,
-            selling_price=float(13))
-        p1 = self.biz.prestation.get(prestation=presta, compute=True)
+            ref=u'Bla',
+            amount=float(13))
+        p1 = self.biz.prestation.get(prestation=presta)
         self.assertEqual(p1.margin, float(13))
-        p1 = self.biz.prestation.set_selling_price(
-            prestation=p1,
-            selling_price=float(17))
-        p2 = self.biz.prestation.get(prestation=p1, compute=True)
+        self.biz.prestation.bill.update(bill=bill, amount=float(17))
+        p2 = self.biz.prestation.get(prestation=p1)
         self.assertEqual(p2.margin, float(17))

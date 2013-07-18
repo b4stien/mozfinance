@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from sqlalchemy import Column, Integer, Float, Unicode, ForeignKey
 from sqlalchemy.orm import relationship
+from voluptuous import Schema, Required, All, Length
 
 from . import Base
 import Prestation
@@ -16,5 +17,16 @@ class BillPrestation(Base):
     prestation_id = Column(Integer, ForeignKey('prestations.id'))
     prestation = relationship('Prestation', backref='bills')
 
-    update_dict = set(['reason', 'amount'])  # For update purpose
-    create_dict = set(['reason', 'amount', 'prestation'])
+
+BillPrestationBaseDict = {
+    Required('ref'): All(unicode, Length(min=3, max=30)),
+    'amount': float
+}
+
+
+BillPrestationCreateDict = BillPrestationBaseDict.copy()
+BillPrestationCreateDict[Required('prestation')] = Prestation.Prestation
+BillPrestationCreateSchema = Schema(BillPrestationCreateDict)
+
+
+BillPrestationUpdateSchema = Schema(BillPrestationBaseDict)
