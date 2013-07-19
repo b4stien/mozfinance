@@ -20,7 +20,7 @@ class BillPrestation(Base):
 
 BillPrestationBaseDict = {
     Required('ref'): All(unicode, Length(min=3, max=30)),
-    'amount': float
+    Required('amount'): float
 }
 
 

@@ -33,8 +33,6 @@ class TestBusinessCompute(TestData):
         month = self.biz.month.create(date=month_date)
         self.biz.month.cost.create(month=month, amount=float(2000), reason=u'Noa')
 
-        print month.total_month_cost
-
         presta = Prestation(
             date=now_date,
             category=0,
