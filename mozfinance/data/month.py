@@ -6,16 +6,16 @@ from sqlalchemy.orm import joinedload
 
 from mozbase.util.database import db_method
 
-from mozfinance.data import cost
-from . import DataRepository
+from mozfinance.data import DataRepository, cost
 
 
 class MonthData(DataRepository):
     """DataRepository object for months."""
 
     def __init__(self, bo=None):
-        DataRepository.__init__(self, bo)
+        DataRepository.__init__(self, bo, managed_object_name='month')
         self._Month = import_module('.Month', package=self._package)
+        self._managed_object = self._Month.Month
 
         self.cost = cost.CostMonthData(bo)
         self.salesman = MonthSalesmanRepository(bo)
@@ -75,7 +75,8 @@ class MonthData(DataRepository):
         month = self._get(month_id, month, date)
         self._expire_instance(month)
 
-        month_prestations = month.prestations.options(joinedload('prestation_salesmen'))
+        month_prestations = month.prestations.options(
+            joinedload('prestation_salesmen'))
         for presta in month_prestations:
             for presta_sm in presta.prestation_salesmen:
                 self._expire_instance(presta_sm)

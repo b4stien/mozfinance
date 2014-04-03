@@ -3,8 +3,7 @@ from importlib import import_module
 
 from mozbase.util.database import db_method
 
-from mozfinance.data import cost
-from . import DataRepository
+from mozfinance.data import DataRepository, cost
 
 
 class PrestationData(DataRepository):
@@ -13,42 +12,14 @@ class PrestationData(DataRepository):
     _patch_exports = ['cost', 'salesman', 'bill', '_expire']
 
     def __init__(self, bo=None):
-        DataRepository.__init__(self, bo)
+        DataRepository.__init__(self, bo, managed_object_name='prestation')
         self.Prestation = import_module('.Prestation', package=self._package)
+        self._managed_object = self.Prestation.Prestation
         self.PrestationSalesman = import_module('.AssPrestationSalesman', package=self._package)
 
         self.cost = cost.CostPrestationData(self._bo)
         self.salesman = PrestationSalesmanData(self._bo)
         self.bill = BillPrestationData(self._bo)
-
-    def _get(self, prestation_id=None, prestation=None):
-        """Return a prestation.
-
-        Arguments:
-            prestation -- explicit (*)
-            prestation_id -- id of the prestation (*)
-
-        * at least one is required
-
-        """
-        if prestation:
-            if not isinstance(prestation, self.Prestation.Prestation):
-                raise AttributeError(
-                    'prestation provided is not a wb-Prestation')
-
-            return prestation
-
-        elif prestation_id:
-            return self._dbsession.query(self.Prestation.Prestation)\
-                .filter(self.Prestation.Prestation.id == prestation_id).one()
-
-        else:
-            raise TypeError(
-                'Prestation informations (prestation or prestation_id) not provided')
-
-    def get(self, prestation_id=None, prestation=None, **kwargs):
-        """Return a prestation. Accept extra arguments."""
-        return self._get(prestation_id, prestation)
 
     def _expire(self, prestation_id=None, prestation=None):
         """Expire a prestation and everything behind in the dependencies."""
@@ -60,38 +31,11 @@ class PrestationData(DataRepository):
 class BillPrestationData(DataRepository):
 
     def __init__(self, bo=None):
-        DataRepository.__init__(self, bo)
+        DataRepository.__init__(self, bo, managed_object_name='bill')
         self.BillPrestation = import_module(
             '.BillPrestation',
             package=self._package)
-
-    def _get(self, bill_id=None, bill=None):
-        """Return a bill (BillPrestation).
-
-        Keyword arguments:
-            bill -- explicit (*)
-            bill_id -- id of the bill (*)
-
-        * at least one is required
-
-        """
-        if bill:
-            if not isinstance(bill, self.BillPrestation.BillPrestation):
-                raise AttributeError(
-                    'bill provided is not a wb-BillPrestation')
-
-            return bill
-
-        elif bill_id:
-            return self._dbsession.query(self.BillPrestation.BillPrestation)\
-                .filter(self.BillPrestation.BillPrestation.id == bill_id).one()
-
-        else:
-            raise TypeError('Bill informations (bill or bill_id) not provided')
-
-    def get(self, bill_id=None, bill=None, **kwargs):
-        """Return a bill (BillPrestation). Accept extra arguments."""
-        return self._get(bill_id, bill)
+        self._managed_object = self.BillPrestation.BillPrestation
 
     @db_method
     def create(self, prestation_id=None, prestation=None, **kwargs):

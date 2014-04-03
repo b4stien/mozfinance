@@ -2,7 +2,7 @@
 import datetime
 from importlib import import_module
 
-from . import DataRepository
+from mozfinance.data import DataRepository
 
 
 class YearData(DataRepository):

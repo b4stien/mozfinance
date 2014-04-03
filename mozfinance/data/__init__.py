@@ -2,23 +2,23 @@
 """Package for all object API."""
 from dogpile.cache.api import NoValue
 
-from mozbase.data import InnerBoDataRepository
+from mozbase.data import ObjectManagingDataRepository
 
 
-class DataRepository(InnerBoDataRepository):
+class DataRepository(ObjectManagingDataRepository):
     """ABC for data repository objects instanciated by a mozfinance
     BusinessObject.
 
     """
 
-    def __init__(self, bo=None):
+    def __init__(self, bo=None, *args, **kwargs):
         """Init a DataRepository object.
 
         Arguments:
             bo -- reference to the parent business object
 
         """
-        InnerBoDataRepository.__init__(self, bo)
+        ObjectManagingDataRepository.__init__(self, bo, *args, **kwargs)
         self._package = bo._package
 
     def _expire_instance(self, instance, ksk_tpl_name=None):

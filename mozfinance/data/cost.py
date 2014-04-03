@@ -3,7 +3,7 @@ from importlib import import_module
 
 from mozbase.util.database import db_method
 
-from . import DataRepository
+from mozfinance.data import DataRepository
 
 
 class CostData(DataRepository):

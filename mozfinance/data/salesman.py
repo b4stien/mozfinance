@@ -3,39 +3,16 @@ from importlib import import_module
 
 from mozbase.util.database import db_method
 
-from . import DataRepository
+from mozfinance.data import DataRepository
 
 
 class SalesmanData(DataRepository):
     """DataRepository object for salesmen."""
 
     def __init__(self, bo=None):
-        DataRepository.__init__(self, bo)
+        DataRepository.__init__(self, bo, managed_object_name='salesman')
         self.Salesman = import_module('.Salesman', package=self._package)
-
-    def _get(self, salesman_id=None, salesman=None):
-        """Return a salesman given a salesman or a salesman_id."""
-        Salesman = import_module('.Salesman', package=self._package)
-        if salesman:
-            if not isinstance(salesman, Salesman.Salesman):
-                raise AttributeError('salesman provided is not a wb-Salesman')
-
-            return salesman
-
-        elif salesman_id:
-            return self._dbsession.query(Salesman.Salesman)\
-                .filter(Salesman.Salesman.id == salesman_id)\
-                .one()
-
-        else:
-            raise TypeError('Salesman informations not provided')
-
-    def get(self, salesman_id=None, salesman=None, **kwargs):
-        """Return a salesman given a salesman or a salesman_id. Accept
-        extra arguments.
-
-        """
-        return self._get(salesman_id, salesman)
+        self._managed_object = self.Salesman.Salesman
 
     @db_method
     def create(self, **kwargs):
