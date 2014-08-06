@@ -4,7 +4,7 @@ from setuptools import setup
 
 setup(
     name='mozfinance',
-    version='0.5.0',
+    version='0.5.1dev',
     packages=['mozfinance'],
     test_suite='tests',
     install_requires=['mozbase==0.5.1'],
