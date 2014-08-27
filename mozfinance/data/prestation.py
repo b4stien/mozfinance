@@ -166,7 +166,7 @@ class PrestationSalesmanData(DataRepository):
         presta_sm = self.PrestationSalesman.PrestationSalesman()
         presta_sm.prestation = presta
         presta_sm.salesman = salesman
-        presta_sm.formula = salesman.commissions_formulae[presta.sector][presta.category]
+        presta_sm.formula = salesman.commissions_formulae[presta.category][presta.sector]
 
         self._dbsession.add(presta_sm)
 
