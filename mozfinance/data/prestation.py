@@ -9,7 +9,7 @@ from mozfinance.data import DataRepository, cost
 class PrestationData(DataRepository):
     """DataRepository object for prestations."""
 
-    _patch_exports = ['cost', 'salesman', 'bill', '_expire']
+    _patch_exports = ['cost', 'salesman', 'bill']
 
     def __init__(self, bo=None):
         DataRepository.__init__(self, bo, managed_object_name='prestation')
@@ -20,12 +20,6 @@ class PrestationData(DataRepository):
         self.cost = cost.CostPrestationData(self._bo)
         self.salesman = PrestationSalesmanData(self._bo)
         self.bill = BillPrestationData(self._bo)
-
-    def _expire(self, prestation_id=None, prestation=None):
-        """Expire a prestation and everything behind in the dependencies."""
-        presta = self._get(prestation_id, prestation)
-        self._expire_instance(presta)
-        self._bo.month._expire(month=presta.month)
 
 
 class BillPrestationData(DataRepository):
